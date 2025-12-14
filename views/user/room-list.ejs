@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= roomType ? roomType.name : 'Kamar' %> - KostPro User</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="user-bg">
+    <style>
+        .glossy-gold {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
+            backdrop-filter: blur(15px);
+            box-shadow: 0 12px 40px rgba(251, 191, 36, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .glossy-gold-light {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 50%, #fbbf24 100%);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 25px rgba(251, 191, 36, 0.2);
+            border: 1px solid rgba(251, 191, 36, 0.3);
+        }
+        .glossy-white {
+            background: linear-gradient(135deg, #ffffff 0%, #fefefe 50%, #f9fafb 100%);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
+        .glossy-card {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 12px;
+        }
+        .glossy-card:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.12), 0 8px 16px rgba(0, 0, 0, 0.08);
+        }
+        .user-bg {
+            background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 30%, #fde68a 70%, #fbbf24 100%);
+            min-height: 100vh;
+        }
+        .text-gold {
+            color: #92400e;
+        }
+        .text-gold-dark {
+            color: #78350f;
+        }
+    </style>
+    <%- include('../partials/user-nav') %>
+
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        <!-- Breadcrumb -->
+        <div class="mb-6">
+            <div class="glossy-white rounded-xl p-4 glossy-card">
+                <nav class="flex" aria-label="Breadcrumb">
+                    <ol class="inline-flex items-center space-x-1 md:space-x-3">
+                        <li class="inline-flex items-center">
+                            <a href="/user/rooms" class="text-blue-600 hover:text-blue-700">
+                                <i class="fas fa-bed mr-2"></i>Kamar
+                            </a>
+                        </li>
+                        <li>
+                            <div class="flex items-center">
+                                <i class="fas fa-chevron-right text-blue-400 mx-2"></i>
+                                <span class="text-blue-600"><%= roomType ? roomType.name : 'Detail Kamar' %></span>
+                            </div>
+                        </li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+
+        <% if (roomType) { %>
+            <!-- Room Type Info -->
+            <div class="glossy-white rounded-2xl p-8 mb-8 glossy-card">
+                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+                    <div class="mb-4 lg:mb-0">
+                        <h1 class="text-3xl font-bold text-gold-dark mb-2"><%= roomType.name %></h1>
+                        <p class="text-gold mb-4"><%= roomType.description %></p>
+                        <div class="text-2xl font-bold text-amber-600">
+                            Rp <%= roomType.base_price.toLocaleString('id-ID') %> <span class="text-sm text-blue-500">per bulan</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Facilities -->
+                    <div class="lg:w-1/3">
+                        <h3 class="font-semibold text-gold-dark mb-3">Fasilitas Lengkap:</h3>
+                        <div class="flex flex-wrap gap-2">
+                            <% if (roomType.facilities) { %>
+                                <% try { %>
+                                    <% const facilities = JSON.parse(roomType.facilities); %>
+                                    <% facilities.forEach(facility => { %>
+                                        <span class="glossy-white text-blue-600 text-sm px-3 py-1 rounded-full border border-blue-200">
+                                            <i class="fas fa-check mr-1"></i><%= facility %>
+                                        </span>
+                                    <% }); %>
+                                <% } catch(e) { %>
+                                    <span class="text-sm text-blue-500">Fasilitas lengkap tersedia</span>
+                                <% } %>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        <% } %>
+
+        <!-- Available Rooms -->
+        <div class="mb-6">
+            <div class="glossy-white rounded-xl p-4 glossy-card">
+                <h2 class="text-2xl font-bold text-gold-dark">Kamar Tersedia</h2>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <% if (rooms.length > 0) { %>
+                <% rooms.forEach(room => { %>
+                    <div class="glossy-white rounded-2xl overflow-hidden glossy-card">
+                        <div class="h-32 relative overflow-hidden">
+                            <img src="/images/<%= room.type_name.replace(/\s+/g, '-') %>/Kamar Tersedia.jpg" 
+                                 alt="Kamar <%= room.room_number %>" 
+                                 class="w-full h-full object-cover">
+                            <div class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+                                <div class="text-center text-white">
+                                    <i class="fas fa-door-open text-2xl mb-2"></i>
+                                    <div class="font-bold text-lg"><%= room.room_number %></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-4">
+                            <div class="flex justify-between items-center mb-3">
+                                <h3 class="font-semibold text-gold-dark">Kamar <%= room.room_number %></h3>
+                                <% if (room.status === 'available') { %>
+                                    <span class="glossy-gold-light text-green-800 text-xs px-2 py-1 rounded-full">
+                                        <i class="fas fa-check mr-1"></i>Tersedia
+                                    </span>
+                                <% } else { %>
+                                    <span class="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full">
+                                        <i class="fas fa-times mr-1"></i>Sudah Terisi
+                                    </span>
+                                <% } %>
+                            </div>
+                            
+                            <div class="text-sm text-blue-600 mb-3">
+                                <div class="flex items-center mb-1">
+                                    <i class="fas fa-layer-group mr-2 text-blue-500"></i>
+                                    Lantai <%= room.floor %>
+                                </div>
+                                <div class="flex items-center">
+                                    <i class="fas fa-tag mr-2 text-blue-500"></i>
+                                    <%= room.type_name %>
+                                </div>
+                            </div>
+                            
+                            <div class="text-lg font-bold text-amber-600 mb-3">
+                                Rp <%= room.base_price.toLocaleString('id-ID') %>
+                                <span class="text-xs text-blue-500">/bulan</span>
+                            </div>
+                            
+                            <% if (room.status === 'available') { %>
+                                <button onclick="openBookingModal('<%= room.id %>', '<%= room.room_number %>', '<%= room.base_price %>')" 
+                                        class="w-full glossy-gold text-white px-4 py-3 rounded-xl glossy-card font-medium">
+                                    <i class="fas fa-calendar-plus mr-2"></i>Booking Sekarang
+                                </button>
+                            <% } else { %>
+                                <button disabled 
+                                        class="w-full bg-gray-400 text-white px-4 py-3 rounded-xl cursor-not-allowed">
+                                    <i class="fas fa-times mr-2"></i>Sudah Terisi
+                                </button>
+                            <% } %>
+                        </div>
+                    </div>
+                <% }); %>
+            <% } else { %>
+                <div class="col-span-full">
+                    <div class="glossy-white rounded-2xl p-12 text-center glossy-card">
+                        <i class="fas fa-door-closed text-4xl text-gold mb-4"></i>
+                        <h3 class="text-xl font-semibold text-gold-dark mb-2">Tidak Ada Kamar Tersedia</h3>
+                        <p class="text-gold mb-4">Semua kamar untuk tipe ini sedang terisi</p>
+                        <a href="/user/rooms" class="glossy-gold text-white px-6 py-3 rounded-xl glossy-card font-medium">
+                            <i class="fas fa-arrow-left mr-2"></i>Kembali ke Daftar Tipe
+                        </a>
+                    </div>
+                </div>
+            <% } %>
+        </div>
+    </div>
+
+    <!-- Booking Modal -->
+    <div id="bookingModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center z-50 p-4">
+        <div class="glossy-white rounded-2xl shadow-lg w-full max-w-md glossy-card">
+            <form action="/user/booking" method="POST">
+                <div class="p-6">
+                    <h3 class="text-lg font-bold text-gold-dark mb-4">Booking Kamar</h3>
+                    <input type="hidden" name="room_id" id="modal_room_id">
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gold mb-2">Kamar</label>
+                            <input type="text" id="modal_room_number" readonly 
+                                   class="w-full px-3 py-2 border border-amber-200 rounded-xl glossy-gold-light">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gold mb-2">Tanggal Mulai</label>
+                            <input type="date" name="start_date" required 
+                                   class="w-full px-3 py-2 border border-amber-200 rounded-xl focus:ring-2 focus:ring-amber-500">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gold mb-2">Durasi (Bulan)</label>
+                            <select name="duration_months" id="duration_select" required 
+                                    class="w-full px-3 py-2 border border-amber-200 rounded-xl focus:ring-2 focus:ring-amber-500">
+                                <option value="1">1 Bulan</option>
+                                <option value="3">3 Bulan</option>
+                                <option value="6">6 Bulan</option>
+                                <option value="12">12 Bulan</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gold mb-2">Total Pembayaran</label>
+                            <input type="text" id="total_amount_display" readonly 
+                                   class="w-full px-3 py-2 border border-amber-200 rounded-xl glossy-gold-light font-bold text-amber-700">
+                            <input type="hidden" name="total_amount" id="total_amount_value">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gold mb-2">Catatan (Opsional)</label>
+                            <textarea name="notes" rows="3" 
+                                      class="w-full px-3 py-2 border border-amber-200 rounded-xl focus:ring-2 focus:ring-amber-500"
+                                      placeholder="Tambahkan catatan khusus..."></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="glossy-gold-light px-6 py-4 rounded-b-2xl flex justify-end space-x-3">
+                    <button type="button" onclick="closeBookingModal()" 
+                            class="px-4 py-2 border border-amber-300 rounded-xl text-gold hover:bg-amber-100 glossy-card">
+                        Batal
+                    </button>
+                    <button type="submit" 
+                            class="px-4 py-2 glossy-gold text-white rounded-xl glossy-card">
+                        <i class="fas fa-check mr-2"></i>Konfirmasi Booking
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let currentRoomPrice = 0;
+
+        function openBookingModal(roomId, roomNumber, basePrice) {
+            document.getElementById('modal_room_id').value = roomId;
+            document.getElementById('modal_room_number').value = 'Kamar ' + roomNumber;
+            currentRoomPrice = parseInt(basePrice);
+            
+            calculateTotal();
+            
+            document.getElementById('bookingModal').classList.remove('hidden');
+            document.getElementById('bookingModal').classList.add('flex');
+        }
+
+        function closeBookingModal() {
+            document.getElementById('bookingModal').classList.add('hidden');
+            document.getElementById('bookingModal').classList.remove('flex');
+        }
+
+        function calculateTotal() {
+            const duration = parseInt(document.getElementById('duration_select').value);
+            const total = currentRoomPrice * duration;
+            
+            document.getElementById('total_amount_display').value = 'Rp ' + total.toLocaleString('id-ID');
+            document.getElementById('total_amount_value').value = total;
+        }
+
+        document.getElementById('duration_select').addEventListener('change', calculateTotal);
+
+        document.getElementById('bookingModal').addEventListener('click', function(e) {
+            if (e.target.id === 'bookingModal') {
+                closeBookingModal();
+            }
+        });
+
+        // Set minimum date to today
+        document.addEventListener('DOMContentLoaded', function() {
+            const today = new Date().toISOString().split('T')[0];
+            document.querySelector('input[name="start_date"]').min = today;
+        });
+    </script>
+</body>
+</html>

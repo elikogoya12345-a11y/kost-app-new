@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daftar - Kost Putra Bu Hartini</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .glossy-white {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(255, 255, 255, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .glossy-gold {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(245, 158, 11, 0.3);
+        }
+        .glossy-blue {
+            background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(59, 130, 246, 0.3);
+        }
+        .glossy-card {
+            transition: all 0.3s ease;
+        }
+        .glossy-card:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+        }
+        .guest-bg {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 50%, #e2e8f0 100%);
+            min-height: 100vh;
+        }
+    </style>
+</head>
+<body class="guest-bg py-8">
+    <div class="max-w-md w-full mx-auto px-4">
+        <div class="glossy-white rounded-2xl p-8 glossy-card">
+            <div class="text-center mb-8">
+                <div class="flex items-center justify-center space-x-2 mb-4">
+                    <i class="fas fa-building text-3xl text-amber-600"></i>
+                    <span class="text-2xl font-bold text-gray-800">Kos Putra Bu Hartini</span>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-800">Daftar Akun Baru</h2>
+                <p class="text-gray-600 mt-2">Bergabunglah dengan kami!</p>
+            </div>
+
+            <% if (typeof error !== 'undefined') { %>
+                <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
+                    <%= error %>
+                </div>
+            <% } %>
+
+            <form method="POST" action="/auth/register" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Nama Lengkap</label>
+                    <input type="text" name="name" required 
+                           value="<%= typeof formData !== 'undefined' ? formData.name || '' : '' %>"
+                           class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-white"
+                           placeholder="Masukkan nama lengkap">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Username</label>
+                    <input type="text" name="username" required 
+                           value="<%= typeof formData !== 'undefined' ? formData.username || '' : '' %>"
+                           class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-white"
+                           placeholder="Masukkan username (tanpa spasi)">
+                    <p class="text-xs text-gray-500 mt-1">Username akan digunakan untuk login</p>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                    <input type="email" name="email" required 
+                           value="<%= typeof formData !== 'undefined' ? formData.email || '' : '' %>"
+                           class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-white"
+                           placeholder="Masukkan email">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Nomor HP</label>
+                    <input type="tel" name="phone" 
+                           value="<%= typeof formData !== 'undefined' ? formData.phone || '' : '' %>"
+                           class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-white"
+                           placeholder="08xxxxxxxxxx">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Tanggal Lahir</label>
+                    <input type="date" name="birth_date" 
+                           value="<%= typeof formData !== 'undefined' ? formData.birth_date || '' : '' %>"
+                           class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-white">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Alamat</label>
+                    <textarea name="address" rows="2" 
+                              class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-white"
+                              placeholder="Alamat lengkap"><%= typeof formData !== 'undefined' ? formData.address || '' : '' %></textarea>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                    <input type="password" name="password" id="password" required minlength="6"
+                           class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-white"
+                           placeholder="Minimal 6 karakter">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Ulangi Password</label>
+                    <input type="password" name="confirm_password" id="confirm_password" required minlength="6"
+                           class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-white"
+                           placeholder="Ulangi password yang sama">
+                    <p id="password-match" class="text-xs mt-1 hidden"></p>
+                </div>
+
+                <button type="submit" id="submit-btn"
+                        class="w-full glossy-gold text-white py-3 px-4 rounded-lg font-semibold glossy-card">
+                    <i class="fas fa-user-plus mr-2"></i>Daftar Sekarang
+                </button>
+            </form>
+
+            <div class="mt-6 text-center">
+                <p class="text-gray-600">
+                    Sudah punya akun? 
+                    <a href="/auth/login" class="text-amber-600 hover:text-amber-700 font-medium">Masuk di sini</a>
+                </p>
+            </div>
+
+            <div class="mt-6 pt-6 border-t border-gray-200">
+                <a href="/" class="w-full flex items-center justify-center py-2 px-4 glossy-blue text-white rounded-lg glossy-card">
+                    <i class="fas fa-arrow-left mr-2"></i>Kembali ke Beranda
+                </a>
+            </div>
+        </div>
+    </div>
+    <script>
+        const password = document.getElementById('password');
+        const confirmPassword = document.getElementById('confirm_password');
+        const passwordMatch = document.getElementById('password-match');
+        const submitBtn = document.getElementById('submit-btn');
+        const form = document.querySelector('form');
+
+        function checkPasswordMatch() {
+            if (confirmPassword.value === '') {
+                passwordMatch.classList.add('hidden');
+                return;
+            }
+
+            passwordMatch.classList.remove('hidden');
+            
+            if (password.value === confirmPassword.value) {
+                passwordMatch.textContent = '✓ Password cocok';
+                passwordMatch.className = 'text-xs mt-1 text-green-600';
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            } else {
+                passwordMatch.textContent = '✗ Password tidak cocok';
+                passwordMatch.className = 'text-xs mt-1 text-red-600';
+                submitBtn.disabled = true;
+                submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+        }
+
+        password.addEventListener('input', checkPasswordMatch);
+        confirmPassword.addEventListener('input', checkPasswordMatch);
+
+        form.addEventListener('submit', function(e) {
+            if (password.value !== confirmPassword.value) {
+                e.preventDefault();
+                alert('Password tidak cocok!');
+            }
+        });
+    </script>
+</body>
+</html>

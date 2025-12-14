@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kamar - KostPro User</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="user-bg">
+    <style>
+        .glossy-gold {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
+            backdrop-filter: blur(15px);
+            box-shadow: 0 12px 40px rgba(251, 191, 36, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .glossy-gold-light {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 50%, #fbbf24 100%);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 25px rgba(251, 191, 36, 0.2);
+            border: 1px solid rgba(251, 191, 36, 0.3);
+        }
+        .glossy-white {
+            background: linear-gradient(135deg, #ffffff 0%, #fefefe 50%, #f9fafb 100%);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
+        .glossy-card {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 12px;
+        }
+        .glossy-card:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.12), 0 8px 16px rgba(0, 0, 0, 0.08);
+        }
+        .user-bg {
+            background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 30%, #fde68a 70%, #fbbf24 100%);
+            min-height: 100vh;
+        }
+        .text-gold {
+            color: #92400e;
+        }
+        .text-gold-dark {
+            color: #78350f;
+        }
+    </style>
+    <%- include('../partials/user-nav') %>
+
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        <div class="mb-8">
+            <div class="glossy-white rounded-2xl p-6 glossy-card">
+                <h1 class="text-3xl font-bold text-gold-dark">Tipe Kamar Tersedia</h1>
+                <p class="text-gold mt-2">Pilih tipe kamar yang sesuai dengan kebutuhan Anda</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <% if (roomTypes.length > 0) { %>
+                <% roomTypes.forEach(roomType => { %>
+                    <div class="glossy-white rounded-2xl overflow-hidden glossy-card">
+                        <div class="h-48 relative overflow-hidden">
+                            <img src="/images/<%= roomType.name.replace(/\s+/g, '-') %>/<%= roomType.name.replace(/\s+/g, '-') %>.jpg" 
+                                 alt="<%= roomType.name %>" 
+                                 class="w-full h-full object-cover">
+                            <div class="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center">
+                                <div class="text-center text-white">
+                                    <i class="fas fa-bed text-3xl mb-2"></i>
+                                    <p class="font-bold text-lg"><%= roomType.name %></p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-6">
+                            <h3 class="text-xl font-bold text-gold-dark mb-2"><%= roomType.name %></h3>
+                            <p class="text-gold mb-4"><%= roomType.description %></p>
+                            
+                            <!-- Facilities -->
+                            <div class="mb-4">
+                                <h4 class="font-semibold text-gold-dark mb-2">Fasilitas:</h4>
+                                <div class="flex flex-wrap gap-1">
+                                    <% if (roomType.facilities) { %>
+                                        <% try { %>
+                                            <% const facilities = JSON.parse(roomType.facilities); %>
+                                            <% facilities.slice(0, 3).forEach(facility => { %>
+                                                <span class="glossy-white text-blue-600 text-xs px-2 py-1 rounded-full border border-blue-200"><%= facility %></span>
+                                            <% }); %>
+                                            <% if (facilities.length > 3) { %>
+                                                <span class="text-xs text-blue-500">+<%= facilities.length - 3 %> lainnya</span>
+                                            <% } %>
+                                        <% } catch(e) { %>
+                                            <span class="text-xs text-blue-500">Fasilitas lengkap</span>
+                                        <% } %>
+                                    <% } %>
+                                </div>
+                            </div>
+
+                            <div class="flex justify-between items-center mb-4">
+                                <span class="text-2xl font-bold text-amber-600">Rp <%= roomType.base_price.toLocaleString('id-ID') %></span>
+                                <span class="text-sm text-blue-500">per bulan</span>
+                            </div>
+                            
+                            <div class="flex justify-between items-center mb-4">
+                                <div class="text-sm text-blue-600">
+                                    <span class="font-medium"><%= roomType.available_rooms || 0 %></span> tersedia dari 
+                                    <span class="font-medium"><%= roomType.total_rooms || 0 %></span> kamar
+                                </div>
+                                <div class="w-16 bg-blue-200 rounded-full h-2">
+                                    <% const percentage = roomType.total_rooms > 0 ? (roomType.available_rooms / roomType.total_rooms) * 100 : 0; %>
+                                    <div class="bg-blue-500 h-2 rounded-full" style="width: <%= percentage %>%"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="flex space-x-2">
+                                <% if (roomType.available_rooms > 0) { %>
+                                    <a href="/user/rooms/<%= roomType.id %>" 
+                                       class="flex-1 glossy-gold text-white px-4 py-3 rounded-xl glossy-card text-center font-medium">
+                                        <i class="fas fa-eye mr-2"></i>Lihat Kamar
+                                    </a>
+                                <% } else { %>
+                                    <button disabled 
+                                            class="flex-1 bg-gray-400 text-white px-4 py-3 rounded-xl cursor-not-allowed text-center">
+                                        <i class="fas fa-times mr-2"></i>Tidak Tersedia
+                                    </button>
+                                <% } %>
+                            </div>
+                        </div>
+                    </div>
+                <% }); %>
+            <% } else { %>
+                <div class="col-span-full">
+                    <div class="glossy-white rounded-2xl p-12 text-center glossy-card">
+                        <i class="fas fa-bed text-4xl text-gold mb-4"></i>
+                        <h3 class="text-xl font-semibold text-gold-dark mb-2">Belum Ada Tipe Kamar</h3>
+                        <p class="text-gold">Tipe kamar akan segera tersedia</p>
+                    </div>
+                </div>
+            <% } %>
+        </div>
+    </div>
+</body>
+</html>

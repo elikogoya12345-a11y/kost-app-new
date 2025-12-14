@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking Saya - Kos Putra Bu Hartini</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="user-bg">
+    <style>
+        .glossy-gold {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
+            backdrop-filter: blur(15px);
+            box-shadow: 0 12px 40px rgba(251, 191, 36, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .glossy-gold-light {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 50%, #fbbf24 100%);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 25px rgba(251, 191, 36, 0.2);
+            border: 1px solid rgba(251, 191, 36, 0.3);
+        }
+        .glossy-white {
+            background: linear-gradient(135deg, #ffffff 0%, #fefefe 50%, #f9fafb 100%);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
+        .glossy-card {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 12px;
+        }
+        .glossy-card:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.12), 0 8px 16px rgba(0, 0, 0, 0.08);
+        }
+        .user-bg {
+            background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 30%, #fde68a 70%, #fbbf24 100%);
+            min-height: 100vh;
+        }
+        .text-gold {
+            color: #92400e;
+        }
+        .text-gold-dark {
+            color: #78350f;
+        }
+    </style>
+    <%- include('../partials/user-nav') %>
+
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        <div class="mb-8">
+            <div class="glossy-white rounded-2xl p-6 glossy-card">
+                <h1 class="text-3xl font-bold text-gold-dark">Booking Saya</h1>
+                <p class="text-gold mt-2">Riwayat booking kamar di Kos Putra Bu Hartini</p>
+            </div>
+        </div>
+
+        <% if (typeof success !== 'undefined' && success) { %>
+            <div class="glossy-gold-light border border-amber-200 text-green-700 px-4 py-3 rounded-xl mb-6 glossy-card">
+                <i class="fas fa-check-circle mr-2"></i><%= success %>
+            </div>
+        <% } %>
+
+        <div class="grid grid-cols-1 gap-6">
+            <% if (bookings.length > 0) { %>
+                <% bookings.forEach(booking => { %>
+                    <div class="glossy-white rounded-2xl p-6 glossy-card">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h3 class="text-xl font-bold text-gold-dark">
+                                    <i class="fas fa-door-open text-amber-600 mr-2"></i>
+                                    Kamar <%= booking.room_number %>
+                                </h3>
+                                <p class="text-gold"><%= booking.room_type %></p>
+                            </div>
+                            <div class="text-right">
+                                <% if (booking.status === 'confirmed') { %>
+                                    <span class="inline-flex px-3 py-1 text-sm font-semibold rounded-full bg-green-100 text-green-800">
+                                        <i class="fas fa-check mr-1"></i>Terkonfirmasi
+                                    </span>
+                                <% } else if (booking.status === 'pending') { %>
+                                    <span class="inline-flex px-3 py-1 text-sm font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                        <i class="fas fa-clock mr-1"></i>Menunggu Konfirmasi
+                                    </span>
+                                <% } else { %>
+                                    <span class="inline-flex px-3 py-1 text-sm font-semibold rounded-full bg-gray-100 text-gray-800">
+                                        <%= booking.status %>
+                                    </span>
+                                <% } %>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                            <div class="glossy-gold-light rounded-xl p-4 glossy-card">
+                                <div class="flex items-center mb-2">
+                                    <i class="fas fa-calendar-alt text-amber-600 mr-2"></i>
+                                    <span class="font-semibold text-gold-dark">Tanggal Mulai</span>
+                                </div>
+                                <p class="text-gold"><%= new Date(booking.start_date).toLocaleDateString('id-ID') %></p>
+                            </div>
+
+                            <div class="glossy-gold-light rounded-xl p-4 glossy-card">
+                                <div class="flex items-center mb-2">
+                                    <i class="fas fa-clock text-amber-600 mr-2"></i>
+                                    <span class="font-semibold text-gold-dark">Durasi</span>
+                                </div>
+                                <p class="text-gold"><%= booking.duration_months %> Bulan</p>
+                            </div>
+
+                            <div class="glossy-gold rounded-xl p-4 glossy-card">
+                                <div class="flex items-center mb-2">
+                                    <i class="fas fa-money-bill-wave text-white mr-2"></i>
+                                    <span class="font-semibold text-white">Total Bayar</span>
+                                </div>
+                                <p class="text-white font-bold">Rp <%= parseFloat(booking.total_amount).toLocaleString('id-ID') %></p>
+                            </div>
+                        </div>
+
+                        <% if (booking.notes) { %>
+                            <div class="glossy-gold-light rounded-xl p-4 mb-4 glossy-card">
+                                <h4 class="font-semibold text-gold-dark mb-2">
+                                    <i class="fas fa-sticky-note text-amber-600 mr-2"></i>Catatan
+                                </h4>
+                                <p class="text-gold"><%= booking.notes %></p>
+                            </div>
+                        <% } %>
+
+                        <div class="flex items-center justify-between pt-4 border-t border-amber-200">
+                            <div class="text-sm text-gold">
+                                <i class="fas fa-calendar mr-1"></i>
+                                Dibooking pada <%= new Date(booking.created_at).toLocaleDateString('id-ID') %>
+                            </div>
+                            <div class="flex space-x-3">
+                                <% if (booking.status === 'pending') { %>
+                                    <form action="/user/bookings/<%= booking.id %>/confirm" method="POST" style="display: inline;">
+                                        <button type="submit" class="glossy-gold text-white px-4 py-2 rounded-xl glossy-card">
+                                            <i class="fas fa-check mr-2"></i>Konfirmasi Booking
+                                        </button>
+                                    </form>
+                                <% } %>
+                                <% if (booking.status === 'confirmed') { %>
+                                    <button onclick="printBooking('<%= booking.id %>')" 
+                                            class="glossy-gold-light text-gold-dark px-4 py-2 rounded-xl glossy-card">
+                                        <i class="fas fa-print mr-2"></i>Print / Save PDF
+                                    </button>
+                                <% } %>
+                            </div>
+                        </div>
+                    </div>
+                <% }); %>
+            <% } else { %>
+                <div class="glossy-white rounded-2xl p-12 text-center glossy-card">
+                    <i class="fas fa-calendar-times text-4xl text-gold mb-4"></i>
+                    <h3 class="text-xl font-semibold text-gold-dark mb-2">Belum Ada Booking</h3>
+                    <p class="text-gold mb-6">Anda belum melakukan booking kamar</p>
+                    <a href="/user/rooms" class="glossy-gold text-white px-6 py-3 rounded-xl glossy-card">
+                        <i class="fas fa-bed mr-2"></i>Lihat Kamar Tersedia
+                    </a>
+                </div>
+            <% } %>
+        </div>
+    </div>
+
+    <!-- Print Modal -->
+    <div id="printModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center z-50 p-4">
+        <div class="glossy-white rounded-2xl shadow-lg w-full max-w-md glossy-card">
+            <div id="printContent" class="p-8" style="font-family: Arial, sans-serif;">
+                <div class="text-center mb-8" style="text-align: center; margin-bottom: 32px;">
+                    <h2 class="text-3xl font-bold text-gray-800" style="font-size: 28px; font-weight: bold; margin-bottom: 8px;">Kos Putra Bu Hartini</h2>
+                    <p class="text-gray-600" style="color: #666; margin-bottom: 20px;">Bukti Booking Kamar</p>
+                    <hr style="border: 1px solid #333; margin: 20px 0;">
+                </div>
+                
+                <div id="bookingDetails" class="space-y-4" style="margin: 20px 0;">
+                    <!-- Content will be filled by JavaScript -->
+                </div>
+                
+                <div class="mt-8 pt-6 border-t text-center" style="margin-top: 40px; padding-top: 24px; border-top: 1px solid #ccc; text-align: center;">
+                    <p style="color: #666; font-size: 14px; margin-bottom: 5px;">Terima kasih telah memilih Kos Putra Bu Hartini</p>
+                    <p style="color: #666; font-size: 14px;">Lokasi: Beringin Lestari, dekat UMN</p>
+                </div>
+            </div>
+            
+            <div class="glossy-gold-light px-6 py-4 rounded-b-2xl flex justify-end space-x-3">
+                <button onclick="closePrintModal()" 
+                        class="px-4 py-2 border border-amber-300 rounded-xl text-gold hover:bg-amber-100 glossy-card">
+                    Tutup
+                </button>
+                <button onclick="printDocument()" 
+                        class="px-4 py-2 glossy-gold text-white rounded-xl glossy-card">
+                    <i class="fas fa-print mr-2"></i>Print
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const bookingsData = <%- JSON.stringify(bookings) %>;
+        const userName = '<%= user.name %>';
+
+        function printBooking(bookingId) {
+            const booking = bookingsData.find(b => b.id == bookingId);
+            if (!booking) return;
+            
+            const bookingDetails = document.getElementById('bookingDetails');
+            bookingDetails.innerHTML = `
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span style="font-weight: bold;">Nama Penyewa:</span>
+                    <span>${userName}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span style="font-weight: bold;">Nomor Kamar:</span>
+                    <span>${booking.room_number}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span style="font-weight: bold;">Tipe Kamar:</span>
+                    <span>${booking.room_type}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span style="font-weight: bold;">Tanggal Mulai:</span>
+                    <span>${new Date(booking.start_date).toLocaleDateString('id-ID')}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span style="font-weight: bold;">Durasi:</span>
+                    <span>${booking.duration_months} Bulan</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span style="font-weight: bold;">Harga per Bulan:</span>
+                    <span>Rp ${parseFloat(booking.base_price).toLocaleString('id-ID')}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px; border-top: 1px solid #ccc; padding-top: 8px;">
+                    <span style="font-weight: bold;">Total Pembayaran:</span>
+                    <span style="font-weight: bold;">Rp ${parseFloat(booking.total_amount).toLocaleString('id-ID')}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span style="font-weight: bold;">Status:</span>
+                    <span style="color: green; font-weight: bold;">Terkonfirmasi</span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="font-weight: bold;">Tanggal Booking:</span>
+                    <span>${new Date(booking.created_at).toLocaleDateString('id-ID')}</span>
+                </div>
+            `;
+            
+            document.getElementById('printModal').classList.remove('hidden');
+            document.getElementById('printModal').classList.add('flex');
+        }
+
+        function closePrintModal() {
+            document.getElementById('printModal').classList.add('hidden');
+            document.getElementById('printModal').classList.remove('flex');
+        }
+
+        function printDocument() {
+            const printContent = document.getElementById('printContent');
+            const newWindow = window.open('', '_blank');
+            newWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Bukti Booking Kamar</title>
+                    <style>
+                        body {
+                            font-family: Arial, sans-serif;
+                            margin: 30px;
+                            line-height: 1.6;
+                        }
+                        .header {
+                            text-align: center;
+                            margin-bottom: 30px;
+                        }
+                        .title {
+                            font-size: 28px;
+                            font-weight: bold;
+                            margin-bottom: 8px;
+                        }
+                        .subtitle {
+                            color: #666;
+                            margin-bottom: 20px;
+                        }
+                        hr {
+                            border: 1px solid #333;
+                            margin: 20px 0;
+                        }
+                        table {
+                            width: 100%;
+                            border-collapse: collapse;
+                            font-size: 16px;
+                            line-height: 1.6;
+                        }
+                        td {
+                            padding: 8px 0;
+                            vertical-align: top;
+                        }
+                        .label {
+                            font-weight: bold;
+                            width: 40%;
+                        }
+                        .total-row {
+                            border-top: 2px solid #333;
+                        }
+                        .total-row td {
+                            padding: 12px 0 8px 0;
+                            font-size: 18px;
+                            font-weight: bold;
+                        }
+                        .status {
+                            color: #22c55e;
+                            font-weight: bold;
+                        }
+                        .footer {
+                            text-align: center;
+                            margin-top: 40px;
+                            color: #666;
+                            font-size: 14px;
+                        }
+                        @media print {
+                            @page {
+                                margin: 15mm;
+                                size: A4;
+                            }
+                        }
+                    </style>
+                </head>
+                <body>
+                    ${printContent.innerHTML}
+                </body>
+                </html>
+            `);
+            newWindow.document.close();
+            newWindow.print();
+            newWindow.close();
+        }
+
+        document.getElementById('printModal').addEventListener('click', function(e) {
+            if (e.target.id === 'printModal') {
+                closePrintModal();
+            }
+        });
+    </script>
+
+
+</body>
+</html>

@@ -1,0 +1,163 @@
+<style>
+/* ADMIN THEME: Blue Glossy Dominant with Gold Accents */
+.glossy-blue {
+    background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 50%, #1d4ed8 100%);
+    backdrop-filter: blur(20px);
+    box-shadow: 0 12px 40px rgba(30, 64, 175, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+.glossy-blue-light {
+    background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 50%, #93c5fd 100%);
+    backdrop-filter: blur(15px);
+    box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+}
+.glossy-gold {
+    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
+    backdrop-filter: blur(15px);
+    box-shadow: 0 10px 35px rgba(251, 191, 36, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+.glossy-white {
+    background: linear-gradient(135deg, #ffffff 0%, #fefefe 50%, #f8fafc 100%);
+    backdrop-filter: blur(15px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+}
+.glossy-card {
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 16px;
+}
+.glossy-card:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15), 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+.admin-bg {
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 30%, #bae6fd 70%, #7dd3fc 100%);
+    min-height: 100vh;
+}
+.text-blue-dark {
+    color: #1e3a8a;
+}
+.text-blue-medium {
+    color: #1d4ed8;
+}
+</style>
+
+<nav class="glossy-blue sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4">
+        <div class="flex justify-between items-center h-16">
+            <div class="flex items-center space-x-3">
+                <div class="glossy-gold w-12 h-12 rounded-xl flex items-center justify-center glossy-card">
+                    <i class="fas fa-crown text-xl text-white"></i>
+                </div>
+                <span class="text-xl font-bold text-white">Kost Putra Bu Hartini</span>
+            </div>
+            
+            <!-- Desktop Menu -->
+            <div class="hidden md:flex items-center space-x-1">
+                <a href="/admin/dashboard" class="text-white hover:bg-white hover:bg-opacity-25 px-4 py-2 rounded-xl transition glossy-card font-medium">
+                    <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
+                </a>
+                <a href="/admin/occupants" class="text-white hover:bg-white hover:bg-opacity-25 px-4 py-2 rounded-xl transition glossy-card font-medium">
+                    <i class="fas fa-users mr-2"></i>Penghuni
+                </a>
+                <a href="/admin/rooms" class="text-white hover:bg-white hover:bg-opacity-25 px-4 py-2 rounded-xl transition glossy-card font-medium">
+                    <i class="fas fa-bed mr-2"></i>Kamar
+                </a>
+                <a href="/admin/payments" class="text-white hover:bg-white hover:bg-opacity-25 px-4 py-2 rounded-xl transition glossy-card font-medium">
+                    <i class="fas fa-credit-card mr-2"></i>Pembayaran
+                </a>
+                <a href="/admin/finance" class="text-white hover:bg-white hover:bg-opacity-25 px-4 py-2 rounded-xl transition glossy-card font-medium">
+                    <i class="fas fa-chart-line mr-2"></i>Keuangan
+                </a>
+                <a href="/admin/complaints" class="text-white hover:bg-white hover:bg-opacity-25 px-4 py-2 rounded-xl transition glossy-card font-medium">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>Pengaduan
+                </a>
+                <a href="/admin/notifications" class="text-white hover:bg-white hover:bg-opacity-25 px-4 py-2 rounded-xl transition glossy-card font-medium">
+                    <i class="fas fa-bell mr-2"></i>Notifikasi
+                </a>
+            </div>
+
+            <div class="flex items-center space-x-3">
+                <a href="/" class="hidden md:block glossy-white text-blue-dark px-4 py-2 rounded-xl glossy-card font-medium">
+                    <i class="fas fa-home mr-2"></i>Menu Utama
+                </a>
+                <div class="relative">
+                    <button id="userMenuBtn" class="flex items-center space-x-2 text-white hover:bg-white hover:bg-opacity-25 px-3 py-2 rounded-xl transition glossy-card">
+                        <div class="glossy-gold w-8 h-8 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-user-shield text-sm text-white"></i>
+                        </div>
+                        <span class="hidden md:block font-medium"><%= typeof user !== 'undefined' ? user.name : 'Admin' %></span>
+                        <i class="fas fa-chevron-down text-sm"></i>
+                    </button>
+                    <div id="userMenuDropdown" class="absolute right-0 mt-3 w-48 glossy-white rounded-xl shadow-lg border hidden z-50">
+                        <div class="p-2">
+                            <a href="/" class="flex items-center px-4 py-3 text-blue-600 hover:bg-blue-50 rounded-lg glossy-card font-medium md:hidden">
+                                <i class="fas fa-home mr-3"></i>Menu Utama
+                            </a>
+                            <a href="/auth/logout" class="flex items-center px-4 py-3 text-red-600 hover:bg-red-50 rounded-lg glossy-card font-medium">
+                                <i class="fas fa-sign-out-alt mr-3"></i>Logout Admin
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- Mobile Tab Menu -->
+<div class="md:hidden glossy-blue-light border-t border-white border-opacity-20">
+    <div class="flex overflow-x-auto scrollbar-hide">
+        <a href="/admin/dashboard" class="flex-shrink-0 flex flex-col items-center px-4 py-3 text-blue-dark hover:bg-white hover:bg-opacity-50 transition">
+            <i class="fas fa-tachometer-alt text-lg mb-1"></i>
+            <span class="text-xs font-medium">Dashboard</span>
+        </a>
+        <a href="/admin/occupants" class="flex-shrink-0 flex flex-col items-center px-4 py-3 text-blue-dark hover:bg-white hover:bg-opacity-50 transition">
+            <i class="fas fa-users text-lg mb-1"></i>
+            <span class="text-xs font-medium">Penghuni</span>
+        </a>
+        <a href="/admin/rooms" class="flex-shrink-0 flex flex-col items-center px-4 py-3 text-blue-dark hover:bg-white hover:bg-opacity-50 transition">
+            <i class="fas fa-bed text-lg mb-1"></i>
+            <span class="text-xs font-medium">Kamar</span>
+        </a>
+        <a href="/admin/payments" class="flex-shrink-0 flex flex-col items-center px-4 py-3 text-blue-dark hover:bg-white hover:bg-opacity-50 transition">
+            <i class="fas fa-credit-card text-lg mb-1"></i>
+            <span class="text-xs font-medium">Pembayaran</span>
+        </a>
+        <a href="/admin/finance" class="flex-shrink-0 flex flex-col items-center px-4 py-3 text-blue-dark hover:bg-white hover:bg-opacity-50 transition">
+            <i class="fas fa-chart-line text-lg mb-1"></i>
+            <span class="text-xs font-medium">Keuangan</span>
+        </a>
+        <a href="/admin/complaints" class="flex-shrink-0 flex flex-col items-center px-4 py-3 text-blue-dark hover:bg-white hover:bg-opacity-50 transition">
+            <i class="fas fa-exclamation-triangle text-lg mb-1"></i>
+            <span class="text-xs font-medium">Pengaduan</span>
+        </a>
+        <a href="/admin/notifications" class="flex-shrink-0 flex flex-col items-center px-4 py-3 text-blue-dark hover:bg-white hover:bg-opacity-50 transition">
+            <i class="fas fa-bell text-lg mb-1"></i>
+            <span class="text-xs font-medium">Notifikasi</span>
+        </a>
+    </div>
+</div>
+
+<style>
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+</style>
+
+<script>
+    document.getElementById('userMenuBtn').addEventListener('click', function(e) {
+        e.stopPropagation();
+        document.getElementById('userMenuDropdown').classList.toggle('hidden');
+    });
+
+    document.addEventListener('click', function() {
+        document.getElementById('userMenuDropdown').classList.add('hidden');
+    });
+</script>

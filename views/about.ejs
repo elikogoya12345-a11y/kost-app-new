@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tentang Kami - Kos Putra Bu Hartini</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        
+        /* GUEST COLOR SCHEME: White Glossy Dominant */
+        .glossy-white {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            backdrop-filter: blur(15px);
+            box-shadow: 0 8px 32px rgba(255, 255, 255, 0.4), 0 2px 8px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        /* Blue Glossy - Secondary Accent */
+        .glossy-blue {
+            background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+            backdrop-filter: blur(15px);
+            box-shadow: 0 8px 32px rgba(59, 130, 246, 0.3), 0 2px 8px rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        /* Gold Glossy - Small Accent */
+        .glossy-gold {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            backdrop-filter: blur(15px);
+            box-shadow: 0 8px 32px rgba(245, 158, 11, 0.3), 0 2px 8px rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .glossy-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 16px;
+        }
+        
+        .glossy-card:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Guest Background */
+        .guest-bg {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 50%, #e2e8f0 100%);
+        }
+        
+        /* Modern Badge */
+        .badge-gold {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+        }
+    </style>
+</head>
+<body class="guest-bg">
+    <!-- Navigation -->
+    <nav class="glossy-white sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-2">
+                    <i class="fas fa-home text-2xl text-amber-600"></i>
+                    <span class="text-xl font-bold text-gray-800">Kos Putra Bu Hartini</span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="/auth/login" class="glossy-blue text-white px-4 py-2 rounded-lg glossy-card">
+                        <i class="fas fa-sign-in-alt mr-2"></i>Login
+                    </a>
+                    <a href="/auth/register" class="glossy-gold text-white px-4 py-2 rounded-lg glossy-card">
+                        <i class="fas fa-user-plus mr-2"></i>Daftar
+                    </a>
+                    <a href="/" class="text-blue-600 hover:text-blue-700 transition px-3 py-2 rounded-lg hover:bg-blue-50">
+                        <i class="fas fa-arrow-left mr-2"></i>Kembali ke Beranda
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 py-12">
+        <!-- Header -->
+        <div class="text-center mb-16">
+            <div class="flex items-center justify-center mb-6">
+                <span class="badge-gold mr-3">📖 TENTANG KAMI</span>
+            </div>
+            <h1 class="text-5xl font-bold text-gray-800 mb-6">Tentang Kos Putra Bu Hartini</h1>
+            <p class="text-xl text-gray-600 max-w-3xl mx-auto">Cerita di balik tempat tinggal nyaman dekat UMN yang telah dipercaya mahasiswa selama bertahun-tahun</p>
+        </div>
+
+        <!-- Story Content -->
+        <div class="glossy-white rounded-2xl p-12 mb-12 glossy-card">
+            <div class="max-w-none">
+                <div class="flex items-center mb-8">
+                    <span class="badge-gold mr-3">🏛️ SEJARAH</span>
+                </div>
+                <h2 class="text-3xl font-bold text-gray-800 mb-8">Sejarah Berdirinya</h2>
+                
+                <p class="text-gray-700 mb-6 leading-relaxed">
+                    Kos Putra Bu Hartini merupakan salah satu usaha tempat tinggal yang berlokasi di kawasan <strong>Beringin Lestari</strong>, 
+                    dekat dengan <strong>Universitas Multimedia Nusantara (UMN)</strong>. Awal berdirinya kos ini bermula dari hal yang sederhana. 
+                    Pemilik kos bercerita bahwa dulunya tidak ada niat khusus untuk membuka usaha kos-kosan.
+                </p>
+
+                <p class="text-gray-700 mb-6 leading-relaxed">
+                    Ide tersebut muncul ketika salah satu dosen UMN, yaitu <strong>Pak Harjo</strong>, sedang mencari tempat tinggal 
+                    sebelum menikah. Kebetulan pada saat itu rumah milik pemilik kos dalam keadaan kosong. Melihat hal itu, 
+                    ia menawarkan rumah tersebut untuk ditempati sementara.
+                </p>
+
+                <p class="text-gray-700 mb-6 leading-relaxed">
+                    Setelah beberapa waktu tinggal di sana, Pak Harjo menyarankan agar rumah tersebut dijadikan kos-kosan 
+                    karena banyak mahasiswa UMN yang sedang mencari tempat tinggal di sekitar kawasan itu. Lingkungan Beringin Lestari 
+                    dan Summarecon pada masa itu masih tergolong baru dan belum banyak tersedia tempat kos.
+                </p>
+
+                <div class="glossy-blue rounded-2xl p-8 my-8 glossy-card">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-quote-left text-2xl text-white mr-3"></i>
+                    </div>
+                    <p class="text-white text-lg italic leading-relaxed">
+                        "Dari situlah ide untuk membangun Kos Putra Bu Hartini mulai direalisasikan. Selain bisa memanfaatkan 
+                        lahan kosong, tujuan utamanya adalah untuk membantu mahasiswa agar mendapatkan tempat tinggal yang 
+                        dekat dengan kampus dan memiliki harga yang terjangkau."
+                    </p>
+                </div>
+
+                <p class="text-gray-700 mb-6 leading-relaxed">
+                    Pak Harjo juga turut membantu dalam proses awal promosi dengan membuat selebaran yang ditempel di papan 
+                    pengumuman kampus. Dari situ, mahasiswa UMN mulai berdatangan untuk menyewa kamar di Kos Putra Bu Hartini. 
+                    Menariknya, karena Pak Harjo juga seorang dosen, ia sekalian dapat memantau mahasiswanya yang tinggal di sana 
+                    agar tetap menjaga kedisiplinan.
+                </p>
+            </div>
+        </div>
+
+        <!-- Facilities Section -->
+        <div class="glossy-white rounded-2xl p-12 mb-12 glossy-card">
+            <div class="flex items-center mb-8">
+                <span class="badge-gold mr-3">🏠 FASILITAS</span>
+            </div>
+            <h2 class="text-3xl font-bold text-gray-800 mb-8">Fasilitas & Kenyamanan</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div class="glossy-white p-8 rounded-2xl glossy-card">
+                    <div class="glossy-blue w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <i class="fas fa-bed text-2xl text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-4 text-center">16 Kamar Nyaman</h3>
+                    <ul class="text-gray-700 space-y-3 text-sm">
+                        <li class="flex items-center"><i class="fas fa-check text-amber-600 mr-3"></i>9 kamar lantai bawah</li>
+                        <li class="flex items-center"><i class="fas fa-check text-amber-600 mr-3"></i>7 kamar lantai atas</li>
+                        <li class="flex items-center"><i class="fas fa-check text-amber-600 mr-3"></i>Ukuran luas & nyaman</li>
+                        <li class="flex items-center"><i class="fas fa-check text-amber-600 mr-3"></i>Jendela view luar</li>
+                        <li class="flex items-center"><i class="fas fa-check text-amber-600 mr-3"></i>Sirkulasi udara baik</li>
+                    </ul>
+                </div>
+                
+                <div class="glossy-white p-8 rounded-2xl glossy-card">
+                    <div class="glossy-gold w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <i class="fas fa-home text-2xl text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-4 text-center">Fasilitas Kamar</h3>
+                    <ul class="text-gray-700 space-y-3 text-sm">
+                        <li class="flex items-center"><i class="fas fa-check text-amber-600 mr-3"></i>Tempat tidur</li>
+                        <li class="flex items-center"><i class="fas fa-check text-amber-600 mr-3"></i>Meja belajar</li>
+                        <li class="flex items-center"><i class="fas fa-check text-amber-600 mr-3"></i>Lemari pakaian</li>
+                        <li class="flex items-center"><i class="fas fa-check text-amber-600 mr-3"></i>Akses WiFi</li>
+                        <li class="flex items-center"><i class="fas fa-check text-amber-600 mr-3"></i>Listrik termasuk</li>
+                    </ul>
+                </div>
+
+                <div class="glossy-white p-8 rounded-2xl glossy-card">
+                    <div class="glossy-blue w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <i class="fas fa-bath text-2xl text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-4 text-center">Fasilitas Bersama</h3>
+                    <ul class="text-gray-700 space-y-3 text-sm">
+                        <li class="flex items-center"><i class="fas fa-check text-amber-600 mr-3"></i>10 kamar mandi</li>
+                        <li class="flex items-center"><i class="fas fa-check text-amber-600 mr-3"></i>Dibersihkan harian</li>
+                        <li class="flex items-center"><i class="fas fa-check text-amber-600 mr-3"></i>5 dapur per lantai</li>
+                        <li class="flex items-center"><i class="fas fa-check text-amber-600 mr-3"></i>Kulkas 2 pintu</li>
+                        <li class="flex items-center"><i class="fas fa-check text-amber-600 mr-3"></i>Ruang santai</li>
+                    </ul>
+                </div>
+                
+                <div class="glossy-white p-8 rounded-2xl glossy-card">
+                    <div class="glossy-gold w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <i class="fas fa-motorcycle text-2xl text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-4 text-center">Fasilitas Lainnya</h3>
+                    <ul class="text-gray-700 space-y-3 text-sm">
+                        <li class="flex items-center"><i class="fas fa-check text-amber-600 mr-3"></i>Parkir 30 motor</li>
+                        <li class="flex items-center"><i class="fas fa-check text-amber-600 mr-3"></i>WiFi seluruh area</li>
+                        <li class="flex items-center"><i class="fas fa-check text-amber-600 mr-3"></i>Lingkungan aman</li>
+                        <li class="flex items-center"><i class="fas fa-check text-amber-600 mr-3"></i>Dekat UMN</li>
+                        <li class="flex items-center"><i class="fas fa-check text-amber-600 mr-3"></i>Harga terjangkau</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Vision & Mission -->
+        <div class="glossy-white rounded-2xl p-12 mb-12 glossy-card">
+            <div class="flex items-center mb-8">
+                <span class="badge-gold mr-3">💎 KOMITMEN</span>
+            </div>
+            <h2 class="text-3xl font-bold text-gray-800 mb-8">Komitmen Kami</h2>
+            
+            <div class="glossy-blue rounded-2xl p-8 glossy-card">
+                <p class="text-white text-xl leading-relaxed mb-6">
+                    Dengan berbagai fasilitas dan kenyamanan yang ditawarkan, <strong>Kos Putra Bu Hartini</strong> 
+                    berkomitmen untuk memberikan suasana tempat tinggal yang <strong>bersih, nyaman, dan ramah</strong> 
+                    bagi setiap penghuninya.
+                </p>
+                
+                <p class="text-white text-xl leading-relaxed">
+                    Harapannya, kos ini dapat menjadi pilihan utama bagi mahasiswa dan pekerja muda yang membutuhkan 
+                    tempat tinggal yang <strong>tenang serta strategis</strong>.
+                </p>
+            </div>
+        </div>
+
+        <!-- Owner Message -->
+        <div class="glossy-gold rounded-2xl p-12 text-white text-center mb-12 glossy-card">
+            <div class="w-20 h-20 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-8">
+                <i class="fas fa-quote-left text-3xl text-white"></i>
+            </div>
+            <p class="text-2xl mb-6 leading-relaxed font-medium">
+                "Yang penting, penghuni merasa nyaman. Semoga website-nya bisa membantu memperkenalkan 
+                Kos Putra Bu Hartini ke lebih banyak orang."
+            </p>
+            <div class="flex items-center justify-center">
+                <div class="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center mr-4">
+                    <i class="fas fa-user text-white"></i>
+                </div>
+                <div class="text-left">
+                    <p class="font-semibold text-lg">Bu Hartini</p>
+                    <p class="text-amber-100">Pemilik Kos</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- CTA Section -->
+        <div class="glossy-white rounded-2xl p-12 text-center glossy-card">
+            <div class="flex items-center justify-center mb-6">
+                <span class="badge-gold mr-3">🚀 BERGABUNG</span>
+            </div>
+            <h3 class="text-3xl font-bold text-gray-800 mb-6">Tertarik Tinggal di Kos Putra Bu Hartini?</h3>
+            <p class="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">Hubungi kami untuk informasi lebih lanjut atau kunjungi langsung lokasi kami</p>
+            <div class="flex flex-col sm:flex-row justify-center gap-4">
+                <a href="/" class="glossy-blue text-white px-8 py-4 rounded-xl font-semibold glossy-card flex items-center justify-center">
+                    <i class="fas fa-home mr-2"></i>Lihat Kamar Tersedia
+                </a>
+                <a href="https://wa.me/6281234567890" class="glossy-gold text-white px-8 py-4 rounded-xl font-semibold glossy-card flex items-center justify-center">
+                    <i class="fab fa-whatsapp mr-2"></i>Hubungi Kami
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="glossy-white py-12 border-t border-gray-100">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <div class="flex items-center justify-center space-x-3 mb-6">
+                <i class="fas fa-home text-3xl text-amber-600"></i>
+                <span class="text-2xl font-bold text-gray-800">Kos Putra Bu Hartini</span>
+            </div>
+            <p class="text-gray-600 text-lg mb-6">Tempat tinggal nyaman dekat UMN dengan fasilitas premium</p>
+            <div class="flex justify-center space-x-6 mb-6">
+                <a href="/auth/register" class="text-blue-600 hover:text-blue-700 font-medium">Daftar</a>
+                <a href="/auth/login" class="text-blue-600 hover:text-blue-700 font-medium">Login</a>
+                <a href="/" class="text-blue-600 hover:text-blue-700 font-medium">Beranda</a>
+            </div>
+            <p class="text-gray-500">© 2024 Kos Putra Bu Hartini. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>

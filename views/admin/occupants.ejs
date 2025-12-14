@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kelola Penghuni - KostPro Admin</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="admin-bg">
+    <style>
+        .glossy-blue {
+            background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 50%, #1d4ed8 100%);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 12px 40px rgba(30, 64, 175, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .glossy-blue-light {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 50%, #93c5fd 100%);
+            backdrop-filter: blur(15px);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+        .glossy-gold {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
+            backdrop-filter: blur(15px);
+            box-shadow: 0 10px 35px rgba(251, 191, 36, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .glossy-white {
+            background: linear-gradient(135deg, #ffffff 0%, #fefefe 50%, #f8fafc 100%);
+            backdrop-filter: blur(15px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
+        .glossy-card {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 16px;
+        }
+        .glossy-card:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15), 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        .admin-bg {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 30%, #bae6fd 70%, #7dd3fc 100%);
+            min-height: 100vh;
+        }
+        .text-blue-dark {
+            color: #1e3a8a;
+        }
+        .text-blue-medium {
+            color: #1d4ed8;
+        }
+    </style>
+    <%- include('../partials/admin-nav') %>
+
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        <div class="mb-8">
+            <div class="glossy-white rounded-2xl p-6 glossy-card">
+                <h1 class="text-3xl font-bold text-blue-dark">Kelola Penghuni</h1>
+                <p class="text-blue-medium mt-2">Manajemen penghuni kost dan status hunian</p>
+            </div>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="glossy-blue rounded-2xl p-6 text-white glossy-card">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-blue-100 text-sm">Total Penghuni</p>
+                        <h3 class="text-2xl font-bold"><%= occupants.length %></h3>
+                    </div>
+                    <div class="glossy-white p-3 rounded-xl glossy-card">
+                        <i class="fas fa-users text-2xl text-blue-600"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glossy-gold rounded-2xl p-6 text-white glossy-card">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-amber-100 text-sm">Penghuni Aktif</p>
+                        <h3 class="text-2xl font-bold">
+                            <%= occupants.filter(o => o.occupant_status === 'active').length %>
+                        </h3>
+                    </div>
+                    <div class="glossy-white p-3 rounded-xl glossy-card">
+                        <i class="fas fa-user-check text-2xl text-green-600"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glossy-white rounded-2xl p-6 text-blue-dark glossy-card">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-blue-medium text-sm">Penghuni Nonaktif</p>
+                        <h3 class="text-2xl font-bold">
+                            <%= occupants.filter(o => o.occupant_status === 'inactive' || !o.occupant_status).length %>
+                        </h3>
+                    </div>
+                    <div class="glossy-blue-light p-3 rounded-xl glossy-card">
+                        <i class="fas fa-user-times text-2xl text-amber-600"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glossy-blue-light rounded-2xl p-6 text-blue-dark glossy-card">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-blue-medium text-sm">User Terdaftar</p>
+                        <h3 class="text-2xl font-bold"><%= occupants.filter(o => o.role === 'user').length %></h3>
+                    </div>
+                    <div class="glossy-white p-3 rounded-xl glossy-card">
+                        <i class="fas fa-user-plus text-2xl text-blue-600"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Occupants Table -->
+        <div class="glossy-white rounded-2xl overflow-hidden glossy-card">
+            <div class="p-6 border-b border-blue-200">
+                <h2 class="text-xl font-bold text-blue-dark">Daftar Penghuni</h2>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="glossy-blue-light">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-blue-dark uppercase tracking-wider">Penghuni</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-blue-dark uppercase tracking-wider">Kontak</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-blue-dark uppercase tracking-wider">Kamar</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-blue-dark uppercase tracking-wider">Periode</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-blue-dark uppercase tracking-wider">Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-blue-dark uppercase tracking-wider">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody class="glossy-white divide-y divide-blue-200">
+                        <% if (occupants.length > 0) { %>
+                            <% occupants.forEach(occupant => { %>
+                                <tr class="hover:bg-blue-50">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="flex-shrink-0 h-10 w-10">
+                                                <div class="h-10 w-10 rounded-xl glossy-blue flex items-center justify-center">
+                                                    <span class="text-white font-medium">
+                                                        <%= occupant.name.charAt(0).toUpperCase() %>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div class="ml-4">
+                                                <div class="text-sm font-medium text-blue-dark"><%= occupant.name %></div>
+                                                <div class="text-sm text-blue-medium"><%= occupant.email %></div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">
+                                            <% if (occupant.phone) { %>
+                                                <i class="fas fa-phone mr-1"></i><%= occupant.phone %>
+                                            <% } else { %>
+                                                <span class="text-gray-400">Tidak ada</span>
+                                            <% } %>
+                                        </div>
+                                        <% if (occupant.birth_date) { %>
+                                            <div class="text-sm text-gray-500">
+                                                <i class="fas fa-birthday-cake mr-1"></i>
+                                                <%= new Date(occupant.birth_date).toLocaleDateString('id-ID') %>
+                                            </div>
+                                        <% } %>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <% if (occupant.room_number) { %>
+                                            <div class="text-sm font-medium text-gray-900">
+                                                <i class="fas fa-door-open mr-1"></i>Kamar <%= occupant.room_number %>
+                                            </div>
+                                        <% } else if (occupant.booking_room_number) { %>
+                                            <div class="text-sm font-medium text-blue-600">
+                                                <i class="fas fa-door-open mr-1"></i>Kamar <%= occupant.booking_room_number %>
+                                            </div>
+                                            <div class="text-xs text-gray-500"><%= occupant.room_type %></div>
+                                        <% } else { %>
+                                            <span class="text-gray-400">Belum ada kamar</span>
+                                        <% } %>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        <% if (occupant.start_date) { %>
+                                            <div>Mulai: <%= new Date(occupant.start_date).toLocaleDateString('id-ID') %></div>
+                                            <% if (occupant.end_date) { %>
+                                                <div class="text-gray-500">Sampai: <%= new Date(occupant.end_date).toLocaleDateString('id-ID') %></div>
+                                            <% } %>
+                                        <% } else if (occupant.booking_id) { %>
+                                            <div class="text-blue-600">Booking: <%= occupant.duration_months %> bulan</div>
+                                            <div class="text-gray-500">Mulai: <%= new Date(occupant.booking_start_date).toLocaleDateString('id-ID') %></div>
+                                        <% } else { %>
+                                            <span class="text-gray-400">-</span>
+                                        <% } %>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <% if (occupant.occupant_status === 'active') { %>
+                                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                                                <i class="fas fa-check mr-1"></i>Aktif
+                                            </span>
+                                        <% } else { %>
+                                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
+                                                <i class="fas fa-times mr-1"></i>Nonaktif
+                                            </span>
+                                        <% } %>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <div class="flex space-x-2">
+                                            <% if (occupant.occupant_status === 'active') { %>
+                                                <button onclick="updateOccupantStatus('<%= occupant.id %>', 'inactive')" 
+                                                        class="glossy-blue-light text-blue-dark px-3 py-1 rounded-lg glossy-card text-xs">
+                                                    <i class="fas fa-pause mr-1"></i>Nonaktifkan
+                                                </button>
+                                            <% } else { %>
+                                                <% if (occupant.booking_id) { %>
+                                                    <form action="/admin/occupants/<%= occupant.id %>/activate" method="POST" style="display: inline;">
+                                                        <button type="submit" class="glossy-gold text-white px-3 py-1 rounded-lg glossy-card text-xs">
+                                                            <i class="fas fa-play mr-1"></i>Aktifkan
+                                                        </button>
+                                                    </form>
+                                                <% } else { %>
+                                                    <span class="text-blue-medium text-xs">Belum booking</span>
+                                                <% } %>
+                                            <% } %>
+                                            <button onclick="deleteOccupant('<%= occupant.id %>', '<%= occupant.name %>')" 
+                                                    class="glossy-white text-red-600 px-3 py-1 rounded-lg glossy-card text-xs border border-red-200">
+                                                <i class="fas fa-trash mr-1"></i>Hapus
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <% }); %>
+                        <% } else { %>
+                            <tr>
+                                <td colspan="6" class="px-6 py-12 text-center">
+                                    <i class="fas fa-users text-4xl text-blue-medium mb-4"></i>
+                                    <h3 class="text-lg font-semibold text-blue-dark mb-2">Belum Ada Penghuni</h3>
+                                    <p class="text-blue-medium">Data penghuni akan muncul di sini</p>
+                                </td>
+                            </tr>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+
+
+    <script>
+        function updateOccupantStatus(userId, status) {
+            if (confirm(`Yakin ingin ${status === 'active' ? 'mengaktifkan' : 'menonaktifkan'} penghuni ini?`)) {
+                fetch(`/admin/occupants/${userId}/status`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ status: status })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Gagal mengupdate status');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Terjadi kesalahan');
+                });
+            }
+        }
+
+        function deleteOccupant(userId, userName) {
+            if (confirm(`Yakin anda ingin menghapus akun penghuni ${userName}? (Jika dihapus akun ${userName} tersebut tidak dapat digunakan)`)) {
+                fetch(`/admin/occupants/${userId}`, {
+                    method: 'DELETE'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Gagal menghapus penghuni');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Terjadi kesalahan');
+                });
+            }
+        }
+    </script>
+</body>
+</html>

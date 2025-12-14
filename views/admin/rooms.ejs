@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kelola Kamar - KostPro Admin</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="admin-bg">
+    <style>
+        .glossy-blue {
+            background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 50%, #1d4ed8 100%);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 12px 40px rgba(30, 64, 175, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .glossy-blue-light {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 50%, #93c5fd 100%);
+            backdrop-filter: blur(15px);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+        .glossy-gold {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
+            backdrop-filter: blur(15px);
+            box-shadow: 0 10px 35px rgba(251, 191, 36, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .glossy-white {
+            background: linear-gradient(135deg, #ffffff 0%, #fefefe 50%, #f8fafc 100%);
+            backdrop-filter: blur(15px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
+        .glossy-card {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 16px;
+        }
+        .glossy-card:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15), 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        .admin-bg {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 30%, #bae6fd 70%, #7dd3fc 100%);
+            min-height: 100vh;
+        }
+        .text-blue-dark {
+            color: #1e3a8a;
+        }
+        .text-blue-medium {
+            color: #1d4ed8;
+        }
+    </style>
+    <%- include('../partials/admin-nav') %>
+
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        <div class="mb-8">
+            <div class="glossy-white rounded-2xl p-6 glossy-card">
+                <h1 class="text-3xl font-bold text-blue-dark">Kelola Kamar</h1>
+                <p class="text-blue-medium mt-2">Manajemen kamar dan tipe kamar</p>
+            </div>
+        </div>
+
+        <% if (typeof success !== 'undefined' && success) { %>
+            <div class="glossy-gold border border-amber-200 text-white px-4 py-3 rounded-xl mb-6 glossy-card">
+                <i class="fas fa-check-circle mr-2"></i><%= success %>
+            </div>
+        <% } %>
+
+        <!-- Room Statistics -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-6 text-white">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-blue-100 text-sm">Total Kamar</p>
+                        <h3 class="text-2xl font-bold"><%= rooms.length %></h3>
+                    </div>
+                    <i class="fas fa-bed text-3xl text-blue-200"></i>
+                </div>
+            </div>
+
+            <div class="bg-gradient-to-r from-green-500 to-green-600 rounded-xl p-6 text-white">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-green-100 text-sm">Tersedia</p>
+                        <h3 class="text-2xl font-bold">
+                            <%= rooms.filter(r => r.status === 'available').length %>
+                        </h3>
+                    </div>
+                    <i class="fas fa-door-open text-3xl text-green-200"></i>
+                </div>
+            </div>
+
+            <div class="bg-gradient-to-r from-red-500 to-red-600 rounded-xl p-6 text-white">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-red-100 text-sm">Terisi</p>
+                        <h3 class="text-2xl font-bold">
+                            <%= rooms.filter(r => r.status === 'occupied').length %>
+                        </h3>
+                    </div>
+                    <i class="fas fa-door-closed text-3xl text-red-200"></i>
+                </div>
+            </div>
+
+            <div class="bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-xl p-6 text-white">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-yellow-100 text-sm">Maintenance</p>
+                        <h3 class="text-2xl font-bold">
+                            <%= rooms.filter(r => r.status === 'maintenance').length %>
+                        </h3>
+                    </div>
+                    <i class="fas fa-tools text-3xl text-yellow-200"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Room Button -->
+        <div class="mb-6">
+            <button onclick="openAddRoomModal()" 
+                    class="glossy-gold text-white px-6 py-3 rounded-xl glossy-card font-medium">
+                <i class="fas fa-plus mr-2"></i>Tambah Kamar Baru
+            </button>
+        </div>
+
+        <!-- Rooms Table -->
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+            <div class="p-6 border-b border-gray-200">
+                <h2 class="text-xl font-bold text-gray-800">Daftar Kamar</h2>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kamar</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipe</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Harga</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lantai</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        <% if (rooms.length > 0) { %>
+                            <% rooms.forEach(room => { %>
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="flex-shrink-0 h-10 w-10">
+                                                <div class="h-10 w-10 rounded-lg bg-blue-500 flex items-center justify-center">
+                                                    <i class="fas fa-bed text-white"></i>
+                                                </div>
+                                            </div>
+                                            <div class="ml-4">
+                                                <div class="text-sm font-medium text-gray-900">Kamar <%= room.room_number %></div>
+                                                <% if (room.description) { %>
+                                                    <div class="text-sm text-gray-500"><%= room.description %></div>
+                                                <% } %>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-medium text-gray-900"><%= room.type_name %></div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-bold text-blue-600">
+                                            Rp <%= parseFloat(room.base_price).toLocaleString('id-ID') %>
+                                        </div>
+                                        <div class="text-xs text-gray-500">per bulan</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">Lantai <%= room.floor %></div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <% if (room.status === 'available') { %>
+                                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                                                <i class="fas fa-check mr-1"></i>Tersedia
+                                            </span>
+                                        <% } else if (room.status === 'occupied') { %>
+                                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
+                                                <i class="fas fa-user mr-1"></i>Terisi
+                                            </span>
+                                        <% } else if (room.status === 'maintenance') { %>
+                                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                                <i class="fas fa-tools mr-1"></i>Maintenance
+                                            </span>
+                                        <% } %>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <div class="flex space-x-2">
+                                            <button onclick="editRoom('<%= room.id %>', '<%= room.room_number %>', '<%= room.room_type_id %>', '<%= room.floor %>', '<%= room.status %>', '<%= room.description || '' %>')" 
+                                                    class="text-blue-600 hover:text-blue-900">
+                                                <i class="fas fa-edit mr-1"></i>Edit
+                                            </button>
+                                            <button onclick="deleteRoom('<%= room.id %>', '<%= room.room_number %>')" 
+                                                    class="text-red-600 hover:text-red-900">
+                                                <i class="fas fa-trash mr-1"></i>Hapus
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <% }); %>
+                        <% } else { %>
+                            <tr>
+                                <td colspan="6" class="px-6 py-12 text-center">
+                                    <i class="fas fa-bed text-4xl text-gray-400 mb-4"></i>
+                                    <h3 class="text-lg font-semibold text-gray-600 mb-2">Belum Ada Kamar</h3>
+                                    <p class="text-gray-500">Tambahkan kamar pertama Anda</p>
+                                </td>
+                            </tr>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Room Modal -->
+    <div id="roomModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center z-50 p-4">
+        <div class="glossy-white rounded-2xl shadow-lg w-full max-w-md glossy-card">
+            <form id="roomForm" action="/admin/rooms" method="POST">
+                <div class="p-6">
+                    <h3 id="modalTitle" class="text-lg font-bold text-blue-dark mb-4">Tambah Kamar Baru</h3>
+                    <input type="hidden" name="room_id" id="room_id">
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-blue-dark mb-2">Nomor Kamar</label>
+                            <input type="text" name="room_number" id="room_number" required 
+                                   class="w-full px-3 py-2 border border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-500"
+                                   placeholder="Contoh: 101, A01">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-blue-dark mb-2">Tipe Kamar</label>
+                            <select name="room_type_id" id="room_type_id" required 
+                                    class="w-full px-3 py-2 border border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-500">
+                                <option value="">Pilih tipe kamar</option>
+                                <% roomTypes.forEach(type => { %>
+                                    <option value="<%= type.id %>"><%= type.name %> - Rp <%= parseFloat(type.base_price).toLocaleString('id-ID') %></option>
+                                <% }); %>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-blue-dark mb-2">Lantai</label>
+                            <input type="number" name="floor" id="floor" required min="0" max="20"
+                                   class="w-full px-3 py-2 border border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-500"
+                                   placeholder="Nomor lantai">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-blue-dark mb-2">Status</label>
+                            <select name="status" id="status" required 
+                                    class="w-full px-3 py-2 border border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-500">
+                                <option value="available">Tersedia</option>
+                                <option value="occupied">Terisi</option>
+                                <option value="maintenance">Maintenance</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-blue-dark mb-2">Deskripsi (Opsional)</label>
+                            <textarea name="description" id="description" rows="3" 
+                                      class="w-full px-3 py-2 border border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-500"
+                                      placeholder="Deskripsi tambahan kamar..."></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="glossy-blue-light px-6 py-4 rounded-b-2xl flex justify-end space-x-3">
+                    <button type="button" onclick="closeRoomModal()" 
+                            class="px-4 py-2 border border-blue-300 rounded-xl text-blue-dark hover:bg-blue-100 glossy-card">
+                        Batal
+                    </button>
+                    <button type="submit" 
+                            class="px-4 py-2 glossy-blue text-white rounded-xl glossy-card">
+                        <i class="fas fa-save mr-2"></i>Simpan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openAddRoomModal() {
+            document.getElementById('modalTitle').textContent = 'Tambah Kamar Baru';
+            document.getElementById('roomForm').action = '/admin/rooms';
+            document.getElementById('room_id').value = '';
+            document.getElementById('room_number').value = '';
+            document.getElementById('room_type_id').value = '';
+            document.getElementById('floor').value = '';
+            document.getElementById('status').value = 'available';
+            document.getElementById('description').value = '';
+            
+            document.getElementById('roomModal').classList.remove('hidden');
+            document.getElementById('roomModal').classList.add('flex');
+        }
+
+        function editRoom(id, roomNumber, typeId, floor, status, description) {
+            document.getElementById('modalTitle').textContent = 'Edit Kamar';
+            document.getElementById('roomForm').action = '/admin/rooms/' + id;
+            document.getElementById('room_id').value = id;
+            document.getElementById('room_number').value = roomNumber;
+            document.getElementById('room_type_id').value = typeId;
+            document.getElementById('floor').value = floor;
+            document.getElementById('status').value = status;
+            document.getElementById('description').value = description;
+            
+            document.getElementById('roomModal').classList.remove('hidden');
+            document.getElementById('roomModal').classList.add('flex');
+        }
+
+        function closeRoomModal() {
+            document.getElementById('roomModal').classList.add('hidden');
+            document.getElementById('roomModal').classList.remove('flex');
+        }
+
+        function deleteRoom(roomId, roomNumber) {
+            if (confirm(`Yakin ingin menghapus Kamar ${roomNumber}? Tindakan ini tidak dapat dibatalkan.`)) {
+                fetch(`/admin/rooms/${roomId}`, {
+                    method: 'DELETE'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Gagal menghapus kamar');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Terjadi kesalahan');
+                });
+            }
+        }
+
+        document.getElementById('roomModal').addEventListener('click', function(e) {
+            if (e.target.id === 'roomModal') {
+                closeRoomModal();
+            }
+        });
+    </script>
+</body>
+</html>

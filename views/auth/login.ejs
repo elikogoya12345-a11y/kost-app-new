@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Kost Putra Bu Hartini</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .glossy-white {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(255, 255, 255, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .glossy-gold {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(245, 158, 11, 0.3);
+        }
+        .glossy-blue {
+            background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(59, 130, 246, 0.3);
+        }
+        .glossy-card {
+            transition: all 0.3s ease;
+        }
+        .glossy-card:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+        }
+        .guest-bg {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 50%, #e2e8f0 100%);
+            min-height: 100vh;
+        }
+    </style>
+</head>
+<body class="guest-bg flex items-center justify-center">
+    <div class="max-w-md w-full mx-4">
+        <div class="glossy-white rounded-2xl p-8 glossy-card">
+            <div class="text-center mb-8">
+                <div class="flex items-center justify-center space-x-2 mb-4">
+                    <i class="fas fa-building text-3xl text-amber-600"></i>
+                    <span class="text-2xl font-bold text-gray-800">Kos Putra Bu Hartini</span>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-800">Masuk ke Akun Anda</h2>
+                <p class="text-gray-600 mt-2">Selamat datang kembali!</p>
+            </div>
+
+            <% if (typeof error !== 'undefined') { %>
+                <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
+                    <%= error %>
+                </div>
+            <% } %>
+            
+            <% if (typeof success !== 'undefined') { %>
+                <div class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg mb-6">
+                    <%= success %>
+                </div>
+            <% } %>
+
+            <form method="POST" action="/auth/login" class="space-y-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Username/Email</label>
+                    <input type="text" name="email" required 
+                           class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-white"
+                           placeholder="Masukkan username atau email">
+                    <p class="text-xs text-gray-500 mt-1">Anda bisa login dengan username atau email</p>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                    <input type="password" name="password" required 
+                           class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-white"
+                           placeholder="Masukkan password Anda">
+                </div>
+
+                <button type="submit" 
+                        class="w-full glossy-gold text-white py-3 px-4 rounded-lg font-semibold glossy-card">
+                    <i class="fas fa-sign-in-alt mr-2"></i>Masuk
+                </button>
+            </form>
+
+            <div class="mt-6 text-center">
+                <p class="text-gray-600">
+                    Belum punya akun? 
+                    <a href="/auth/register" class="text-amber-600 hover:text-amber-700 font-medium">Daftar di sini</a>
+                </p>
+            </div>
+
+            <div class="mt-6 pt-6 border-t border-gray-200">
+                <a href="/" class="w-full flex items-center justify-center py-2 px-4 glossy-blue text-white rounded-lg glossy-card">
+                    <i class="fas fa-arrow-left mr-2"></i>Kembali ke Beranda
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

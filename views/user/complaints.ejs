@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pengaduan - KostPro User</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-gray-50">
+    <%- include('../partials/user-nav') %>
+
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-800">Pengaduan</h1>
+            <p class="text-gray-600 mt-2">Laporkan masalah atau keluhan terkait fasilitas kost</p>
+        </div>
+
+        <% if (typeof success !== 'undefined' && success) { %>
+            <div class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg mb-6">
+                <%= success %>
+            </div>
+        <% } %>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Form Pengaduan -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-xl shadow-sm p-6">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4">Buat Pengaduan Baru</h2>
+                    
+                    <form action="/user/complaints" method="POST">
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Judul Pengaduan</label>
+                                <input type="text" name="title" required 
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                       placeholder="Ringkasan masalah">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Kategori</label>
+                                <select name="category" required 
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                    <option value="">Pilih kategori</option>
+                                    <option value="fasilitas">Fasilitas</option>
+                                    <option value="kebersihan">Kebersihan</option>
+                                    <option value="keamanan">Keamanan</option>
+                                    <option value="internet">Internet/WiFi</option>
+                                    <option value="listrik">Listrik</option>
+                                    <option value="air">Air</option>
+                                    <option value="lainnya">Lainnya</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Prioritas</label>
+                                <select name="priority" required 
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                    <option value="low">Rendah</option>
+                                    <option value="medium" selected>Sedang</option>
+                                    <option value="high">Tinggi</option>
+                                </select>
+                            </div>
+                            
+                            <% if (userRoom) { %>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Fasilitas Terkait</label>
+                                    <select name="facility_type" 
+                                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                        <option value="">Pilih fasilitas (opsional)</option>
+                                        <% if (userRoom.facilities) { %>
+                                            <% try { %>
+                                                <% const facilities = JSON.parse(userRoom.facilities); %>
+                                                <% facilities.forEach(facility => { %>
+                                                    <option value="<%= facility %>"><%= facility %></option>
+                                                <% }); %>
+                                            <% } catch(e) { %>
+                                                <option value="umum">Fasilitas Umum</option>
+                                            <% } %>
+                                        <% } %>
+                                    </select>
+                                </div>
+                            <% } %>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Deskripsi Masalah</label>
+                                <textarea name="description" rows="4" required 
+                                          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                          placeholder="Jelaskan masalah secara detail..."></textarea>
+                            </div>
+                            
+                            <button type="submit" 
+                                    class="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+                                <i class="fas fa-paper-plane mr-2"></i>Kirim Pengaduan
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <% if (userRoom) { %>
+                    <div class="glossy-gold-light rounded-xl p-4 mt-6 glossy-card">
+                        <h3 class="font-semibold text-gold-dark mb-2">Info Kamar Anda</h3>
+                        <div class="text-sm text-gold">
+                            <p><strong>Kamar:</strong> <%= userRoom.room_number %></p>
+                            <p><strong>Tipe:</strong> <%= userRoom.room_type %></p>
+                            <p><strong>Lantai:</strong> <%= userRoom.floor %></p>
+                        </div>
+                    </div>
+                <% } %>
+            </div>
+            
+            <!-- Daftar Pengaduan -->
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-xl shadow-sm">
+                    <div class="p-6 border-b border-gray-200">
+                        <h2 class="text-xl font-bold text-gray-800">Riwayat Pengaduan</h2>
+                    </div>
+                    
+                    <div class="p-6">
+                        <% if (complaints.length > 0) { %>
+                            <div class="space-y-4">
+                                <% complaints.forEach(complaint => { %>
+                                    <div class="border border-gray-200 rounded-lg p-4">
+                                        <div class="flex justify-between items-start mb-3">
+                                            <div>
+                                                <h3 class="font-semibold text-gray-800"><%= complaint.title %></h3>
+                                                <div class="flex items-center space-x-4 text-sm text-gray-600 mt-1">
+                                                    <span><i class="fas fa-tag mr-1"></i><%= complaint.category %></span>
+                                                    <span><i class="fas fa-calendar mr-1"></i><%= new Date(complaint.created_at).toLocaleDateString('id-ID') %></span>
+                                                    <% if (complaint.facility_type) { %>
+                                                        <span><i class="fas fa-wrench mr-1"></i><%= complaint.facility_type %></span>
+                                                    <% } %>
+                                                </div>
+                                            </div>
+                                            <div class="flex items-center space-x-2">
+                                                <% if (complaint.priority === 'high') { %>
+                                                    <span class="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full">
+                                                        <i class="fas fa-exclamation-triangle mr-1"></i>Tinggi
+                                                    </span>
+                                                <% } else if (complaint.priority === 'medium') { %>
+                                                    <span class="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full">
+                                                        <i class="fas fa-exclamation-circle mr-1"></i>Sedang
+                                                    </span>
+                                                <% } else { %>
+                                                    <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
+                                                        <i class="fas fa-info-circle mr-1"></i>Rendah
+                                                    </span>
+                                                <% } %>
+                                                
+                                                <% if (complaint.status === 'open') { %>
+                                                    <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
+                                                        <i class="fas fa-clock mr-1"></i>Baru
+                                                    </span>
+                                                <% } else if (complaint.status === 'in_progress') { %>
+                                                    <span class="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full">
+                                                        <i class="fas fa-cog mr-1"></i>Diproses
+                                                    </span>
+                                                <% } else if (complaint.status === 'resolved') { %>
+                                                    <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
+                                                        <i class="fas fa-check mr-1"></i>Selesai
+                                                    </span>
+                                                <% } %>
+                                            </div>
+                                        </div>
+                                        
+                                        <p class="text-gray-700 mb-3"><%= complaint.description %></p>
+                                        
+                                        <% if (complaint.admin_response) { %>
+                                            <div class="bg-green-50 border border-green-200 rounded-lg p-3 mt-3">
+                                                <h4 class="font-semibold text-green-800 mb-1">
+                                                    <i class="fas fa-reply mr-1"></i>Tanggapan Admin:
+                                                </h4>
+                                                <p class="text-green-700 text-sm"><%= complaint.admin_response %></p>
+                                            </div>
+                                        <% } %>
+                                    </div>
+                                <% }); %>
+                            </div>
+                        <% } else { %>
+                            <div class="text-center py-12">
+                                <i class="fas fa-clipboard-list text-4xl text-gray-400 mb-4"></i>
+                                <h3 class="text-lg font-semibold text-gray-600 mb-2">Belum Ada Pengaduan</h3>
+                                <p class="text-gray-500">Pengaduan yang Anda buat akan muncul di sini</p>
+                            </div>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

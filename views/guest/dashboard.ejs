@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guest Dashboard - Kos Putra Bu Hartini</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        
+        /* GUEST COLOR SCHEME */
+        .glossy-white {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            backdrop-filter: blur(15px);
+            box-shadow: 0 8px 32px rgba(255, 255, 255, 0.4), 0 2px 8px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .glossy-blue {
+            background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+            backdrop-filter: blur(15px);
+            box-shadow: 0 8px 32px rgba(59, 130, 246, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .glossy-gold {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            backdrop-filter: blur(15px);
+            box-shadow: 0 8px 32px rgba(245, 158, 11, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .glossy-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 16px;
+        }
+        
+        .glossy-card:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+        
+        .guest-bg {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 50%, #e2e8f0 100%);
+        }
+        
+        .badge-gold {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+        }
+    </style>
+</head>
+<body class="guest-bg">
+    <!-- Navigation -->
+    <nav class="glossy-white sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-2">
+                    <i class="fas fa-home text-2xl text-amber-600"></i>
+                    <span class="text-xl font-bold text-gray-800">Kos Putra Bu Hartini</span>
+                    <span class="badge-gold ml-2">GUEST</span>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <a href="/" class="glossy-blue text-white px-4 py-2 rounded-lg glossy-card">
+                        <i class="fas fa-home mr-2"></i>Menu Utama
+                    </a>
+                    <a href="/auth/register" class="glossy-gold text-white px-4 py-2 rounded-lg glossy-card">
+                        <i class="fas fa-user-plus mr-2"></i>Daftar Sekarang
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        <!-- Welcome Section -->
+        <div class="glossy-white rounded-2xl p-12 text-center mb-12 glossy-card">
+            <div class="flex items-center justify-center mb-6">
+                <span class="badge-gold mr-3">👋 SELAMAT DATANG</span>
+            </div>
+            <h1 class="text-4xl font-bold mb-6 text-gray-800">Jelajahi Kos Putra Bu Hartini</h1>
+            <p class="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">Anda sedang menjelajah sebagai tamu. Daftar sekarang untuk mengakses semua fitur dan melakukan booking!</p>
+            <div class="flex flex-col sm:flex-row justify-center gap-4">
+                <a href="/auth/register" class="glossy-gold text-white px-8 py-4 rounded-xl font-semibold glossy-card flex items-center justify-center">
+                    <i class="fas fa-user-plus mr-2"></i>Daftar Gratis
+                </a>
+                <a href="/auth/login" class="glossy-blue text-white px-8 py-4 rounded-xl font-semibold glossy-card flex items-center justify-center">
+                    <i class="fas fa-sign-in-alt mr-2"></i>Sudah Punya Akun?
+                </a>
+            </div>
+        </div>
+
+        <!-- Contact Information -->
+        <div class="mb-16">
+            <div class="text-center mb-12">
+                <div class="flex items-center justify-center mb-4">
+                    <span class="badge-gold mr-3">📞 KONTAK KAMI</span>
+                </div>
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">Hubungi Kami</h2>
+                <p class="text-gray-600">Tim kami siap membantu Anda 24/7</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="glossy-white rounded-2xl p-8 text-center glossy-card">
+                    <div class="glossy-gold w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <i class="fab fa-whatsapp text-3xl text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3 text-gray-800">WhatsApp</h3>
+                    <p class="text-gray-600 mb-6 text-lg">+62 812-3456-7890</p>
+                    <a href="https://wa.me/6281234567890" class="glossy-gold text-white px-6 py-3 rounded-xl font-semibold glossy-card inline-block">
+                        <i class="fab fa-whatsapp mr-2"></i>Chat Sekarang
+                    </a>
+                </div>
+
+                <div class="glossy-white rounded-2xl p-8 text-center glossy-card">
+                    <div class="glossy-blue w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <i class="fas fa-map-marker-alt text-3xl text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3 text-gray-800">Lokasi Strategis</h3>
+                    <p class="text-gray-600 text-lg leading-relaxed mb-6">Medang Lestari<br>Dekat Universitas Multimedia Nusantara</p>
+                    <a href="https://maps.app.goo.gl/V3aKMZkToatH27kTA?g_st=aw" target="_blank" class="glossy-blue text-white px-6 py-3 rounded-xl font-semibold glossy-card inline-block">
+                        <i class="fas fa-map-marked-alt mr-2"></i>Buka di Maps
+                    </a>
+                </div>
+
+                <div class="glossy-white rounded-2xl p-8 text-center glossy-card">
+                    <div class="glossy-blue w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <i class="fas fa-clock text-3xl text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3 text-gray-800">Jam Operasional</h3>
+                    <p class="text-gray-600 text-lg leading-relaxed">Senin - Minggu<br>08:00 - 22:00 WIB</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Room Types (Limited View) -->
+        <div class="mb-16">
+            <div class="text-center mb-12">
+                <div class="flex items-center justify-center mb-4">
+                    <span class="badge-gold mr-3">🏠 KAMAR TERSEDIA</span>
+                </div>
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">Tipe Kamar Tersedia</h2>
+                <p class="text-gray-600">Pilih kamar yang sesuai dengan kebutuhan Anda</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <% roomTypes.forEach((room, index) => { %>
+                    <div class="glossy-white rounded-2xl overflow-hidden glossy-card">
+                        <div class="h-56 relative overflow-hidden">
+                            <img src="/images/<%= room.name.replace(/\s+/g, '-') %>/<%= room.name.replace(/\s+/g, '-') %>.jpg" 
+                                 alt="<%= room.name %>" 
+                                 class="w-full h-full object-cover">
+                            <div class="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center">
+                                <div class="text-center text-white">
+                                    <i class="fas fa-bed text-4xl mb-2"></i>
+                                    <p class="font-bold text-lg"><%= room.name %></p>
+                                </div>
+                            </div>
+                            <% if (room.available_rooms > 0) { %>
+                                <span class="absolute top-4 right-4 badge-gold">Tersedia</span>
+                            <% } %>
+                        </div>
+                        <div class="p-8">
+                            <h3 class="text-2xl font-bold text-gray-800 mb-3"><%= room.name %></h3>
+                            <p class="text-gray-600 mb-6 leading-relaxed"><%= room.description %></p>
+                            <div class="flex justify-between items-center mb-6">
+                                <div>
+                                    <span class="text-3xl font-bold text-amber-600">Rp <%= room.base_price.toLocaleString('id-ID') %></span>
+                                    <span class="text-gray-500 ml-2">/bulan</span>
+                                </div>
+                                <span class="badge-gold"><%= room.available_rooms %> tersedia</span>
+                            </div>
+                            <button onclick="showRegisterModal()" 
+                                    class="w-full glossy-blue text-white py-3 px-6 rounded-xl font-semibold glossy-card">
+                                <i class="fas fa-eye mr-2"></i>Lihat Detail
+                            </button>
+                        </div>
+                    </div>
+                <% }); %>
+            </div>
+        </div>
+
+        <!-- Facilities -->
+        <div class="mb-16">
+            <div class="text-center mb-12">
+                <div class="flex items-center justify-center mb-4">
+                    <span class="badge-gold mr-3">⭐ FASILITAS</span>
+                </div>
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">Fasilitas Lengkap</h2>
+                <p class="text-gray-600">Nikmati berbagai fasilitas modern untuk kenyamanan hidup Anda</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div class="glossy-white p-8 rounded-2xl text-center glossy-card">
+                    <div class="glossy-blue w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <i class="fas fa-wifi text-3xl text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3 text-gray-800">WiFi Lancar</h3>
+                    <p class="text-gray-600 leading-relaxed">Internet cepat 24/7 untuk belajar dan bekerja</p>
+                </div>
+                <div class="glossy-white p-8 rounded-2xl text-center glossy-card">
+                    <div class="glossy-gold w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <i class="fas fa-shield-alt text-3xl text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3 text-gray-800">Keamanan 24 Jam</h3>
+                    <p class="text-gray-600 leading-relaxed">Security dan CCTV untuk keamanan maksimal</p>
+                </div>
+                <div class="glossy-white p-8 rounded-2xl text-center glossy-card">
+                    <div class="glossy-blue w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <i class="fas fa-utensils text-3xl text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3 text-gray-800">Dapur Lengkap</h3>
+                    <p class="text-gray-600 leading-relaxed">5 dapur dengan kompor dan kulkas</p>
+                </div>
+                <div class="glossy-white p-8 rounded-2xl text-center glossy-card">
+                    <div class="glossy-gold w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <i class="fas fa-motorcycle text-3xl text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3 text-gray-800">Parkir Aman</h3>
+                    <p class="text-gray-600 leading-relaxed">Area parkir luas untuk 30 motor</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div id="registerModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
+        <div class="glossy-white rounded-2xl w-full max-w-md glossy-card">
+            <div class="p-8">
+                <div class="text-center mb-6">
+                    <div class="glossy-gold w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-lock text-2xl text-white"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-2">Daftar untuk Akses Penuh</h3>
+                    <p class="text-gray-600">Untuk melihat detail kamar dan melakukan booking, silakan daftar terlebih dahulu.</p>
+                </div>
+                
+                <div class="space-y-4">
+                    <a href="/auth/register" class="block w-full glossy-gold text-white text-center py-4 px-6 rounded-xl font-semibold glossy-card">
+                        <i class="fas fa-user-plus mr-2"></i>Daftar Gratis Sekarang
+                    </a>
+                    <a href="/auth/login" class="block w-full glossy-blue text-white text-center py-4 px-6 rounded-xl font-semibold glossy-card">
+                        <i class="fas fa-sign-in-alt mr-2"></i>Sudah Punya Akun? Login
+                    </a>
+                </div>
+            </div>
+            <div class="bg-gray-50 px-8 py-4 rounded-b-2xl flex justify-end">
+                <button onclick="closeRegisterModal()" class="px-6 py-2 text-gray-600 hover:text-gray-800 font-medium">
+                    Tutup
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showRegisterModal() {
+            document.getElementById('registerModal').classList.remove('hidden');
+            document.getElementById('registerModal').classList.add('flex');
+        }
+
+        function closeRegisterModal() {
+            document.getElementById('registerModal').classList.add('hidden');
+            document.getElementById('registerModal').classList.remove('flex');
+        }
+
+        document.getElementById('registerModal').addEventListener('click', function(e) {
+            if (e.target.id === 'registerModal') {
+                closeRegisterModal();
+            }
+        });
+    </script>
+</body>
+</html>
