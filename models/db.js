@@ -8,12 +8,14 @@ const pool = mysql.createPool({
     database: process.env.DB_NAME || 'kost_professional',
     port: process.env.DB_PORT || 3306,
     ssl: process.env.NODE_ENV === 'production' ? {
-        rejectUnauthorized: true
+        rejectUnauthorized: false
     } : false,
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0,
-    connectTimeout: 60000
+    connectTimeout: 60000,
+    enableKeepAlive: true,
+    keepAliveInitialDelay: 0
 });
 
 module.exports = pool;
