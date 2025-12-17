@@ -159,9 +159,9 @@ router.get('/payments', async (req, res) => {
         const [payments] = await db.execute(`
             SELECT p.*, u.name as user_name, r.room_number, rt.name as room_type
             FROM payments p
-            JOIN users u ON p.user_id = u.id
-            JOIN bookings b ON p.booking_id = b.id
-            JOIN rooms r ON b.room_id = r.id
+            JOIN occupants o ON p.occupant_id = o.id
+            JOIN users u ON o.user_id = u.id
+            JOIN rooms r ON o.room_id = r.id
             JOIN room_types rt ON r.room_type_id = rt.id
             ORDER BY p.due_date DESC
         `);
@@ -214,8 +214,8 @@ router.get('/finance', async (req, res) => {
         const [payments] = await db.execute(`
             SELECT p.*, u.name as user_name, r.room_number
             FROM payments p
-            JOIN users u ON p.user_id = u.id
-            LEFT JOIN occupants o ON u.id = o.user_id
+            JOIN occupants o ON p.occupant_id = o.id
+            JOIN users u ON o.user_id = u.id
             LEFT JOIN rooms r ON o.room_id = r.id
             WHERE 1=1 ${dateFilter}
             ORDER BY p.created_at DESC
@@ -243,8 +243,8 @@ router.get('/finance/export', async (req, res) => {
         const [payments] = await db.execute(`
             SELECT p.*, u.name as user_name, r.room_number
             FROM payments p
-            JOIN users u ON p.user_id = u.id
-            LEFT JOIN occupants o ON u.id = o.user_id
+            JOIN occupants o ON p.occupant_id = o.id
+            JOIN users u ON o.user_id = u.id
             LEFT JOIN rooms r ON o.room_id = r.id
             WHERE 1=1 ${dateFilter}
             ORDER BY p.created_at DESC
@@ -427,8 +427,8 @@ router.delete('/occupants/:id', async (req, res) => {
         // Delete occupant record
         await db.execute('DELETE FROM occupants WHERE user_id = ?', [userId]);
         
-        // Delete user's payments
-        await db.execute('DELETE FROM payments WHERE user_id = ?', [userId]);
+        // Delete user's payments through occupants
+        await db.execute('DELETE p FROM payments p JOIN occupants o ON p.occupant_id = o.id WHERE o.user_id = ?', [userId]);
         
         // Delete user's bookings
         await db.execute('DELETE FROM bookings WHERE user_id = ?', [userId]);
