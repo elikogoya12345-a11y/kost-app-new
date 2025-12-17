@@ -390,4 +390,42 @@ router.get('/images', async (req, res) => {
     }
 });
 
+// Reply to payment extension request
+router.post('/notifications/:id/reply', async (req, res) => {
+    try {
+        const { reply, action } = req.body;
+        const notificationId = req.params.id;
+        
+        // Get the original notification
+        const [notification] = await db.execute(
+            'SELECT * FROM notifications WHERE id = ?',
+            [notificationId]
+        );
+        
+        if (notification.length === 0) {
+            return res.redirect('/admin/notifications?error=Notifikasi tidak ditemukan');
+        }
+        
+        const status = action === 'approve' ? 'Disetujui' : 'Ditolak';
+        const replyMessage = `Pengajuan perpanjangan pembayaran Anda ${status.toLowerCase()}. Balasan admin: ${reply}`;
+        
+        // Create reply notification for user
+        await db.execute(
+            'INSERT INTO notifications (user_id, title, message, type) VALUES (?, ?, ?, ?)',
+            [null, `Balasan: ${status}`, replyMessage, 'payment_extension_reply']
+        );
+        
+        // Mark original notification as read
+        await db.execute(
+            'UPDATE notifications SET is_read = 1 WHERE id = ?',
+            [notificationId]
+        );
+        
+        res.redirect('/admin/notifications?success=Balasan berhasil dikirim');
+    } catch (error) {
+        console.error(error);
+        res.redirect('/admin/notifications?error=Gagal mengirim balasan');
+    }
+});
+
 module.exports = router;
