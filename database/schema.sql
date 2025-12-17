@@ -72,7 +72,7 @@ CREATE TABLE payments (
     id INT AUTO_INCREMENT PRIMARY KEY,
     occupant_id INT,
     amount DECIMAL(10,2) NOT NULL,
-    payment_date DATE NOT NULL,
+    payment_date DATE,
     due_date DATE NOT NULL,
     status ENUM('pending', 'paid', 'overdue') DEFAULT 'pending',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

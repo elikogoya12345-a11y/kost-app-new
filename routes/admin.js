@@ -384,8 +384,9 @@ router.post('/occupants/:id/activate', async (req, res) => {
         
         // Get user's confirmed booking
         const [booking] = await db.execute(`
-            SELECT b.*, r.id as room_id FROM bookings b
+            SELECT b.*, r.id as room_id, rt.base_price as monthly_rent FROM bookings b
             JOIN rooms r ON b.room_id = r.id
+            JOIN room_types rt ON r.room_type_id = rt.id
             WHERE b.user_id = ? AND b.status = 'confirmed'
             ORDER BY b.created_at DESC LIMIT 1
         `, [userId]);
@@ -399,10 +400,25 @@ router.post('/occupants/:id/activate', async (req, res) => {
         endDate.setMonth(endDate.getMonth() + parseInt(bookingData.duration_months));
         
         // Create occupant record
-        await db.execute(
-            'INSERT INTO occupants (user_id, room_id, start_date, end_date, status) VALUES (?, ?, ?, ?, ?)',
-            [userId, bookingData.room_id, bookingData.start_date, endDate.toISOString().slice(0, 10), 'active']
+        const [result] = await db.execute(
+            'INSERT INTO occupants (user_id, room_id, start_date, end_date, monthly_rent, status) VALUES (?, ?, ?, ?, ?, ?)',
+            [userId, bookingData.room_id, bookingData.start_date, endDate.toISOString().slice(0, 10), bookingData.monthly_rent, 'active']
         );
+        
+        const occupantId = result.insertId;
+        
+        // Create monthly payment records
+        const startDate = new Date(bookingData.start_date);
+        for (let i = 0; i < bookingData.duration_months; i++) {
+            const dueDate = new Date(startDate);
+            dueDate.setMonth(dueDate.getMonth() + i);
+            dueDate.setDate(10); // Due date on 10th of each month
+            
+            await db.execute(
+                'INSERT INTO payments (occupant_id, amount, due_date, status) VALUES (?, ?, ?, ?)',
+                [occupantId, bookingData.monthly_rent, dueDate.toISOString().slice(0, 10), 'pending']
+            );
+        }
         
         // Update room status
         await db.execute('UPDATE rooms SET status = ? WHERE id = ?', ['occupied', bookingData.room_id]);

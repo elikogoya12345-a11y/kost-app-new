@@ -60,9 +60,25 @@ INSERT INTO occupants (user_id, room_id, start_date, end_date, monthly_rent, sta
 INSERT INTO payments (occupant_id, amount, payment_date, due_date, status) VALUES
 (1, 800000, '2024-01-05', '2024-01-10', 'paid'),
 (1, 800000, '2024-02-05', '2024-02-10', 'paid'),
+(1, 800000, NULL, '2024-03-10', 'pending'),
+(1, 800000, NULL, '2024-04-10', 'pending'),
+(1, 800000, NULL, '2024-05-10', 'pending'),
+(1, 800000, NULL, '2024-06-10', 'pending'),
 (2, 1200000, '2024-02-05', '2024-02-10', 'paid'),
-(2, 1200000, '2024-03-05', '2024-03-10', 'pending'),
-(3, 1500000, '2024-03-05', '2024-03-10', 'paid');
+(2, 1200000, NULL, '2024-03-10', 'pending'),
+(2, 1200000, NULL, '2024-04-10', 'pending'),
+(2, 1200000, NULL, '2024-05-10', 'pending'),
+(2, 1200000, NULL, '2024-06-10', 'pending'),
+(2, 1200000, NULL, '2024-07-10', 'pending'),
+(2, 1200000, NULL, '2024-08-10', 'pending'),
+(2, 1200000, NULL, '2024-09-10', 'pending'),
+(2, 1200000, NULL, '2024-10-10', 'pending'),
+(2, 1200000, NULL, '2024-11-10', 'pending'),
+(2, 1200000, NULL, '2024-12-10', 'pending'),
+(2, 1200000, NULL, '2025-01-10', 'pending'),
+(3, 1500000, '2024-03-05', '2024-03-10', 'paid'),
+(3, 1500000, NULL, '2024-04-10', 'pending'),
+(3, 1500000, NULL, '2024-05-10', 'pending');
 
 -- Insert sample complaints
 INSERT INTO complaints (user_id, room_id, facility, description, status, admin_response) VALUES
