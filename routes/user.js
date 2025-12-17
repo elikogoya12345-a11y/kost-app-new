@@ -139,7 +139,7 @@ router.post('/booking', async (req, res) => {
         const userId = req.session.user.id;
         
         // Get room details
-        const [room] = await db.execute('SELECT r.*, rt.id as room_type_id FROM rooms r JOIN room_types rt ON r.room_type_id = rt.id WHERE r.id = ?', [room_id]);
+        const [room] = await db.execute('SELECT r.*, rt.id as room_type_id, rt.base_price FROM rooms r JOIN room_types rt ON r.room_type_id = rt.id WHERE r.id = ?', [room_id]);
         if (room.length === 0 || room[0].status !== 'available') {
             return res.redirect('/user/rooms?error=Kamar tidak tersedia');
         }
@@ -172,8 +172,8 @@ router.post('/booking', async (req, res) => {
             dueDate.setDate(10);
             
             await db.execute(
-                'INSERT INTO payments (occupant_id, amount, due_date, status) VALUES (?, ?, ?, ?)',
-                [occupantId, room[0].base_price, dueDate.toISOString().slice(0, 10), 'pending']
+                'INSERT INTO payments (occupant_id, amount, due_date, status, payment_date) VALUES (?, ?, ?, ?, ?)',
+                [occupantId, room[0].base_price, dueDate.toISOString().slice(0, 10), 'pending', null]
             );
         }
         
@@ -219,8 +219,8 @@ router.post('/bookings/:id/activate', async (req, res) => {
             dueDate.setDate(10); // Due date on 10th of each month
             
             await db.execute(
-                'INSERT INTO payments (occupant_id, amount, due_date, status) VALUES (?, ?, ?, ?)',
-                [occupantId, bookingData.base_price, dueDate.toISOString().slice(0, 10), 'pending']
+                'INSERT INTO payments (occupant_id, amount, due_date, status, payment_date) VALUES (?, ?, ?, ?, ?)',
+                [occupantId, bookingData.base_price, dueDate.toISOString().slice(0, 10), 'pending', null]
             );
         }
         
