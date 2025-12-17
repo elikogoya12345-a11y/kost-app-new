@@ -109,7 +109,17 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-blue-100 text-sm font-medium">Pendapatan</p>
-                        <h3 class="text-xl font-bold">Rp <%= parseInt(stats.revenue || 0).toLocaleString('id-ID') %></h3>
+                        <h3 class="text-xl font-bold">
+                            Rp <% 
+                                const revenue = parseInt(stats.revenue || 0);
+                                if (revenue >= 1000000) {
+                                    const millions = revenue / 1000000;
+                                    if (millions % 1 === 0) {
+                            %><%= millions %> Juta<% } else { %><%= millions.toFixed(1) %> Juta<% } 
+                                } else if (revenue >= 1000) {
+                                    const thousands = revenue / 1000;
+                            %><%= thousands %> Ribu<% } else { %><%= revenue %><% } %>
+                        </h3>
                         <p class="text-blue-100 text-xs mt-1">
                             <%= period === 'week' ? 'Minggu ini' : period === 'month' ? 'Bulan ini' : 'Tahun ini' %>
                         </p>
@@ -124,7 +134,17 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-amber-100 text-sm font-medium">Total Pendapatan</p>
-                        <h3 class="text-xl font-bold">Rp <%= parseInt(stats.totalRevenue || 0).toLocaleString('id-ID') %></h3>
+                        <h3 class="text-xl font-bold">
+                            Rp <% 
+                                const totalRevenue = parseInt(stats.totalRevenue || 0);
+                                if (totalRevenue >= 1000000) {
+                                    const millions = totalRevenue / 1000000;
+                                    if (millions % 1 === 0) {
+                            %><%= millions %> Juta<% } else { %><%= millions.toFixed(1) %> Juta<% } 
+                                } else if (totalRevenue >= 1000) {
+                                    const thousands = totalRevenue / 1000;
+                            %><%= thousands %> Ribu<% } else { %><%= totalRevenue %><% } %>
+                        </h3>
                         <p class="text-amber-100 text-xs mt-1">Semua pembayaran</p>
                     </div>
                     <div class="glossy-white p-3 rounded-xl glossy-card">

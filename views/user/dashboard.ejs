@@ -82,7 +82,17 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-amber-100 text-sm font-medium">Total Dibayar</p>
-                        <h3 class="text-2xl font-bold">Rp <%= (totalPaid || 0).toLocaleString('id-ID') %></h3>
+                        <h3 class="text-2xl font-bold">
+                            Rp <% 
+                                const totalPaidAmount = parseInt(totalPaid || 0);
+                                if (totalPaidAmount >= 1000000) {
+                                    const millions = totalPaidAmount / 1000000;
+                                    if (millions % 1 === 0) {
+                            %><%= millions %> Juta<% } else { %><%= millions.toFixed(1) %> Juta<% } 
+                                } else if (totalPaidAmount >= 1000) {
+                                    const thousands = totalPaidAmount / 1000;
+                            %><%= thousands %> Ribu<% } else { %><%= totalPaidAmount %><% } %>
+                        </h3>
                         <p class="text-amber-100 text-xs mt-1">Semua pembayaran</p>
                     </div>
                     <div class="glossy-white p-3 rounded-xl glossy-card">
@@ -105,7 +115,15 @@
                                 <%= new Date(nextPayment.due_date).toLocaleDateString('id-ID') %>
                             </h3>
                             <p class="text-gold text-xs mt-1">
-                                Rp <%= nextPayment.amount.toLocaleString('id-ID') %> - 
+                                Rp <% 
+                                    const nextAmount = parseInt(nextPayment.amount);
+                                    if (nextAmount >= 1000000) {
+                                        const millions = nextAmount / 1000000;
+                                        if (millions % 1 === 0) {
+                                %><%= millions %> Juta<% } else { %><%= millions.toFixed(1) %> Juta<% } 
+                                    } else if (nextAmount >= 1000) {
+                                        const thousands = nextAmount / 1000;
+                                %><%= thousands %> Ribu<% } else { %><%= nextAmount %><% } %> - 
                                 <% if (diffDays > 0) { %>
                                     <%= diffDays %> hari lagi
                                 <% } else if (diffDays === 0) { %>
