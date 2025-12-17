@@ -91,7 +91,7 @@
                         <h1 class="text-3xl font-bold text-gold-dark mb-2"><%= roomType.name %></h1>
                         <p class="text-gold mb-4"><%= roomType.description %></p>
                         <div class="text-2xl font-bold text-amber-600">
-                            Rp <%= roomType.base_price.toLocaleString('id-ID') %> <span class="text-sm text-blue-500">per bulan</span>
+                            Rp <%= parseInt(roomType.base_price).toLocaleString('id-ID') %> <span class="text-sm text-blue-500">per bulan</span>
                         </div>
                     </div>
                     
@@ -172,7 +172,7 @@
                             </div>
                             
                             <div class="text-lg font-bold text-amber-600 mb-3">
-                                Rp <%= room.base_price.toLocaleString('id-ID') %>
+                                Rp <%= parseInt(room.base_price).toLocaleString('id-ID') %>
                                 <span class="text-xs text-blue-500">/bulan</span>
                             </div>
                             

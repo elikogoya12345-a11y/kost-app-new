@@ -57,7 +57,7 @@ INSERT INTO notifications (user_id, title, message, type, is_read) VALUES
 (NULL, 'Info Pembayaran', 'Pembayaran dapat dilakukan setiap tanggal 1-10 setiap bulannya.', 'payment', false);
 
 -- Update harga kamar untuk database yang sudah ada
-UPDATE room_types SET base_price = 1000000 WHERE name = 'Standard Room';
+UPDATE room_types SET base_price = 100000 WHERE name = 'Standard Room';
 UPDATE room_types SET base_price = 1200000 WHERE name = 'Superior Room';
 UPDATE room_types SET base_price = 1500000 WHERE name = 'Deluxe Room';
 UPDATE room_types SET base_price = 1800000 WHERE name = 'Suite Room';

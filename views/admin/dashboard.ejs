@@ -109,7 +109,7 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-blue-100 text-sm font-medium">Pendapatan</p>
-                        <h3 class="text-xl font-bold">Rp <%= (stats.revenue || 0).toLocaleString('id-ID') %></h3>
+                        <h3 class="text-xl font-bold">Rp <%= parseInt(stats.revenue || 0).toLocaleString('id-ID') %></h3>
                         <p class="text-blue-100 text-xs mt-1">
                             <%= period === 'week' ? 'Minggu ini' : period === 'month' ? 'Bulan ini' : 'Tahun ini' %>
                         </p>
@@ -124,7 +124,7 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-amber-100 text-sm font-medium">Total Pendapatan</p>
-                        <h3 class="text-xl font-bold">Rp <%= (stats.totalRevenue || 0).toLocaleString('id-ID') %></h3>
+                        <h3 class="text-xl font-bold">Rp <%= parseInt(stats.totalRevenue || 0).toLocaleString('id-ID') %></h3>
                         <p class="text-amber-100 text-xs mt-1">Semua pembayaran</p>
                     </div>
                     <div class="glossy-white p-3 rounded-xl glossy-card">
