@@ -46,6 +46,18 @@
         .text-gold-dark {
             color: #78350f;
         }
+        .room-image-1 {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 50%, #fbbf24 100%);
+        }
+        .room-image-2 {
+            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 50%, #10b981 100%);
+        }
+        .room-image-3 {
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 50%, #3b82f6 100%);
+        }
+        .room-image-4 {
+            background: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 50%, #ec4899 100%);
+        }
     </style>
     <%- include('../partials/user-nav') %>
 
@@ -116,14 +128,11 @@
             <% if (rooms.length > 0) { %>
                 <% rooms.forEach(room => { %>
                     <div class="glossy-white rounded-2xl overflow-hidden glossy-card">
-                        <div class="h-32 relative overflow-hidden">
-                            <img src="https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=300&h=200&fit=crop&crop=center" 
-                                 alt="Kamar <%= room.room_number %>" 
-                                 class="w-full h-full object-cover"
-                                 onerror="this.src='https://via.placeholder.com/300x200/fbbf24/ffffff?text=<%= room.room_number %>'">
-                            <div class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
-                                <div class="text-center text-white">
-                                    <i class="fas fa-door-open text-2xl mb-2"></i>
+                        <div class="h-32 relative overflow-hidden room-image-<%= room.id % 4 + 1 %>">
+                            <div class="absolute inset-0 bg-gradient-to-br from-amber-100 to-amber-300 opacity-90"></div>
+                            <div class="absolute inset-0 flex items-center justify-center">
+                                <div class="text-center text-amber-800">
+                                    <i class="fas fa-door-open text-3xl mb-2"></i>
                                     <div class="font-bold text-lg"><%= room.room_number %></div>
                                 </div>
                             </div>
