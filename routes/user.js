@@ -130,12 +130,12 @@ router.post('/payments/:id/pay', async (req, res) => {
 // Booking
 router.post('/booking', async (req, res) => {
     try {
-        const { room_id, start_date, duration_months, total_amount, notes } = req.body;
+        const { room_id, start_date, duration_months, total_amount } = req.body;
         const userId = req.session.user.id;
         
         await db.execute(
-            'INSERT INTO bookings (user_id, room_id, start_date, duration_months, total_amount, notes, status) VALUES (?, ?, ?, ?, ?, ?, ?)',
-            [userId, room_id, start_date, duration_months, total_amount, notes || null, 'pending']
+            'INSERT INTO bookings (user_id, room_id, start_date, duration_months, total_amount, status) VALUES (?, ?, ?, ?, ?, ?)',
+            [userId, room_id, start_date, duration_months, total_amount, 'pending']
         );
         
         res.redirect('/user/bookings?success=Booking berhasil! Menunggu konfirmasi admin.');

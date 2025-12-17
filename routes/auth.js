@@ -40,7 +40,6 @@ router.post('/login', async (req, res) => {
             id: user.id,
             name: user.name,
             email: user.email,
-            username: user.username,
             role: user.role
         };
         
@@ -58,7 +57,7 @@ router.get('/register', redirectIfAuth, (req, res) => {
 
 router.post('/register', async (req, res) => {
     try {
-        const { name, username, email, password, confirm_password, phone, birth_date, address } = req.body;
+        const { name, email, password, confirm_password } = req.body;
         
         // Validasi password match
         if (password !== confirm_password) {
@@ -76,36 +75,19 @@ router.post('/register', async (req, res) => {
             });
         }
         
-        // Validasi username (tidak boleh ada spasi)
-        if (username.includes(' ')) {
-            return res.render('auth/register', { 
-                error: 'Username tidak boleh mengandung spasi',
-                formData: req.body
-            });
-        }
-        
         // Cek apakah email sudah terdaftar
         const [existingEmail] = await db.execute('SELECT id FROM users WHERE email = ?', [email]);
-        if (existingEmail.length > 0) {
+        if (existingEmail && existingEmail.length > 0) {
             return res.render('auth/register', { 
                 error: 'Email sudah terdaftar',
                 formData: req.body
             });
         }
         
-        // Cek apakah username sudah terdaftar
-        const [existingUsername] = await db.execute('SELECT id FROM users WHERE username = ?', [username]);
-        if (existingUsername.length > 0) {
-            return res.render('auth/register', { 
-                error: 'Username sudah terdaftar',
-                formData: req.body
-            });
-        }
-        
         const hashedPassword = await bcrypt.hash(password, 10);
         await db.execute(
-            'INSERT INTO users (name, username, email, password, phone, birth_date, address) VALUES (?, ?, ?, ?, ?, ?, ?)',
-            [name, username, email, hashedPassword, phone, birth_date, address]
+            'INSERT INTO users (name, email, password) VALUES (?, ?, ?)',
+            [name, email, hashedPassword]
         );
         
         res.redirect('/auth/login?success=Registrasi berhasil! Silakan login dengan username atau email dan password Anda.');
@@ -119,8 +101,12 @@ router.post('/register', async (req, res) => {
 });
 
 router.get('/logout', (req, res) => {
-    req.session.destroy();
-    res.redirect('/');
+    req.session.destroy((err) => {
+        if (err) {
+            console.error('Session destroy error:', err);
+        }
+        res.redirect('/');
+    });
 });
 
 module.exports = router;

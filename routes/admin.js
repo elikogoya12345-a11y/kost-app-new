@@ -107,11 +107,11 @@ router.get('/rooms', async (req, res) => {
 // Add new room
 router.post('/rooms', async (req, res) => {
     try {
-        const { room_number, room_type_id, floor, status, description } = req.body;
+        const { room_number, room_type_id, status } = req.body;
         
         await db.execute(
-            'INSERT INTO rooms (room_number, room_type_id, floor, status, description) VALUES (?, ?, ?, ?, ?)',
-            [room_number, room_type_id, floor, status || 'available', description || null]
+            'INSERT INTO rooms (room_number, room_type_id, status) VALUES (?, ?, ?)',
+            [room_number, room_type_id, status || 'available']
         );
         
         res.redirect('/admin/rooms?success=Kamar berhasil ditambahkan');
@@ -125,11 +125,11 @@ router.post('/rooms', async (req, res) => {
 router.post('/rooms/:id', async (req, res) => {
     try {
         const roomId = req.params.id;
-        const { room_number, room_type_id, floor, status, description } = req.body;
+        const { room_number, room_type_id, status } = req.body;
         
         await db.execute(
-            'UPDATE rooms SET room_number = ?, room_type_id = ?, floor = ?, status = ?, description = ? WHERE id = ?',
-            [room_number, room_type_id, floor, status, description || null, roomId]
+            'UPDATE rooms SET room_number = ?, room_type_id = ?, status = ? WHERE id = ?',
+            [room_number, room_type_id, status, roomId]
         );
         
         res.redirect('/admin/rooms?success=Kamar berhasil diperbarui');

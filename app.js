@@ -11,6 +11,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static('public'));
 app.use('/images', express.static('images'));
+app.use('/images', express.static(path.join(__dirname, 'images')));
 
 // Handle favicon
 app.get('/favicon.ico', (req, res) => {
@@ -39,6 +40,12 @@ app.use('/auth', require('./routes/auth'));
 app.use('/admin', require('./routes/admin'));
 app.use('/user', require('./routes/user'));
 app.use('/guest', require('./routes/guest'));
+
+// Error handlers
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).render('error/404', { error: 'Internal Server Error' });
+});
 
 // 404 handler
 app.use((req, res) => {
