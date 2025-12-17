@@ -119,7 +119,8 @@
                         <div class="h-32 relative overflow-hidden">
                             <img src="/images/<%= room.type_name.replace(/\s+/g, '-') %>/Kamar Tersedia.jpg" 
                                  alt="Kamar <%= room.room_number %>" 
-                                 class="w-full h-full object-cover">
+                                 class="w-full h-full object-cover"
+                                 onerror="this.src='https://via.placeholder.com/300x200/fbbf24/ffffff?text=<%= room.room_number %>'">
                             <div class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
                                 <div class="text-center text-white">
                                     <i class="fas fa-door-open text-2xl mb-2"></i>

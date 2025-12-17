@@ -64,7 +64,8 @@
                         <div class="h-48 relative overflow-hidden">
                             <img src="/images/<%= roomType.name.replace(/\s+/g, '-') %>/<%= roomType.name.replace(/\s+/g, '-') %>.jpg" 
                                  alt="<%= roomType.name %>" 
-                                 class="w-full h-full object-cover">
+                                 class="w-full h-full object-cover"
+                                 onerror="this.src='https://via.placeholder.com/400x300/fbbf24/ffffff?text=<%= roomType.name.replace(/\s+/g, '+') %>'">
                             <div class="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center">
                                 <div class="text-center text-white">
                                     <i class="fas fa-bed text-3xl mb-2"></i>
