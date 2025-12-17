@@ -1,12 +1,9 @@
--- Seed data for Kost Professional
+-- Seed data for KostPro
 USE kost_professional;
 
--- Insert admin user
--- Username: admin
--- Email: admin@kostapp.com
--- Password: admin123
+-- Insert admin user (password: admin123)
 INSERT INTO users (name, username, email, password, role) VALUES 
-('Administrator', 'admin', 'admin@kostapp.com', '$2a$10$AdFI1Gt4ru.Nj8w.6srR/eW0LTQm54TRAwbnFYN2H3MEhBrJKKxra', 'admin');
+('Administrator', 'admin', 'admin', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin');
 
 -- Insert room types
 INSERT INTO room_types (name, base_price, description, facilities, image_url) VALUES
@@ -37,42 +34,3 @@ INSERT INTO rooms (room_type_id, room_number, status) VALUES
 (7, 'LRG-001', 'available'), (7, 'LRG-002', 'available'), (7, 'LRG-003', 'available'), (7, 'LRG-004', 'available'), (7, 'LRG-005', 'available'),
 -- President Room (3 rooms)
 (8, 'PRE-001', 'available'), (8, 'PRE-002', 'available'), (8, 'PRE-003', 'available');
-
--- Insert sample users
-INSERT INTO users (name, username, email, password, phone, role) VALUES
-('John Doe', 'johndoe', 'john@example.com', '$2a$10$AdFI1Gt4ru.Nj8w.6srR/eW0LTQm54TRAwbnFYN2H3MEhBrJKKxra', '081234567890', 'user'),
-('Jane Smith', 'janesmith', 'jane@example.com', '$2a$10$AdFI1Gt4ru.Nj8w.6srR/eW0LTQm54TRAwbnFYN2H3MEhBrJKKxra', '081234567891', 'user'),
-('Bob Wilson', 'bobwilson', 'bob@example.com', '$2a$10$AdFI1Gt4ru.Nj8w.6srR/eW0LTQm54TRAwbnFYN2H3MEhBrJKKxra', '081234567892', 'user');
-
--- Insert sample bookings
-INSERT INTO bookings (user_id, room_type_id, room_id, start_date, duration_months, total_amount, status) VALUES
-(2, 1, 3, '2024-01-01', 6, 4800000, 'confirmed'),
-(3, 2, 9, '2024-02-01', 12, 14400000, 'confirmed'),
-(4, 3, 16, '2024-03-01', 3, 4500000, 'confirmed');
-
--- Insert sample occupants
-INSERT INTO occupants (user_id, room_id, start_date, end_date, monthly_rent, status) VALUES
-(2, 3, '2024-01-01', '2024-06-30', 800000, 'active'),
-(3, 9, '2024-02-01', '2025-01-31', 1200000, 'active'),
-(4, 16, '2024-03-01', '2024-05-31', 1500000, 'active');
-
--- Insert sample payments
-INSERT INTO payments (occupant_id, amount, payment_date, due_date, status) VALUES
-(1, 800000, '2024-01-05', '2024-01-10', 'paid'),
-(1, 800000, '2024-02-05', '2024-02-10', 'paid'),
-(2, 1200000, '2024-02-05', '2024-02-10', 'paid'),
-(2, 1200000, '2024-03-05', '2024-03-10', 'pending'),
-(3, 1500000, '2024-03-05', '2024-03-10', 'paid');
-
--- Insert sample complaints
-INSERT INTO complaints (user_id, room_id, facility, description, status, admin_response) VALUES
-(2, 3, 'AC', 'AC tidak dingin, mohon diperbaiki', 'resolved', 'AC sudah diperbaiki oleh teknisi'),
-(3, 9, 'WiFi', 'Koneksi WiFi sering putus', 'in_progress', 'Sedang dalam pengecekan oleh teknisi'),
-(4, 16, 'Kamar Mandi', 'Air panas tidak berfungsi', 'pending', NULL);
-
--- Insert sample notifications
-INSERT INTO notifications (user_id, title, message, is_read) VALUES
-(2, 'Pembayaran Berhasil', 'Pembayaran untuk bulan Februari telah diterima', true),
-(3, 'Pengaduan Diproses', 'Pengaduan Anda tentang WiFi sedang ditangani', false),
-(4, 'Reminder Pembayaran', 'Pembayaran bulan April jatuh tempo 10 April 2024', false),
-(NULL, 'Pengumuman', 'Pemeliharaan sistem air akan dilakukan tanggal 20 April 2024', false);
