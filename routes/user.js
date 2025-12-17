@@ -11,7 +11,7 @@ router.get('/dashboard', async (req, res) => {
         const userId = req.session.user.id;
         
         const [payments] = await db.execute(`
-            SELECT COALESCE(SUM(p.amount), 0) as total_paid 
+            SELECT IFNULL(SUM(p.amount), 0) as total_paid 
             FROM payments p
             JOIN occupants o ON p.occupant_id = o.id
             WHERE o.user_id = ? AND p.status = 'paid'

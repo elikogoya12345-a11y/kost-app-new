@@ -12,18 +12,18 @@ router.get('/dashboard', async (req, res) => {
         let dateFilter = '';
         
         switch(period) {
-            case 'week': dateFilter = 'AND p.created_at >= DATE_SUB(NOW(), INTERVAL 1 WEEK)'; break;
-            case 'month': dateFilter = 'AND p.created_at >= DATE_SUB(NOW(), INTERVAL 1 MONTH)'; break;
-            case 'year': dateFilter = 'AND p.created_at >= DATE_SUB(NOW(), INTERVAL 1 YEAR)'; break;
+            case 'week': dateFilter = 'AND p.created_at >= DATE_SUB(CURDATE(), INTERVAL 1 WEEK)'; break;
+            case 'month': dateFilter = 'AND p.created_at >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH)'; break;
+            case 'year': dateFilter = 'AND p.created_at >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR)'; break;
         }
         
         const [revenue] = await db.execute(`
-            SELECT COALESCE(SUM(amount), 0) as total_revenue 
+            SELECT IFNULL(SUM(amount), 0) as total_revenue 
             FROM payments p WHERE status = 'paid' ${dateFilter}
         `);
         
         const [totalRevenue] = await db.execute(`
-            SELECT COALESCE(SUM(amount), 0) as total_revenue 
+            SELECT IFNULL(SUM(amount), 0) as total_revenue 
             FROM payments WHERE status = 'paid'
         `);
         
@@ -206,9 +206,9 @@ router.get('/finance', async (req, res) => {
         let dateFilter = '';
         
         switch(period) {
-            case 'week': dateFilter = 'AND p.created_at >= DATE_SUB(NOW(), INTERVAL 1 WEEK)'; break;
-            case 'month': dateFilter = 'AND p.created_at >= DATE_SUB(NOW(), INTERVAL 1 MONTH)'; break;
-            case 'year': dateFilter = 'AND p.created_at >= DATE_SUB(NOW(), INTERVAL 1 YEAR)'; break;
+            case 'week': dateFilter = 'AND p.created_at >= DATE_SUB(CURDATE(), INTERVAL 1 WEEK)'; break;
+            case 'month': dateFilter = 'AND p.created_at >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH)'; break;
+            case 'year': dateFilter = 'AND p.created_at >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR)'; break;
         }
         
         const [payments] = await db.execute(`
@@ -235,9 +235,9 @@ router.get('/finance/export', async (req, res) => {
         let dateFilter = '';
         
         switch(period) {
-            case 'week': dateFilter = 'AND p.created_at >= DATE_SUB(NOW(), INTERVAL 1 WEEK)'; break;
-            case 'month': dateFilter = 'AND p.created_at >= DATE_SUB(NOW(), INTERVAL 1 MONTH)'; break;
-            case 'year': dateFilter = 'AND p.created_at >= DATE_SUB(NOW(), INTERVAL 1 YEAR)'; break;
+            case 'week': dateFilter = 'AND p.created_at >= DATE_SUB(CURDATE(), INTERVAL 1 WEEK)'; break;
+            case 'month': dateFilter = 'AND p.created_at >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH)'; break;
+            case 'year': dateFilter = 'AND p.created_at >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR)'; break;
         }
         
         const [payments] = await db.execute(`
@@ -285,7 +285,7 @@ router.post('/complaints/response', async (req, res) => {
         const { complaint_id, admin_response } = req.body;
         
         await db.execute(
-            'UPDATE complaints SET admin_response = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+            'UPDATE complaints SET admin_response = ?, updated_at = NOW() WHERE id = ?',
             [admin_response, complaint_id]
         );
         
@@ -302,7 +302,7 @@ router.post('/complaints/:id/status', async (req, res) => {
         const complaintId = req.params.id;
         
         await db.execute(
-            'UPDATE complaints SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+            'UPDATE complaints SET status = ?, updated_at = NOW() WHERE id = ?',
             [status, complaintId]
         );
         
@@ -359,162 +359,11 @@ router.post('/notifications', async (req, res) => {
     }
 });
 
-// Get available rooms
-router.get('/rooms/available', async (req, res) => {
-    try {
-        const [rooms] = await db.execute(`
-            SELECT r.*, rt.name as type_name, rt.base_price
-            FROM rooms r
-            JOIN room_types rt ON r.room_type_id = rt.id
-            WHERE r.status = 'available'
-            ORDER BY r.room_number
-        `);
-        
-        res.json({ rooms });
-    } catch (error) {
-        console.error(error);
-        res.json({ rooms: [] });
-    }
-});
-
-// Activate occupant based on booking
-router.post('/occupants/:id/activate', async (req, res) => {
-    try {
-        const userId = req.params.id;
-        
-        // Get user's confirmed booking
-        const [booking] = await db.execute(`
-            SELECT b.*, r.id as room_id, rt.base_price as monthly_rent FROM bookings b
-            JOIN rooms r ON b.room_id = r.id
-            JOIN room_types rt ON r.room_type_id = rt.id
-            WHERE b.user_id = ? AND b.status = 'confirmed'
-            ORDER BY b.created_at DESC LIMIT 1
-        `, [userId]);
-        
-        if (booking.length === 0) {
-            return res.redirect('/admin/occupants?error=User belum memiliki booking yang dikonfirmasi');
-        }
-        
-        const bookingData = booking[0];
-        const endDate = new Date(bookingData.start_date);
-        endDate.setMonth(endDate.getMonth() + parseInt(bookingData.duration_months));
-        
-        // Create occupant record
-        const [result] = await db.execute(
-            'INSERT INTO occupants (user_id, room_id, start_date, end_date, monthly_rent, status) VALUES (?, ?, ?, ?, ?, ?)',
-            [userId, bookingData.room_id, bookingData.start_date, endDate.toISOString().slice(0, 10), bookingData.monthly_rent, 'active']
-        );
-        
-        const occupantId = result.insertId;
-        
-        // Create monthly payment records
-        const startDate = new Date(bookingData.start_date);
-        for (let i = 0; i < bookingData.duration_months; i++) {
-            const dueDate = new Date(startDate);
-            dueDate.setMonth(dueDate.getMonth() + i);
-            dueDate.setDate(10); // Due date on 10th of each month
-            
-            await db.execute(
-                'INSERT INTO payments (occupant_id, amount, due_date, status) VALUES (?, ?, ?, ?)',
-                [occupantId, bookingData.monthly_rent, dueDate.toISOString().slice(0, 10), 'pending']
-            );
-        }
-        
-        // Update room status
-        await db.execute('UPDATE rooms SET status = ? WHERE id = ?', ['occupied', bookingData.room_id]);
-        
-        res.redirect('/admin/occupants?success=Penghuni berhasil diaktifkan');
-    } catch (error) {
-        console.error(error);
-        res.redirect('/admin/occupants?error=Gagal mengaktifkan penghuni');
-    }
-});
-
-// Toggle user status (activate/deactivate)
-router.post('/occupants/:id/toggle-status', async (req, res) => {
-    try {
-        const userId = req.params.id;
-        
-        // Get current user status
-        const [user] = await db.execute('SELECT status FROM users WHERE id = ?', [userId]);
-        if (user.length === 0) {
-            return res.redirect('/admin/occupants?error=User tidak ditemukan');
-        }
-        
-        const newStatus = user[0].status === 'active' ? 'inactive' : 'active';
-        
-        // Update user status
-        await db.execute('UPDATE users SET status = ? WHERE id = ?', [newStatus, userId]);
-        
-        // If deactivating, also deactivate occupant and free room
-        if (newStatus === 'inactive') {
-            const [occupant] = await db.execute('SELECT room_id FROM occupants WHERE user_id = ? AND status = "active"', [userId]);
-            
-            await db.execute('UPDATE occupants SET status = ? WHERE user_id = ?', ['inactive', userId]);
-            
-            if (occupant.length > 0) {
-                await db.execute('UPDATE rooms SET status = ? WHERE id = ?', ['available', occupant[0].room_id]);
-            }
-        }
-        
-        const statusText = newStatus === 'active' ? 'diaktifkan' : 'dinonaktifkan';
-        res.redirect(`/admin/occupants?success=User berhasil ${statusText}`);
-    } catch (error) {
-        console.error(error);
-        res.redirect('/admin/occupants?error=Gagal mengubah status user');
-    }
-});
-
-// Delete occupant
-router.delete('/occupants/:id', async (req, res) => {
-    try {
-        const userId = req.params.id;
-        
-        // Get occupant's room to free it up
-        const [occupant] = await db.execute(`
-            SELECT room_id FROM occupants WHERE user_id = ? AND status = 'active'
-        `, [userId]);
-        
-        // Delete occupant record
-        await db.execute('DELETE FROM occupants WHERE user_id = ?', [userId]);
-        
-        // Delete user's payments through occupants
-        await db.execute('DELETE p FROM payments p JOIN occupants o ON p.occupant_id = o.id WHERE o.user_id = ?', [userId]);
-        
-        // Delete user's bookings
-        await db.execute('DELETE FROM bookings WHERE user_id = ?', [userId]);
-        
-        // Delete user's complaints
-        await db.execute('DELETE FROM complaints WHERE user_id = ?', [userId]);
-        
-        // Delete user's notifications
-        await db.execute('DELETE FROM notifications WHERE user_id = ?', [userId]);
-        
-        // Free up the room if occupied
-        if (occupant.length > 0) {
-            await db.execute('UPDATE rooms SET status = ? WHERE id = ?', ['available', occupant[0].room_id]);
-        }
-        
-        // Delete the user
-        await db.execute('DELETE FROM users WHERE id = ?', [userId]);
-        
-        res.json({ success: true });
-    } catch (error) {
-        console.error(error);
-        res.json({ success: false });
-    }
-});
-
 // Reset all rooms to available
 router.post('/rooms/reset-all', async (req, res) => {
     try {
-        // Update all rooms to available
         await db.execute('UPDATE rooms SET status = ? WHERE status != ?', ['available', 'maintenance']);
-        
-        // Deactivate all occupants
         await db.execute('UPDATE occupants SET status = ?', ['inactive']);
-        
-        // Reset all bookings to pending
         await db.execute('UPDATE bookings SET status = ?', ['pending']);
         
         res.redirect('/admin/rooms?success=Semua kamar berhasil direset ke status tersedia');
