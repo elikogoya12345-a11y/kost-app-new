@@ -11,22 +11,27 @@ router.get('/dashboard', async (req, res) => {
         const userId = req.session.user.id;
         
         const [payments] = await db.execute(`
-            SELECT COALESCE(SUM(amount), 0) as total_paid 
-            FROM payments WHERE user_id = ? AND status = 'paid'
+            SELECT COALESCE(SUM(p.amount), 0) as total_paid 
+            FROM payments p
+            JOIN occupants o ON p.occupant_id = o.id
+            WHERE o.user_id = ? AND p.status = 'paid'
         `, [userId]);
         
         const [nextPayment] = await db.execute(`
             SELECT p.*, r.room_number, rt.name as room_type
             FROM payments p
-            JOIN bookings b ON p.booking_id = b.id
-            JOIN rooms r ON b.room_id = r.id
+            JOIN occupants o ON p.occupant_id = o.id
+            JOIN rooms r ON o.room_id = r.id
             JOIN room_types rt ON r.room_type_id = rt.id
-            WHERE p.user_id = ? AND p.status = 'pending' 
+            WHERE o.user_id = ? AND p.status = 'pending' 
             ORDER BY p.due_date LIMIT 1
         `, [userId]);
         
         const [totalPayments] = await db.execute(`
-            SELECT COUNT(*) as total_count FROM payments WHERE user_id = ?
+            SELECT COUNT(*) as total_count 
+            FROM payments p
+            JOIN occupants o ON p.occupant_id = o.id
+            WHERE o.user_id = ?
         `, [userId]);
         
         const [notifications] = await db.execute(`
@@ -93,12 +98,12 @@ router.get('/rooms/:typeId', async (req, res) => {
 router.get('/payments', async (req, res) => {
     try {
         const [payments] = await db.execute(`
-            SELECT p.*, b.duration_months, r.room_number, rt.name as room_type
+            SELECT p.*, r.room_number, rt.name as room_type
             FROM payments p
-            JOIN bookings b ON p.booking_id = b.id
-            JOIN rooms r ON b.room_id = r.id
+            JOIN occupants o ON p.occupant_id = o.id
+            JOIN rooms r ON o.room_id = r.id
             JOIN room_types rt ON r.room_type_id = rt.id
-            WHERE p.user_id = ? 
+            WHERE o.user_id = ? 
             ORDER BY p.due_date DESC
         `, [req.session.user.id]);
         
@@ -116,8 +121,8 @@ router.post('/payments/:id/pay', async (req, res) => {
         const currentDate = new Date().toISOString().slice(0, 10);
         
         await db.execute(
-            'UPDATE payments SET status = ?, payment_date = ? WHERE id = ? AND user_id = ?',
-            ['paid', currentDate, paymentId, req.session.user.id]
+            'UPDATE payments SET status = ?, payment_date = ? WHERE id = ?',
+            ['paid', currentDate, paymentId]
         );
         
         res.redirect('/user/payments?success=Pembayaran berhasil dikonfirmasi');
@@ -130,12 +135,12 @@ router.post('/payments/:id/pay', async (req, res) => {
 // Booking
 router.post('/booking', async (req, res) => {
     try {
-        const { room_id, start_date, duration_months, total_amount } = req.body;
+        const { room_id, room_type_id, start_date, duration_months, total_amount } = req.body;
         const userId = req.session.user.id;
         
         await db.execute(
-            'INSERT INTO bookings (user_id, room_id, start_date, duration_months, total_amount, status) VALUES (?, ?, ?, ?, ?, ?)',
-            [userId, room_id, start_date, duration_months, total_amount, 'pending']
+            'INSERT INTO bookings (user_id, room_id, room_type_id, start_date, duration_months, total_amount, status) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            [userId, room_id, room_type_id, start_date, duration_months, total_amount, 'pending']
         );
         
         res.redirect('/user/bookings?success=Booking berhasil! Menunggu konfirmasi admin.');
@@ -145,7 +150,7 @@ router.post('/booking', async (req, res) => {
     }
 });
 
-// Confirm booking and create payments
+// Confirm booking
 router.post('/bookings/:id/confirm', async (req, res) => {
     try {
         const bookingId = req.params.id;
@@ -160,30 +165,10 @@ router.post('/bookings/:id/confirm', async (req, res) => {
             return res.redirect('/user/bookings?error=Booking tidak ditemukan');
         }
         
-        const bookingData = booking[0];
-        const monthlyAmount = parseFloat(bookingData.total_amount) / parseInt(bookingData.duration_months);
-        const startDateObj = new Date(bookingData.start_date);
-        
-        // Create payment records for each month
-        for (let i = 0; i < parseInt(bookingData.duration_months); i++) {
-            const paymentDate = new Date(startDateObj);
-            paymentDate.setMonth(paymentDate.getMonth() + i);
-            
-            const dueDate = new Date(paymentDate);
-            dueDate.setDate(dueDate.getDate() + 1); // Due date is 1 day after period start
-            
-            const monthYear = paymentDate.toISOString().slice(0, 7); // YYYY-MM format
-            
-            await db.execute(
-                'INSERT INTO payments (user_id, booking_id, amount, due_date, month_year, status) VALUES (?, ?, ?, ?, ?, ?)',
-                [userId, bookingId, monthlyAmount, dueDate.toISOString().slice(0, 10), monthYear, 'pending']
-            );
-        }
-        
         await db.execute('UPDATE bookings SET status = ? WHERE id = ?', ['confirmed', bookingId]);
-        await db.execute('UPDATE rooms SET status = ? WHERE id = ?', ['occupied', bookingData.room_id]);
+        await db.execute('UPDATE rooms SET status = ? WHERE id = ?', ['occupied', booking[0].room_id]);
         
-        res.redirect('/user/bookings?success=Booking dikonfirmasi! Pembayaran telah dibuat.');
+        res.redirect('/user/bookings?success=Booking dikonfirmasi!');
     } catch (error) {
         console.error(error);
         res.redirect('/user/bookings?error=Gagal mengkonfirmasi booking');
@@ -208,8 +193,6 @@ router.get('/bookings', async (req, res) => {
         res.render('user/bookings', { user: req.session.user, bookings: [], success: null });
     }
 });
-
-
 
 // Complaints
 router.get('/complaints', async (req, res) => {
@@ -257,43 +240,14 @@ router.post('/complaints', async (req, res) => {
         const roomId = userRoom.length > 0 ? userRoom[0].room_id : null;
         
         await db.execute(
-            'INSERT INTO complaints (user_id, room_id, title, category, priority, description, facility_type, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-            [userId, roomId, title, category, priority, description, facility_type || null, 'open']
+            'INSERT INTO complaints (user_id, room_id, facility, description, status) VALUES (?, ?, ?, ?, ?)',
+            [userId, roomId, facility_type || category, description, 'pending']
         );
         
-        res.redirect('/user/complaints?success=Pengaduan berhasil dikirim! Admin akan segera menindaklanjuti.');
+        res.redirect('/user/complaints?success=Pengaduan berhasil dikirim!');
     } catch (error) {
         console.error(error);
         res.redirect('/user/complaints?error=Gagal mengirim pengaduan');
-    }
-});
-
-// Payment Extension Request
-router.post('/payment-extension', async (req, res) => {
-    try {
-        const { reason, planned_date } = req.body;
-        const userId = req.session.user.id;
-        
-        const [userRoom] = await db.execute(`
-            SELECT r.id as room_id FROM bookings b
-            JOIN rooms r ON b.room_id = r.id
-            WHERE b.user_id = ? AND b.status = 'confirmed'
-            ORDER BY b.created_at DESC LIMIT 1
-        `, [userId]);
-        
-        const roomId = userRoom.length > 0 ? userRoom[0].room_id : null;
-        const title = 'Pengajuan Perpanjangan Pembayaran';
-        const description = `Alasan: ${reason}\n\nRencana tanggal bayar: ${new Date(planned_date).toLocaleDateString('id-ID')}`;
-        
-        await db.execute(
-            'INSERT INTO complaints (user_id, room_id, title, category, priority, description, facility_type, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-            [userId, roomId, title, 'Pembayaran', 'medium', description, 'Perpanjangan Pembayaran', 'open']
-        );
-        
-        res.redirect('/user/dashboard?success=Pengajuan perpanjangan pembayaran berhasil dikirim! Tunggu konfirmasi admin.');
-    } catch (error) {
-        console.error(error);
-        res.redirect('/user/dashboard?error=Gagal mengirim pengajuan perpanjangan pembayaran');
     }
 });
 
