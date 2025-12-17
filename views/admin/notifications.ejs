@@ -23,74 +23,90 @@
             </div>
         <% } %>
 
-        <!-- Payment Extension Requests -->
+        <!-- Payment Extension Requests (Collapsible) -->
+        <% const paymentExtensions = notifications.filter(n => n.type === 'payment_extension' && n.is_read === 0); %>
+        <% if (paymentExtensions.length > 0) { %>
         <div class="bg-white rounded-xl shadow-sm mb-8">
-            <div class="p-6 border-b border-gray-200">
-                <h2 class="text-xl font-bold text-gray-800 flex items-center">
-                    <i class="fas fa-clock text-amber-600 mr-3"></i>
-                    Pengajuan Perpanjangan Pembayaran
+            <div class="p-6 border-b border-gray-200 cursor-pointer" onclick="toggleExtensions()">
+                <h2 class="text-xl font-bold text-gray-800 flex items-center justify-between">
+                    <div class="flex items-center">
+                        <i class="fas fa-clock text-amber-600 mr-3"></i>
+                        Pengajuan Perpanjangan Pembayaran
+                        <span class="bg-red-500 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center ml-3">
+                            <%= paymentExtensions.length %>
+                        </span>
+                    </div>
+                    <i id="extensionToggle" class="fas fa-chevron-down text-gray-400"></i>
                 </h2>
                 <p class="text-gray-600 mt-2">Kelola permintaan perpanjangan pembayaran dari penghuni</p>
             </div>
             
-            <div class="p-6">
-                <% const paymentExtensions = notifications.filter(n => n.type === 'payment_extension'); %>
-                <% if (paymentExtensions.length > 0) { %>
-                    <div class="space-y-4">
-                        <% paymentExtensions.forEach(extension => { %>
-                            <div class="border border-amber-200 rounded-lg p-4 bg-amber-50">
-                                <div class="flex justify-between items-start mb-3">
-                                    <h3 class="font-semibold text-gray-800"><%= extension.title %></h3>
-                                    <span class="bg-amber-100 text-amber-800 text-xs px-2 py-1 rounded-full">
-                                        <i class="fas fa-clock mr-1"></i>Perpanjangan
-                                    </span>
-                                </div>
-                                
-                                <p class="text-gray-700 mb-4"><%= extension.message %></p>
-                                
-                                <div class="mb-4">
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Ketik Balasan:</label>
-                                    <form action="/admin/notifications/<%= extension.id %>/reply" method="POST" class="space-y-3">
-                                        <textarea name="reply" rows="3" required 
-                                                  class="w-full px-3 py-2 border border-amber-300 rounded-lg focus:ring-2 focus:ring-amber-500"
-                                                  placeholder="Tulis balasan untuk pengajuan perpanjangan ini..."></textarea>
-                                        <div class="flex space-x-2">
-                                            <button type="submit" name="action" value="approve" 
-                                                    class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-                                                <i class="fas fa-check mr-2"></i>Setujui
-                                            </button>
-                                            <button type="submit" name="action" value="reject" 
-                                                    class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
-                                                <i class="fas fa-times mr-2"></i>Tolak
-                                            </button>
-                                        </div>
-                                    </form>
-                                </div>
-                                
-                                <div class="text-sm text-gray-500">
-                                    <i class="fas fa-calendar mr-1"></i>
-                                    <%= new Date(extension.created_at).toLocaleDateString('id-ID') %>
-                                </div>
+            <div id="extensionContent" class="p-6" style="display: none;">
+                <div class="space-y-4">
+                    <% paymentExtensions.forEach(extension => { %>
+                        <div class="border border-amber-200 rounded-lg p-4 bg-amber-50">
+                            <div class="flex justify-between items-start mb-3">
+                                <h3 class="font-semibold text-gray-800"><%= extension.title %></h3>
+                                <span class="bg-amber-100 text-amber-800 text-xs px-2 py-1 rounded-full">
+                                    <i class="fas fa-clock mr-1"></i>Perpanjangan
+                                </span>
                             </div>
-                        <% }); %>
-                    </div>
-                <% } else { %>
-                    <div class="text-center py-8">
-                        <i class="fas fa-clock text-4xl text-gray-400 mb-4"></i>
-                        <h3 class="text-lg font-semibold text-gray-600 mb-2">Tidak Ada Pengajuan</h3>
-                        <p class="text-gray-500">Pengajuan perpanjangan pembayaran akan muncul di sini</p>
-                    </div>
-                <% } %>
+                            
+                            <p class="text-gray-700 mb-4"><%= extension.message %></p>
+                            
+                            <div class="mb-4">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Ketik Balasan:</label>
+                                <form action="/admin/notifications/<%= extension.id %>/reply" method="POST" class="space-y-3">
+                                    <textarea name="reply" rows="3" required 
+                                              class="w-full px-3 py-2 border border-amber-300 rounded-lg focus:ring-2 focus:ring-amber-500"
+                                              placeholder="Tulis balasan untuk pengajuan perpanjangan ini..."></textarea>
+                                    <div class="flex space-x-2">
+                                        <button type="submit" name="action" value="approve" 
+                                                class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                                            <i class="fas fa-check mr-2"></i>Setujui
+                                        </button>
+                                        <button type="submit" name="action" value="reject" 
+                                                class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+                                            <i class="fas fa-times mr-2"></i>Tolak
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                            
+                            <div class="text-sm text-gray-500">
+                                <i class="fas fa-calendar mr-1"></i>
+                                <%= new Date(extension.created_at).toLocaleDateString('id-ID') %>
+                            </div>
+                        </div>
+                    <% }); %>
+                </div>
             </div>
         </div>
+        <% } %>
 
-        <!-- Send Notification Form -->
+        <!-- Mini Tabs for Notifications -->
         <div class="bg-white rounded-xl shadow-sm mb-8">
             <div class="p-6 border-b border-gray-200">
-                <h2 class="text-xl font-bold text-gray-800">Kirim Notifikasi Baru</h2>
+                <h2 class="text-xl font-bold text-gray-800 mb-4">Kelola Notifikasi</h2>
+                
+                <!-- Mini Tabs -->
+                <div class="flex space-x-2 mb-4">
+                    <button onclick="showTab('send')" id="sendTab" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm">
+                        <i class="fas fa-plus mr-2"></i>Kirim Baru
+                    </button>
+                    <button onclick="showTab('history')" id="historyTab" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm">
+                        <i class="fas fa-history mr-2"></i>Riwayat
+                    </button>
+                    <button onclick="showTab('extensions')" id="extensionsTab" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm">
+                        <i class="fas fa-clock mr-2"></i>Pengajuan User
+                    </button>
+                </div>
             </div>
             
-            <form action="/admin/notifications" method="POST" class="p-6">
+            <!-- Send Notification Tab -->
+            <div id="sendContent" class="p-6">
+
+                <form action="/admin/notifications" method="POST">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Kepada</label>
@@ -132,16 +148,13 @@
                         <i class="fas fa-bell mr-2"></i>Kirim Notifikasi
                     </button>
                 </div>
-            </form>
-        </div>
-
-        <!-- Notifications History -->
-        <div class="bg-white rounded-xl shadow-sm">
-            <div class="p-6 border-b border-gray-200">
-                <h2 class="text-xl font-bold text-gray-800">Riwayat Notifikasi</h2>
+                </form>
             </div>
             
-            <div class="p-6">
+            <!-- History Tab -->
+            <div id="historyContent" class="p-6" style="display: none;">
+
+
                 <% if (notifications.length > 0) { %>
                     <div class="space-y-4">
                         <% notifications.forEach(notification => { %>
@@ -190,7 +203,88 @@
                     </div>
                 <% } %>
             </div>
+            
+            <!-- User Extensions Tab -->
+            <div id="extensionsContent" class="p-6" style="display: none;">
+                <% const allExtensions = notifications.filter(n => n.type === 'payment_extension'); %>
+                <% if (allExtensions.length > 0) { %>
+                    <div class="space-y-4">
+                        <% allExtensions.forEach(extension => { %>
+                            <div class="border border-gray-200 rounded-lg p-4 <%= extension.is_read ? 'bg-gray-50' : 'bg-amber-50' %>">
+                                <div class="flex justify-between items-start mb-2">
+                                    <h3 class="font-semibold text-gray-800"><%= extension.title %></h3>
+                                    <div class="flex items-center space-x-2">
+                                        <% if (!extension.is_read) { %>
+                                            <span class="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full">
+                                                <i class="fas fa-exclamation mr-1"></i>Baru
+                                            </span>
+                                        <% } else { %>
+                                            <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
+                                                <i class="fas fa-check mr-1"></i>Dibalas
+                                            </span>
+                                        <% } %>
+                                    </div>
+                                </div>
+                                
+                                <p class="text-gray-700 mb-3"><%= extension.message %></p>
+                                
+                                <div class="text-sm text-gray-500">
+                                    <i class="fas fa-calendar mr-1"></i>
+                                    <%= new Date(extension.created_at).toLocaleDateString('id-ID') %>
+                                </div>
+                            </div>
+                        <% }); %>
+                    </div>
+                <% } else { %>
+                    <div class="text-center py-8">
+                        <i class="fas fa-clock text-4xl text-gray-400 mb-4"></i>
+                        <h3 class="text-lg font-semibold text-gray-600 mb-2">Tidak Ada Pengajuan</h3>
+                        <p class="text-gray-500">Pengajuan perpanjangan dari user akan muncul di sini</p>
+                    </div>
+                <% } %>
+            </div>
         </div>
+        
+        <script>
+            function toggleExtensions() {
+                const content = document.getElementById('extensionContent');
+                const toggle = document.getElementById('extensionToggle');
+                
+                if (content.style.display === 'none') {
+                    content.style.display = 'block';
+                    toggle.classList.remove('fa-chevron-down');
+                    toggle.classList.add('fa-chevron-up');
+                } else {
+                    content.style.display = 'none';
+                    toggle.classList.remove('fa-chevron-up');
+                    toggle.classList.add('fa-chevron-down');
+                }
+            }
+            
+            function showTab(tabName) {
+                // Hide all content
+                document.getElementById('sendContent').style.display = 'none';
+                document.getElementById('historyContent').style.display = 'none';
+                document.getElementById('extensionsContent').style.display = 'none';
+                
+                // Reset all tab buttons
+                document.getElementById('sendTab').className = 'px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm';
+                document.getElementById('historyTab').className = 'px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm';
+                document.getElementById('extensionsTab').className = 'px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm';
+                
+                // Show selected content and highlight tab
+                if (tabName === 'send') {
+                    document.getElementById('sendContent').style.display = 'block';
+                    document.getElementById('sendTab').className = 'px-4 py-2 bg-blue-600 text-white rounded-lg text-sm';
+                } else if (tabName === 'history') {
+                    document.getElementById('historyContent').style.display = 'block';
+                    document.getElementById('historyTab').className = 'px-4 py-2 bg-blue-600 text-white rounded-lg text-sm';
+                } else if (tabName === 'extensions') {
+                    document.getElementById('extensionsContent').style.display = 'block';
+                    document.getElementById('extensionsTab').className = 'px-4 py-2 bg-blue-600 text-white rounded-lg text-sm';
+                }
+            }
+        </script>
     </div>
 </body>
 </html>
