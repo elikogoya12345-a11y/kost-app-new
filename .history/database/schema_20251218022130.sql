@@ -1,7 +1,5 @@
--- Complete Database Setup for Kost Professional
--- Drop database if exists and create fresh
-DROP DATABASE IF EXISTS kost_professional;
-CREATE DATABASE kost_professional;
+-- MySQL Schema for KostPro
+CREATE DATABASE IF NOT EXISTS kost_professional;
 USE kost_professional;
 
 -- Users table
@@ -15,7 +13,6 @@ CREATE TABLE users (
     birth_date DATE,
     address TEXT,
     role ENUM('admin', 'user') DEFAULT 'user',
-    status ENUM('active', 'inactive') DEFAULT 'active',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -75,7 +72,7 @@ CREATE TABLE payments (
     id INT AUTO_INCREMENT PRIMARY KEY,
     occupant_id INT,
     amount DECIMAL(10,2) NOT NULL,
-    payment_date DATE NULL,
+    payment_date DATE,
     due_date DATE NOT NULL,
     status ENUM('pending', 'paid', 'overdue') DEFAULT 'pending',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -92,7 +89,6 @@ CREATE TABLE complaints (
     status ENUM('pending', 'in_progress', 'resolved') DEFAULT 'pending',
     admin_response TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id),
     FOREIGN KEY (room_id) REFERENCES rooms(id)
 );
@@ -103,7 +99,6 @@ CREATE TABLE notifications (
     user_id INT,
     title VARCHAR(200) NOT NULL,
     message TEXT NOT NULL,
-    type VARCHAR(50) DEFAULT 'info',
     is_read BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id)

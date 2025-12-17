@@ -138,26 +138,35 @@ router.post('/booking', async (req, res) => {
         const { room_id, room_type_id, start_date, duration_months, total_amount } = req.body;
         const userId = req.session.user.id;
         
+        // Check if room is available
+        const [room] = await db.execute('SELECT status FROM rooms WHERE id = ?', [room_id]);
+        if (room.length === 0 || room[0].status !== 'available') {
+            return res.redirect('/user/rooms?error=Kamar tidak tersedia');
+        }
+        
         await db.execute(
             'INSERT INTO bookings (user_id, room_id, room_type_id, start_date, duration_months, total_amount, status) VALUES (?, ?, ?, ?, ?, ?, ?)',
-            [userId, room_id, room_type_id, start_date, duration_months, total_amount, 'pending']
+            [userId, room_id, room_type_id, start_date, duration_months, total_amount, 'confirmed']
         );
         
-        res.redirect('/user/bookings?success=Booking berhasil! Menunggu konfirmasi admin.');
+        // Update room status to occupied
+        await db.execute('UPDATE rooms SET status = ? WHERE id = ?', ['occupied', room_id]);
+        
+        res.redirect('/user/bookings?success=Booking berhasil dikonfirmasi! Silakan lihat riwayat pembayaran.');
     } catch (error) {
         console.error(error);
         res.redirect('/user/rooms?error=Gagal melakukan booking');
     }
 });
 
-// Confirm booking
-router.post('/bookings/:id/confirm', async (req, res) => {
+// Activate occupancy after booking
+router.post('/bookings/:id/activate', async (req, res) => {
     try {
         const bookingId = req.params.id;
         const userId = req.session.user.id;
         
         const [booking] = await db.execute(
-            'SELECT * FROM bookings WHERE id = ? AND user_id = ?',
+            'SELECT b.*, rt.base_price FROM bookings b JOIN room_types rt ON b.room_type_id = rt.id WHERE b.id = ? AND b.user_id = ?',
             [bookingId, userId]
         );
         
@@ -165,13 +174,35 @@ router.post('/bookings/:id/confirm', async (req, res) => {
             return res.redirect('/user/bookings?error=Booking tidak ditemukan');
         }
         
-        await db.execute('UPDATE bookings SET status = ? WHERE id = ?', ['confirmed', bookingId]);
-        await db.execute('UPDATE rooms SET status = ? WHERE id = ?', ['occupied', booking[0].room_id]);
+        const bookingData = booking[0];
+        const endDate = new Date(bookingData.start_date);
+        endDate.setMonth(endDate.getMonth() + parseInt(bookingData.duration_months));
         
-        res.redirect('/user/bookings?success=Booking dikonfirmasi!');
+        // Create occupant record
+        const [result] = await db.execute(
+            'INSERT INTO occupants (user_id, room_id, start_date, end_date, monthly_rent, status) VALUES (?, ?, ?, ?, ?, ?)',
+            [userId, bookingData.room_id, bookingData.start_date, endDate.toISOString().slice(0, 10), bookingData.base_price, 'active']
+        );
+        
+        const occupantId = result.insertId;
+        
+        // Create monthly payment records
+        const startDate = new Date(bookingData.start_date);
+        for (let i = 0; i < bookingData.duration_months; i++) {
+            const dueDate = new Date(startDate);
+            dueDate.setMonth(dueDate.getMonth() + i);
+            dueDate.setDate(10); // Due date on 10th of each month
+            
+            await db.execute(
+                'INSERT INTO payments (occupant_id, amount, due_date, status) VALUES (?, ?, ?, ?)',
+                [occupantId, bookingData.base_price, dueDate.toISOString().slice(0, 10), 'pending']
+            );
+        }
+        
+        res.redirect('/user/payments?success=Pembayaran berhasil diaktifkan! Lihat riwayat pembayaran Anda.');
     } catch (error) {
         console.error(error);
-        res.redirect('/user/bookings?error=Gagal mengkonfirmasi booking');
+        res.redirect('/user/bookings?error=Gagal mengaktifkan pembayaran');
     }
 });
 
@@ -248,6 +279,25 @@ router.post('/complaints', async (req, res) => {
     } catch (error) {
         console.error(error);
         res.redirect('/user/complaints?error=Gagal mengirim pengaduan');
+    }
+});
+
+// Payment extension request
+router.post('/payment-extension', async (req, res) => {
+    try {
+        const { reason, planned_date } = req.body;
+        const userId = req.session.user.id;
+        
+        // Create notification for admin
+        await db.execute(
+            'INSERT INTO notifications (user_id, title, message, type) VALUES (?, ?, ?, ?)',
+            [null, 'Pengajuan Perpanjangan Pembayaran', `User ${req.session.user.name} mengajukan perpanjangan pembayaran. Alasan: ${reason}. Rencana bayar: ${planned_date}`, 'payment_extension']
+        );
+        
+        res.redirect('/user/dashboard?success=Pengajuan perpanjangan pembayaran berhasil dikirim');
+    } catch (error) {
+        console.error(error);
+        res.redirect('/user/dashboard?error=Gagal mengirim pengajuan');
     }
 });
 

@@ -118,11 +118,15 @@
             </div>
         </div>
 
-        <!-- Add Room Button -->
-        <div class="mb-6">
+        <!-- Action Buttons -->
+        <div class="mb-6 flex space-x-4">
             <button onclick="openAddRoomModal()" 
                     class="glossy-gold text-white px-6 py-3 rounded-xl glossy-card font-medium">
                 <i class="fas fa-plus mr-2"></i>Tambah Kamar Baru
+            </button>
+            <button onclick="resetAllRooms()" 
+                    class="glossy-blue text-white px-6 py-3 rounded-xl glossy-card font-medium">
+                <i class="fas fa-refresh mr-2"></i>Reset Semua Kamar ke Tersedia
             </button>
         </div>
 
@@ -330,6 +334,25 @@
                         location.reload();
                     } else {
                         alert('Gagal menghapus kamar');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Terjadi kesalahan');
+                });
+            }
+        }
+
+        function resetAllRooms() {
+            if (confirm('Yakin ingin mereset semua kamar ke status tersedia? Ini akan membuat semua kamar dapat dibooking kembali.')) {
+                fetch('/admin/rooms/reset-all', {
+                    method: 'POST'
+                })
+                .then(response => {
+                    if (response.ok) {
+                        location.reload();
+                    } else {
+                        alert('Gagal mereset kamar');
                     }
                 })
                 .catch(error => {

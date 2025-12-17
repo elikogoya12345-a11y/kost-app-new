@@ -133,14 +133,12 @@
                                 Dibooking pada <%= new Date(booking.created_at).toLocaleDateString('id-ID') %>
                             </div>
                             <div class="flex space-x-3">
-                                <% if (booking.status === 'pending') { %>
-                                    <form action="/user/bookings/<%= booking.id %>/confirm" method="POST" style="display: inline;">
+                                <% if (booking.status === 'confirmed') { %>
+                                    <form action="/user/bookings/<%= booking.id %>/activate" method="POST" style="display: inline;">
                                         <button type="submit" class="glossy-gold text-white px-4 py-2 rounded-xl glossy-card">
-                                            <i class="fas fa-check mr-2"></i>Konfirmasi Booking
+                                            <i class="fas fa-credit-card mr-2"></i>Aktifkan Pembayaran
                                         </button>
                                     </form>
-                                <% } %>
-                                <% if (booking.status === 'confirmed') { %>
                                     <button onclick="printBooking('<%= booking.id %>')" 
                                             class="glossy-gold-light text-gold-dark px-4 py-2 rounded-xl glossy-card">
                                         <i class="fas fa-print mr-2"></i>Print / Save PDF

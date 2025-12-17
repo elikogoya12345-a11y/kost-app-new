@@ -80,7 +80,7 @@
             <div class="glossy-gold rounded-2xl p-6 text-white glossy-card">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-amber-100 text-sm">Penghuni Aktif</p>
+                        <p class="text-amber-100 text-sm">Sedang Menghuni</p>
                         <h3 class="text-2xl font-bold">
                             <%= occupants.filter(o => o.occupant_status === 'active').length %>
                         </h3>
@@ -94,9 +94,9 @@
             <div class="glossy-white rounded-2xl p-6 text-blue-dark glossy-card">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-blue-medium text-sm">Penghuni Nonaktif</p>
+                        <p class="text-blue-medium text-sm">User Nonaktif</p>
                         <h3 class="text-2xl font-bold">
-                            <%= occupants.filter(o => o.occupant_status === 'inactive' || !o.occupant_status).length %>
+                            <%= occupants.filter(o => o.status === 'inactive').length %>
                         </h3>
                     </div>
                     <div class="glossy-blue-light p-3 rounded-xl glossy-card">
@@ -198,7 +198,7 @@
                                         <% } %>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <% if (occupant.occupant_status === 'active') { %>
+                                        <% if (occupant.status === 'active') { %>
                                             <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
                                                 <i class="fas fa-check mr-1"></i>Aktif
                                             </span>
@@ -207,23 +207,32 @@
                                                 <i class="fas fa-times mr-1"></i>Nonaktif
                                             </span>
                                         <% } %>
+                                        <% if (occupant.occupant_status === 'active') { %>
+                                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 ml-1">
+                                                <i class="fas fa-home mr-1"></i>Menghuni
+                                            </span>
+                                        <% } %>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                         <div class="flex space-x-2">
-                                            <% if (occupant.occupant_status === 'active') { %>
-                                                <button onclick="updateOccupantStatus('<%= occupant.id %>', 'inactive')" 
-                                                        class="glossy-blue-light text-blue-dark px-3 py-1 rounded-lg glossy-card text-xs">
-                                                    <i class="fas fa-pause mr-1"></i>Nonaktifkan
-                                                </button>
+                                            <% if (occupant.status === 'active') { %>
+                                                <form action="/admin/occupants/<%= occupant.id %>/toggle-status" method="POST" style="display: inline;">
+                                                    <button type="submit" class="glossy-blue-light text-blue-dark px-3 py-1 rounded-lg glossy-card text-xs">
+                                                        <i class="fas fa-pause mr-1"></i>Nonaktifkan
+                                                    </button>
+                                                </form>
                                             <% } else { %>
+                                                <form action="/admin/occupants/<%= occupant.id %>/toggle-status" method="POST" style="display: inline;">
+                                                    <button type="submit" class="glossy-gold text-white px-3 py-1 rounded-lg glossy-card text-xs">
+                                                        <i class="fas fa-play mr-1"></i>Aktifkan
+                                                    </button>
+                                                </form>
                                                 <% if (occupant.booking_id) { %>
                                                     <form action="/admin/occupants/<%= occupant.id %>/activate" method="POST" style="display: inline;">
-                                                        <button type="submit" class="glossy-gold text-white px-3 py-1 rounded-lg glossy-card text-xs">
-                                                            <i class="fas fa-play mr-1"></i>Aktifkan
+                                                        <button type="submit" class="glossy-white text-green-600 px-3 py-1 rounded-lg glossy-card text-xs border border-green-200">
+                                                            <i class="fas fa-home mr-1"></i>Aktifkan Hunian
                                                         </button>
                                                     </form>
-                                                <% } else { %>
-                                                    <span class="text-blue-medium text-xs">Belum booking</span>
                                                 <% } %>
                                             <% } %>
                                             <button onclick="deleteOccupant('<%= occupant.id %>', '<%= occupant.name %>')" 

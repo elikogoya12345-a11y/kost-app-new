@@ -430,6 +430,41 @@ router.post('/occupants/:id/activate', async (req, res) => {
     }
 });
 
+// Toggle user status (activate/deactivate)
+router.post('/occupants/:id/toggle-status', async (req, res) => {
+    try {
+        const userId = req.params.id;
+        
+        // Get current user status
+        const [user] = await db.execute('SELECT status FROM users WHERE id = ?', [userId]);
+        if (user.length === 0) {
+            return res.redirect('/admin/occupants?error=User tidak ditemukan');
+        }
+        
+        const newStatus = user[0].status === 'active' ? 'inactive' : 'active';
+        
+        // Update user status
+        await db.execute('UPDATE users SET status = ? WHERE id = ?', [newStatus, userId]);
+        
+        // If deactivating, also deactivate occupant and free room
+        if (newStatus === 'inactive') {
+            const [occupant] = await db.execute('SELECT room_id FROM occupants WHERE user_id = ? AND status = "active"', [userId]);
+            
+            await db.execute('UPDATE occupants SET status = ? WHERE user_id = ?', ['inactive', userId]);
+            
+            if (occupant.length > 0) {
+                await db.execute('UPDATE rooms SET status = ? WHERE id = ?', ['available', occupant[0].room_id]);
+            }
+        }
+        
+        const statusText = newStatus === 'active' ? 'diaktifkan' : 'dinonaktifkan';
+        res.redirect(`/admin/occupants?success=User berhasil ${statusText}`);
+    } catch (error) {
+        console.error(error);
+        res.redirect('/admin/occupants?error=Gagal mengubah status user');
+    }
+});
+
 // Delete occupant
 router.delete('/occupants/:id', async (req, res) => {
     try {
@@ -467,6 +502,25 @@ router.delete('/occupants/:id', async (req, res) => {
     } catch (error) {
         console.error(error);
         res.json({ success: false });
+    }
+});
+
+// Reset all rooms to available
+router.post('/rooms/reset-all', async (req, res) => {
+    try {
+        // Update all rooms to available
+        await db.execute('UPDATE rooms SET status = ? WHERE status != ?', ['available', 'maintenance']);
+        
+        // Deactivate all occupants
+        await db.execute('UPDATE occupants SET status = ?', ['inactive']);
+        
+        // Reset all bookings to pending
+        await db.execute('UPDATE bookings SET status = ?', ['pending']);
+        
+        res.redirect('/admin/rooms?success=Semua kamar berhasil direset ke status tersedia');
+    } catch (error) {
+        console.error(error);
+        res.redirect('/admin/rooms?error=Gagal mereset kamar');
     }
 });
 
