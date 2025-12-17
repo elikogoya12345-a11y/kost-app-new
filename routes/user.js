@@ -172,8 +172,8 @@ router.post('/booking', async (req, res) => {
             dueDate.setDate(10);
             
             await db.execute(
-                'INSERT INTO payments (occupant_id, amount, due_date, status, payment_date) VALUES (?, ?, ?, ?, ?)',
-                [occupantId, room[0].base_price, dueDate.toISOString().slice(0, 10), 'pending', null]
+                'INSERT INTO payments (occupant_id, amount, due_date, status) VALUES (?, ?, ?, ?)',
+                [occupantId, room[0].base_price, dueDate.toISOString().slice(0, 10), 'pending']
             );
         }
         
@@ -219,8 +219,8 @@ router.post('/bookings/:id/activate', async (req, res) => {
             dueDate.setDate(10); // Due date on 10th of each month
             
             await db.execute(
-                'INSERT INTO payments (occupant_id, amount, due_date, status, payment_date) VALUES (?, ?, ?, ?, ?)',
-                [occupantId, bookingData.base_price, dueDate.toISOString().slice(0, 10), 'pending', null]
+                'INSERT INTO payments (occupant_id, amount, due_date, status) VALUES (?, ?, ?, ?)',
+                [occupantId, bookingData.base_price, dueDate.toISOString().slice(0, 10), 'pending']
             );
         }
         
