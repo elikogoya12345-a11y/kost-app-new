@@ -5,6 +5,14 @@ npm-debug.log*
 # Environment variables
 .env
 
+# Railway (not used)
+railway.json
+
+# Old database files
+database/schema.sql
+database/seed.sql
+config/
+
 # Logs
 logs
 *.log
