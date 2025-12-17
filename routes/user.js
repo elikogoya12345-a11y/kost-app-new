@@ -135,24 +135,49 @@ router.post('/payments/:id/pay', async (req, res) => {
 // Booking
 router.post('/booking', async (req, res) => {
     try {
-        const { room_id, room_type_id, start_date, duration_months, total_amount } = req.body;
+        const { room_id, start_date, duration_months, total_amount } = req.body;
         const userId = req.session.user.id;
         
-        // Check if room is available
-        const [room] = await db.execute('SELECT status FROM rooms WHERE id = ?', [room_id]);
+        // Get room details
+        const [room] = await db.execute('SELECT r.*, rt.id as room_type_id FROM rooms r JOIN room_types rt ON r.room_type_id = rt.id WHERE r.id = ?', [room_id]);
         if (room.length === 0 || room[0].status !== 'available') {
             return res.redirect('/user/rooms?error=Kamar tidak tersedia');
         }
         
-        await db.execute(
+        // Create booking
+        const [result] = await db.execute(
             'INSERT INTO bookings (user_id, room_id, room_type_id, start_date, duration_months, total_amount, status) VALUES (?, ?, ?, ?, ?, ?, ?)',
-            [userId, room_id, room_type_id, start_date, duration_months, total_amount, 'confirmed']
+            [userId, room_id, room[0].room_type_id, start_date, duration_months, total_amount, 'confirmed']
         );
         
         // Update room status to occupied
         await db.execute('UPDATE rooms SET status = ? WHERE id = ?', ['occupied', room_id]);
         
-        res.redirect('/user/bookings?success=Booking berhasil dikonfirmasi! Silakan lihat riwayat pembayaran.');
+        // Auto-activate occupancy and create payments
+        const endDate = new Date(start_date);
+        endDate.setMonth(endDate.getMonth() + parseInt(duration_months));
+        
+        const [occupantResult] = await db.execute(
+            'INSERT INTO occupants (user_id, room_id, start_date, end_date, monthly_rent, status) VALUES (?, ?, ?, ?, ?, ?)',
+            [userId, room_id, start_date, endDate.toISOString().slice(0, 10), room[0].base_price, 'active']
+        );
+        
+        const occupantId = occupantResult.insertId;
+        
+        // Create monthly payment records
+        const startDateObj = new Date(start_date);
+        for (let i = 0; i < duration_months; i++) {
+            const dueDate = new Date(startDateObj);
+            dueDate.setMonth(dueDate.getMonth() + i);
+            dueDate.setDate(10);
+            
+            await db.execute(
+                'INSERT INTO payments (occupant_id, amount, due_date, status) VALUES (?, ?, ?, ?)',
+                [occupantId, room[0].base_price, dueDate.toISOString().slice(0, 10), 'pending']
+            );
+        }
+        
+        res.redirect('/user/payments?success=Booking berhasil! Pembayaran sudah diaktifkan.');
     } catch (error) {
         console.error(error);
         res.redirect('/user/rooms?error=Gagal melakukan booking');

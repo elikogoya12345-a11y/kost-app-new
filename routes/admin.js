@@ -362,9 +362,10 @@ router.post('/notifications', async (req, res) => {
 // Reset all rooms to available
 router.post('/rooms/reset-all', async (req, res) => {
     try {
-        await db.execute('UPDATE rooms SET status = ? WHERE status != ?', ['available', 'maintenance']);
+        await db.execute('UPDATE rooms SET status = ?', ['available']);
         await db.execute('UPDATE occupants SET status = ?', ['inactive']);
         await db.execute('UPDATE bookings SET status = ?', ['pending']);
+        await db.execute('DELETE FROM payments WHERE status = "pending"');
         
         res.redirect('/admin/rooms?success=Semua kamar berhasil direset ke status tersedia');
     } catch (error) {
