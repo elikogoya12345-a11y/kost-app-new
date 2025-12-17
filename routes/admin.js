@@ -41,6 +41,11 @@ router.get('/dashboard', async (req, res) => {
         
         const [totalRooms] = await db.execute('SELECT COUNT(*) as total FROM rooms');
         
+        const [paymentExtensions] = await db.execute(`
+            SELECT COUNT(*) as extension_count FROM notifications 
+            WHERE type = 'payment_extension' AND is_read = 0
+        `);
+        
         res.render('admin/dashboard', {
             user: req.session.user,
             stats: {
@@ -49,7 +54,8 @@ router.get('/dashboard', async (req, res) => {
                 pendingPayments: pendingPayments[0].pending_count,
                 occupiedRooms: occupancy[0].occupied_rooms,
                 totalRooms: totalRooms[0].total,
-                unresolvedComplaints: complaints[0].unresolved_complaints
+                unresolvedComplaints: complaints[0].unresolved_complaints,
+                paymentExtensions: paymentExtensions[0].extension_count
             },
             period
         });
