@@ -116,7 +116,17 @@
                             </div>
 
                             <div class="flex justify-between items-center mb-4">
-                                <span class="text-2xl font-bold text-amber-600">Rp <%= parseInt(roomType.base_price).toLocaleString('id-ID') %></span>
+                                <span class="text-2xl font-bold text-amber-600">
+                                    Rp <% 
+                                        const price = parseInt(roomType.base_price);
+                                        if (price >= 1000000) {
+                                            const millions = price / 1000000;
+                                            if (millions % 1 === 0) {
+                                    %><%= millions %> Juta<% } else { %><%= millions.toFixed(1) %> Juta<% } 
+                                        } else if (price >= 1000) {
+                                            const thousands = price / 1000;
+                                    %><%= thousands %> Ribu<% } else { %><%= price %><% } %>
+                                </span>
                                 <span class="text-sm text-blue-500">per bulan</span>
                             </div>
                             
