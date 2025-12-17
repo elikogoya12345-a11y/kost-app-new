@@ -39,6 +39,7 @@ app.use('/auth', require('./routes/auth'));
 app.use('/admin', require('./routes/admin'));
 app.use('/user', require('./routes/user'));
 app.use('/guest', require('./routes/guest'));
+app.use('/upload', require('./routes/upload'));
 
 // Error handlers
 app.use((err, req, res, next) => {

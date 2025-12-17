@@ -374,4 +374,14 @@ router.post('/rooms/reset-all', async (req, res) => {
     }
 });
 
+// Image upload page
+router.get('/images', async (req, res) => {
+    try {
+        res.render('admin/image-upload', { user: req.session.user });
+    } catch (error) {
+        console.error(error);
+        res.redirect('/admin/dashboard');
+    }
+});
+
 module.exports = router;
