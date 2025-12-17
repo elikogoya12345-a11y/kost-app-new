@@ -84,10 +84,13 @@ router.post('/register', async (req, res) => {
             });
         }
         
+        // Generate username from email (before @)
+        const username = email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
+        
         const hashedPassword = await bcrypt.hash(password, 10);
         await db.execute(
-            'INSERT INTO users (name, email, password) VALUES (?, ?, ?)',
-            [name, email, hashedPassword]
+            'INSERT INTO users (name, username, email, password) VALUES (?, ?, ?, ?)',
+            [name, username, email, hashedPassword]
         );
         
         res.redirect('/auth/login?success=Registrasi berhasil! Silakan login dengan username atau email dan password Anda.');
