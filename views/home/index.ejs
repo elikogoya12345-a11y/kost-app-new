@@ -239,7 +239,14 @@
                         <div class="h-56 relative overflow-hidden">
                             <img src="/images/<%= room.name.replace(/\s+/g, '-') %>/<%= room.name.replace(/\s+/g, '-') %>.jpg" 
                                  alt="<%= room.name %>" 
-                                 class="w-full h-full object-cover">
+                                 class="w-full h-full object-cover"
+                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+                            <div class="absolute inset-0 bg-gradient-to-br from-amber-400 to-amber-600 items-center justify-center" style="display: none;">
+                                <div class="text-center text-white">
+                                    <i class="fas fa-bed text-4xl mb-2"></i>
+                                    <p class="font-bold text-lg"><%= room.name %></p>
+                                </div>
+                            </div>
                             <div class="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center">
                                 <div class="text-center text-white">
                                     <i class="fas fa-bed text-4xl mb-2"></i>
