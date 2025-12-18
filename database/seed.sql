@@ -11,7 +11,7 @@ DELETE FROM room_types WHERE name = 'Twin Room';
 -- Insert admin user (Password: admin123)
 INSERT INTO users (name, username, email, password, role) VALUES 
 ('Administrator', 'admin', 'admin@kostapp.com', '$2a$10$AdFI1Gt4ru.Nj8w.6srR/eW0LTQm54TRAwbnFYN2H3MEhBrJKKxra', 'admin')
-ON DUPLICATE KEY UPDATE password = VALUES(password);
+ON DUPLICATE KEY UPDATE password = '$2a$10$AdFI1Gt4ru.Nj8w.6srR/eW0LTQm54TRAwbnFYN2H3MEhBrJKKxra';
 
 -- Insert room types
 INSERT INTO room_types (name, base_price, description, facilities, image_url) VALUES
@@ -23,34 +23,57 @@ INSERT INTO room_types (name, base_price, description, facilities, image_url) VA
 ('Large Room', 2000000, 'Kamar besar dengan ruang luas', '[\"AC\", \"WiFi\", \"Kasur King\", \"Lemari Besar\", \"Meja Kerja\", \"TV\", \"Sofa\"]', '/images/Large-room/Large-room.jpg'),
 ('President Room', 2500000, 'Kamar presiden dengan fasilitas terlengkap', '[\"AC\", \"WiFi\", \"Kasur King\", \"Walk-in Closet\", \"Meja Kerja\", \"TV 55 inch\", \"Kulkas\", \"Sofa\", \"Balkon\"]', '/images/President-room/President-room.jpg')
 ON DUPLICATE KEY UPDATE 
-base_price = VALUES(base_price),
-description = VALUES(description),
-facilities = VALUES(facilities),
-image_url = VALUES(image_url);
+base_price = 1000000,
+description = 'Kamar standar dengan fasilitas dasar';
 
 -- Insert all rooms as available (35 rooms total, 5 per type)
-INSERT INTO rooms (room_type_id, room_number, status, floor) VALUES
--- Standard Room (5 rooms)
-(1, 'STD-001', 'available', 1), (1, 'STD-002', 'available', 1), (1, 'STD-003', 'available', 1), (1, 'STD-004', 'available', 1), (1, 'STD-005', 'available', 1),
--- Superior Room (5 rooms)
-(2, 'SUP-001', 'available', 2), (2, 'SUP-002', 'available', 2), (2, 'SUP-003', 'available', 2), (2, 'SUP-004', 'available', 2), (2, 'SUP-005', 'available', 2),
--- Deluxe Room (5 rooms)
-(3, 'DLX-001', 'available', 3), (3, 'DLX-002', 'available', 3), (3, 'DLX-003', 'available', 3), (3, 'DLX-004', 'available', 3), (3, 'DLX-005', 'available', 3),
--- Suite Room (5 rooms)
-(4, 'STE-001', 'available', 4), (4, 'STE-002', 'available', 4), (4, 'STE-003', 'available', 4), (4, 'STE-004', 'available', 4), (4, 'STE-005', 'available', 4),
--- Share Room (5 rooms)
-(5, 'SHR-001', 'available', 1), (5, 'SHR-002', 'available', 1), (5, 'SHR-003', 'available', 1), (5, 'SHR-004', 'available', 1), (5, 'SHR-005', 'available', 1),
--- Large Room (5 rooms)
-(6, 'LRG-001', 'available', 5), (6, 'LRG-002', 'available', 5), (6, 'LRG-003', 'available', 5), (6, 'LRG-004', 'available', 5), (6, 'LRG-005', 'available', 5),
--- President Room (5 rooms)
-(7, 'PRE-001', 'available', 6), (7, 'PRE-002', 'available', 6), (7, 'PRE-003', 'available', 6), (7, 'PRE-004', 'available', 6), (7, 'PRE-005', 'available', 6);
+INSERT INTO rooms (room_type_id, room_number, status, floor) 
+SELECT rt.id, room_number, 'available', floor_num
+FROM room_types rt
+JOIN (
+    SELECT 'Standard Room' as type_name, 'STD-001' as room_number, 1 as floor_num UNION ALL
+    SELECT 'Standard Room', 'STD-002', 1 UNION ALL
+    SELECT 'Standard Room', 'STD-003', 1 UNION ALL
+    SELECT 'Standard Room', 'STD-004', 1 UNION ALL
+    SELECT 'Standard Room', 'STD-005', 1 UNION ALL
+    SELECT 'Superior Room', 'SUP-001', 2 UNION ALL
+    SELECT 'Superior Room', 'SUP-002', 2 UNION ALL
+    SELECT 'Superior Room', 'SUP-003', 2 UNION ALL
+    SELECT 'Superior Room', 'SUP-004', 2 UNION ALL
+    SELECT 'Superior Room', 'SUP-005', 2 UNION ALL
+    SELECT 'Deluxe Room', 'DLX-001', 3 UNION ALL
+    SELECT 'Deluxe Room', 'DLX-002', 3 UNION ALL
+    SELECT 'Deluxe Room', 'DLX-003', 3 UNION ALL
+    SELECT 'Deluxe Room', 'DLX-004', 3 UNION ALL
+    SELECT 'Deluxe Room', 'DLX-005', 3 UNION ALL
+    SELECT 'Suite Room', 'STE-001', 4 UNION ALL
+    SELECT 'Suite Room', 'STE-002', 4 UNION ALL
+    SELECT 'Suite Room', 'STE-003', 4 UNION ALL
+    SELECT 'Suite Room', 'STE-004', 4 UNION ALL
+    SELECT 'Suite Room', 'STE-005', 4 UNION ALL
+    SELECT 'Share Room', 'SHR-001', 1 UNION ALL
+    SELECT 'Share Room', 'SHR-002', 1 UNION ALL
+    SELECT 'Share Room', 'SHR-003', 1 UNION ALL
+    SELECT 'Share Room', 'SHR-004', 1 UNION ALL
+    SELECT 'Share Room', 'SHR-005', 1 UNION ALL
+    SELECT 'Large Room', 'LRG-001', 5 UNION ALL
+    SELECT 'Large Room', 'LRG-002', 5 UNION ALL
+    SELECT 'Large Room', 'LRG-003', 5 UNION ALL
+    SELECT 'Large Room', 'LRG-004', 5 UNION ALL
+    SELECT 'Large Room', 'LRG-005', 5 UNION ALL
+    SELECT 'President Room', 'PRE-001', 6 UNION ALL
+    SELECT 'President Room', 'PRE-002', 6 UNION ALL
+    SELECT 'President Room', 'PRE-003', 6 UNION ALL
+    SELECT 'President Room', 'PRE-004', 6 UNION ALL
+    SELECT 'President Room', 'PRE-005', 6
+) room_data ON rt.name = room_data.type_name;
 
 -- Insert sample users (Password: user123)
 INSERT INTO users (name, username, email, password, phone, role) VALUES
 ('John Doe', 'johndoe', 'john@example.com', '$2a$10$AdFI1Gt4ru.Nj8w.6srR/eW0LTQm54TRAwbnFYN2H3MEhBrJKKxra', '081234567890', 'user'),
 ('Jane Smith', 'janesmith', 'jane@example.com', '$2a$10$AdFI1Gt4ru.Nj8w.6srR/eW0LTQm54TRAwbnFYN2H3MEhBrJKKxra', '081234567891', 'user'),
 ('Bob Wilson', 'bobwilson', 'bob@example.com', '$2a$10$AdFI1Gt4ru.Nj8w.6srR/eW0LTQm54TRAwbnFYN2H3MEhBrJKKxra', '081234567892', 'user')
-ON DUPLICATE KEY UPDATE password = VALUES(password);
+ON DUPLICATE KEY UPDATE password = '$2a$10$AdFI1Gt4ru.Nj8w.6srR/eW0LTQm54TRAwbnFYN2H3MEhBrJKKxra';
 
 -- Insert sample notifications
 INSERT INTO notifications (user_id, title, message, type, is_read) VALUES
