@@ -467,4 +467,30 @@ router.post('/notifications/:id/reply', async (req, res) => {
     }
 });
 
+// Set default images for all room types
+router.post('/images/set-defaults', async (req, res) => {
+    try {
+        const defaultImages = {
+            'Standard Room': 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=600&h=400&fit=crop',
+            'Superior Room': 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=600&h=400&fit=crop',
+            'Deluxe Room': 'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=600&h=400&fit=crop',
+            'Suite Room': 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&h=400&fit=crop',
+            'Share Room': 'https://images.unsplash.com/photo-1571508601891-ca5e7a713859?w=600&h=400&fit=crop',
+            'Twin Room': 'https://images.unsplash.com/photo-1540518614846-7eded47432f5?w=600&h=400&fit=crop'
+        };
+        
+        for (const [roomTypeName, imageUrl] of Object.entries(defaultImages)) {
+            await db.execute(
+                'UPDATE room_types SET image_url = ? WHERE name = ?',
+                [imageUrl, roomTypeName]
+            );
+        }
+        
+        res.redirect('/admin/images?success=Gambar default berhasil diterapkan ke semua tipe kamar');
+    } catch (error) {
+        console.error(error);
+        res.redirect('/admin/images?error=Gagal menerapkan gambar default');
+    }
+});
+
 module.exports = router;

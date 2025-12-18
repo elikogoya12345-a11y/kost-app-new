@@ -64,6 +64,22 @@ router.get('/rooms', async (req, res) => {
             ORDER BY rt.base_price
         `);
         
+        // Add default images for each room type
+        const defaultImages = {
+            'Standard Room': 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=600&h=400&fit=crop',
+            'Superior Room': 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=600&h=400&fit=crop',
+            'Deluxe Room': 'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=600&h=400&fit=crop',
+            'Suite Room': 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&h=400&fit=crop',
+            'Share Room': 'https://images.unsplash.com/photo-1571508601891-ca5e7a713859?w=600&h=400&fit=crop',
+            'Twin Room': 'https://images.unsplash.com/photo-1540518614846-7eded47432f5?w=600&h=400&fit=crop'
+        };
+        
+        roomTypes.forEach(roomType => {
+            if (!roomType.image_url) {
+                roomType.image_url = defaultImages[roomType.name] || 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=600&h=400&fit=crop';
+            }
+        });
+        
         res.render('user/rooms', { user: req.session.user, roomTypes });
     } catch (error) {
         console.error(error);
@@ -82,6 +98,29 @@ router.get('/rooms/:typeId', async (req, res) => {
         `, [req.params.typeId]);
         
         const [roomType] = await db.execute('SELECT * FROM room_types WHERE id = ?', [req.params.typeId]);
+        
+        // Add default images
+        const defaultImages = {
+            'Standard Room': 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=600&h=400&fit=crop',
+            'Superior Room': 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=600&h=400&fit=crop',
+            'Deluxe Room': 'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=600&h=400&fit=crop',
+            'Suite Room': 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&h=400&fit=crop',
+            'Share Room': 'https://images.unsplash.com/photo-1571508601891-ca5e7a713859?w=600&h=400&fit=crop',
+            'Twin Room': 'https://images.unsplash.com/photo-1540518614846-7eded47432f5?w=600&h=400&fit=crop'
+        };
+        
+        if (roomType.length > 0) {
+            const rt = roomType[0];
+            if (!rt.image_url) {
+                rt.image_url = defaultImages[rt.name] || 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=600&h=400&fit=crop';
+            }
+        }
+        
+        rooms.forEach(room => {
+            if (!room.type_image_url) {
+                room.type_image_url = defaultImages[room.type_name] || 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=600&h=400&fit=crop';
+            }
+        });
         
         res.render('user/room-list', { 
             user: req.session.user, 
