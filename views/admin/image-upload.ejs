@@ -38,63 +38,49 @@
                     <h2 class="text-xl font-bold text-blue-800 mb-4">
                         <i class="fas fa-image mr-2"></i>Gambar Tipe Kamar
                     </h2>
-                    <form id="roomTypeForm" enctype="multipart/form-data">
+                    <form action="/admin/images/upload" method="POST">
                         <div class="mb-4">
                             <label class="block text-sm font-medium text-blue-700 mb-2">Tipe Kamar</label>
-                            <select name="room_type" required class="w-full px-3 py-2 border border-blue-300 rounded-lg">
+                            <select name="room_type_id" required class="w-full px-3 py-2 border border-blue-300 rounded-lg">
                                 <option value="">Pilih Tipe Kamar</option>
-                                <option value="Standard-room">Standard Room</option>
-                                <option value="Superior-room">Superior Room</option>
-                                <option value="Deluxe-room">Deluxe Room</option>
-                                <option value="Suite-room">Suite Room</option>
-                                <option value="Share-room">Share Room</option>
-                                <option value="Twin-room">Twin Room</option>
-                                <option value="Large-room">Large Room</option>
-                                <option value="President-room">President Room</option>
+                                <% roomTypes.forEach(roomType => { %>
+                                    <option value="<%= roomType.id %>"><%= roomType.name %></option>
+                                <% }); %>
                             </select>
                         </div>
                         <div class="mb-4">
-                            <label class="block text-sm font-medium text-blue-700 mb-2">Gambar Tipe Kamar</label>
-                            <input type="file" name="image" accept="image/*" required 
-                                   class="w-full px-3 py-2 border border-blue-300 rounded-lg">
-                            <input type="hidden" name="image_type" value="room_type">
+                            <label class="block text-sm font-medium text-blue-700 mb-2">URL Gambar</label>
+                            <input type="url" name="image_url" required 
+                                   class="w-full px-3 py-2 border border-blue-300 rounded-lg"
+                                   placeholder="https://example.com/image.jpg">
+                            <p class="text-xs text-blue-600 mt-1">Masukkan URL gambar dari internet (contoh: Unsplash, Imgur, dll)</p>
                         </div>
                         <button type="submit" class="glossy-blue text-white px-4 py-2 rounded-lg w-full">
-                            <i class="fas fa-upload mr-2"></i>Upload Gambar Tipe
+                            <i class="fas fa-upload mr-2"></i>Upload & Terapkan ke Semua Kamar
                         </button>
                     </form>
                 </div>
 
-                <!-- Upload Available Room Image -->
+                <!-- Info Panel -->
                 <div class="glossy-white rounded-xl p-6 border">
                     <h2 class="text-xl font-bold text-blue-800 mb-4">
-                        <i class="fas fa-door-open mr-2"></i>Gambar Kamar Tersedia
+                        <i class="fas fa-info-circle mr-2"></i>Cara Kerja
                     </h2>
-                    <form id="availableRoomForm" enctype="multipart/form-data">
-                        <div class="mb-4">
-                            <label class="block text-sm font-medium text-blue-700 mb-2">Tipe Kamar</label>
-                            <select name="room_type" required class="w-full px-3 py-2 border border-blue-300 rounded-lg">
-                                <option value="">Pilih Tipe Kamar</option>
-                                <option value="Standard-room">Standard Room</option>
-                                <option value="Superior-room">Superior Room</option>
-                                <option value="Deluxe-room">Deluxe Room</option>
-                                <option value="Suite-room">Suite Room</option>
-                                <option value="Share-room">Share Room</option>
-                                <option value="Twin-room">Twin Room</option>
-                                <option value="Large-room">Large Room</option>
-                                <option value="President-room">President Room</option>
-                            </select>
+                    <div class="space-y-3 text-sm text-blue-700">
+                        <p><strong>1.</strong> Pilih tipe kamar yang ingin diubah gambarnya</p>
+                        <p><strong>2.</strong> Masukkan URL gambar dari internet</p>
+                        <p><strong>3.</strong> Klik upload - gambar akan otomatis diterapkan ke:</p>
+                        <ul class="ml-4 space-y-1">
+                            <li>• Halaman tipe kamar</li>
+                            <li>• Semua kamar tersedia dari tipe ini</li>
+                            <li>• Home page</li>
+                            <li>• Guest dashboard</li>
+                        </ul>
+                        <div class="mt-4 p-3 bg-blue-50 rounded-lg">
+                            <p class="font-medium text-blue-800">Contoh URL gambar:</p>
+                            <p class="text-xs text-blue-600 break-all">https://images.unsplash.com/photo-1586023492125-27b2c045efd7</p>
                         </div>
-                        <div class="mb-4">
-                            <label class="block text-sm font-medium text-blue-700 mb-2">Gambar Kamar Tersedia</label>
-                            <input type="file" name="image" accept="image/*" required 
-                                   class="w-full px-3 py-2 border border-blue-300 rounded-lg">
-                            <input type="hidden" name="image_type" value="available_room">
-                        </div>
-                        <button type="submit" class="glossy-blue text-white px-4 py-2 rounded-lg w-full">
-                            <i class="fas fa-upload mr-2"></i>Upload Gambar Tersedia
-                        </button>
-                    </form>
+                    </div>
                 </div>
             </div>
 

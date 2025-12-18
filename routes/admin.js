@@ -383,10 +383,35 @@ router.post('/rooms/reset-all', async (req, res) => {
 // Image upload page
 router.get('/images', async (req, res) => {
     try {
-        res.render('admin/image-upload', { user: req.session.user });
+        const [roomTypes] = await db.execute('SELECT * FROM room_types ORDER BY name');
+        res.render('admin/image-upload', { user: req.session.user, roomTypes });
     } catch (error) {
         console.error(error);
         res.redirect('/admin/dashboard');
+    }
+});
+
+// Handle image upload
+router.post('/images/upload', async (req, res) => {
+    try {
+        const { room_type_id, image_url } = req.body;
+        
+        // Update room type image
+        await db.execute(
+            'UPDATE room_types SET image_url = ? WHERE id = ?',
+            [image_url, room_type_id]
+        );
+        
+        // Update all rooms of this type to use the same image
+        await db.execute(
+            'UPDATE rooms SET image_url = ? WHERE room_type_id = ?',
+            [image_url, room_type_id]
+        );
+        
+        res.redirect('/admin/images?success=Gambar berhasil diupload dan diterapkan ke semua kamar tipe ini');
+    } catch (error) {
+        console.error(error);
+        res.redirect('/admin/images?error=Gagal mengupload gambar');
     }
 });
 
