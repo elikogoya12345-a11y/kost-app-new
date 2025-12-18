@@ -90,6 +90,24 @@ router.get('/occupants', async (req, res) => {
     }
 });
 
+// Toggle user status
+router.post('/occupants/:id/toggle-status', async (req, res) => {
+    try {
+        const userId = req.params.id;
+        const { status } = req.body;
+        
+        await db.execute(
+            'UPDATE users SET status = ? WHERE id = ?',
+            [status, userId]
+        );
+        
+        res.redirect('/admin/occupants?success=Status penghuni berhasil diperbarui');
+    } catch (error) {
+        console.error(error);
+        res.redirect('/admin/occupants?error=Gagal memperbarui status penghuni');
+    }
+});
+
 // Manage Rooms
 router.get('/rooms', async (req, res) => {
     try {

@@ -342,4 +342,33 @@ router.post('/payment-extension', async (req, res) => {
     }
 });
 
+// Print booking receipt
+router.get('/bookings/:id/print', async (req, res) => {
+    try {
+        const bookingId = req.params.id;
+        const userId = req.session.user.id;
+        
+        const [booking] = await db.execute(`
+            SELECT b.*, r.room_number, rt.name as room_type, rt.base_price, u.name as user_name, u.email, u.phone
+            FROM bookings b
+            JOIN rooms r ON b.room_id = r.id
+            JOIN room_types rt ON r.room_type_id = rt.id
+            JOIN users u ON b.user_id = u.id
+            WHERE b.id = ? AND b.user_id = ?
+        `, [bookingId, userId]);
+        
+        if (booking.length === 0) {
+            return res.redirect('/user/bookings?error=Booking tidak ditemukan');
+        }
+        
+        res.render('user/booking-receipt', { 
+            user: req.session.user, 
+            booking: booking[0]
+        });
+    } catch (error) {
+        console.error(error);
+        res.redirect('/user/bookings?error=Gagal memuat bukti booking');
+    }
+});
+
 module.exports = router;
