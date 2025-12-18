@@ -214,7 +214,7 @@
                         <i class="fas fa-exclamation-triangle text-2xl mb-3 text-red-600"></i>
                         <span class="text-sm font-medium">Pengaduan</span>
                     </a>
-                    <a href="/admin/notifications" class="flex flex-col items-center p-4 glossy-gold text-white rounded-xl glossy-card col-span-2 relative">
+                    <a href="/admin/notifications" class="flex flex-col items-center p-4 glossy-gold text-white rounded-xl glossy-card relative">
                         <i class="fas fa-clock text-2xl mb-3"></i>
                         <span class="text-sm font-medium">Pengajuan Perpanjangan</span>
                         <% if (stats.paymentExtensions > 0) { %>
@@ -223,6 +223,10 @@
                             </span>
                         <% } %>
                     </a>
+                    <button onclick="fixImages()" class="flex flex-col items-center p-4 bg-green-600 text-white rounded-xl glossy-card">
+                        <i class="fas fa-images text-2xl mb-3"></i>
+                        <span class="text-sm font-medium">Fix Gambar Kamar</span>
+                    </button>
                 </div>
             </div>
 
@@ -256,5 +260,25 @@
             </div>
         </div>
     </div>
+
+    <script>
+        async function fixImages() {
+            if (confirm('Apakah Anda yakin ingin mengupdate semua gambar tipe kamar?')) {
+                try {
+                    const response = await fetch('/fix/fix-images-now');
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        alert('✅ BERHASIL! ' + result.message);
+                        window.location.reload();
+                    } else {
+                        alert('❌ Error: ' + result.message);
+                    }
+                } catch (error) {
+                    alert('❌ Error: ' + error.message);
+                }
+            }
+        }
+    </script>
 </body>
 </html>

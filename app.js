@@ -40,6 +40,7 @@ app.use('/admin', require('./routes/admin'));
 app.use('/user', require('./routes/user'));
 app.use('/guest', require('./routes/guest'));
 app.use('/upload', require('./routes/upload'));
+app.use('/fix', require('./routes/fix-images'));
 
 // Error handlers
 app.use((err, req, res, next) => {
