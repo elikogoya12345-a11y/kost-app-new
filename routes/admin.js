@@ -588,54 +588,7 @@ router.post('/rooms/reset-all', async (req, res) => {
     }
 });
 
-// Image upload page
-router.get('/images', async (req, res) => {
-    try {
-        const [roomTypes] = await db.execute('SELECT * FROM room_types WHERE name != "Twin Room" ORDER BY name');
-        res.render('admin/image-upload', { user: req.session.user, roomTypes });
-    } catch (error) {
-        console.error(error);
-        res.redirect('/admin/dashboard');
-    }
-});
 
-// Handle image upload from folder
-router.post('/images/upload', async (req, res) => {
-    try {
-        const { room_type_id, image_choice } = req.body;
-        
-        let imagePath;
-        
-        // Check if it's a placeholder image URL
-        if (image_choice.startsWith('https://')) {
-            imagePath = image_choice;
-        } else {
-            // Get room type name for local images
-            const [roomType] = await db.execute(
-                'SELECT name FROM room_types WHERE id = ?',
-                [room_type_id]
-            );
-            
-            if (roomType.length === 0) {
-                return res.redirect('/admin/images?error=Tipe kamar tidak ditemukan');
-            }
-            
-            const typeName = roomType[0].name.replace(/\s+/g, '-');
-            imagePath = `/images/${typeName}/${image_choice}`;
-        }
-        
-        // Update room type image
-        await db.execute(
-            'UPDATE room_types SET image_url = ? WHERE id = ?',
-            [imagePath, room_type_id]
-        );
-        
-        res.redirect('/admin/images?success=Gambar berhasil diterapkan ke tipe kamar ini');
-    } catch (error) {
-        console.error(error);
-        res.redirect('/admin/images?error=Gagal mengupload gambar');
-    }
-});
 
 // Reply to payment extension request
 router.post('/notifications/:id/reply', async (req, res) => {
@@ -675,31 +628,6 @@ router.post('/notifications/:id/reply', async (req, res) => {
     }
 });
 
-// Set default images for all room types
-router.post('/images/set-defaults', async (req, res) => {
-    try {
-        const defaultImages = {
-            'Standard Room': 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=600&h=400&fit=crop',
-            'Superior Room': 'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=600&h=400&fit=crop',
-            'Deluxe Room': 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&h=400&fit=crop',
-            'Suite Room': 'https://images.unsplash.com/photo-1571508601891-ca5e7a713859?w=600&h=400&fit=crop',
-            'Share Room': 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=600&h=400&fit=crop',
-            'Large Room': 'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=600&h=400&fit=crop',
-            'President Room': 'https://images.unsplash.com/photo-1578683010236-d716f9a3f461?w=600&h=400&fit=crop'
-        };
-        
-        for (const [roomTypeName, imageUrl] of Object.entries(defaultImages)) {
-            await db.execute(
-                'UPDATE room_types SET image_url = ? WHERE name = ?',
-                [imageUrl, roomTypeName]
-            );
-        }
-        
-        res.redirect('/admin/images?success=Gambar default berhasil diterapkan ke semua tipe kamar');
-    } catch (error) {
-        console.error(error);
-        res.redirect('/admin/images?error=Gagal menerapkan gambar default');
-    }
-});
+
 
 module.exports = router;
