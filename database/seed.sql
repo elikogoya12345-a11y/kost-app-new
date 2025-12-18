@@ -6,7 +6,9 @@ DELETE FROM payments;
 DELETE FROM occupants;
 DELETE FROM bookings;
 DELETE FROM rooms;
-DELETE FROM room_types WHERE name = 'Twin Room';
+DELETE FROM room_types;
+DELETE FROM users WHERE role = 'user';
+DELETE FROM notifications;
 
 -- Insert admin user (Password: admin123)
 INSERT INTO users (name, username, email, password, role) VALUES 
