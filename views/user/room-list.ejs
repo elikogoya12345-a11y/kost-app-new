@@ -86,39 +86,65 @@
         <% if (roomType) { %>
             <!-- Room Type Info -->
             <div class="glossy-white rounded-2xl p-8 mb-8 glossy-card">
-                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between">
-                    <div class="mb-4 lg:mb-0">
-                        <h1 class="text-3xl font-bold text-gold-dark mb-2"><%= roomType.name %></h1>
-                        <p class="text-gold mb-4"><%= roomType.description %></p>
-                        <div class="text-2xl font-bold text-amber-600">
-                            Rp <% 
-                                const price = parseInt(roomType.base_price);
-                                if (price >= 1000000) {
-                                    const millions = price / 1000000;
-                                    if (millions % 1 === 0) {
-                            %><%= millions %> Juta<% } else { %><%= millions.toFixed(1) %> Juta<% } 
-                                } else if (price >= 1000) {
-                                    const thousands = price / 1000;
-                            %><%= thousands %> Ribu<% } else { %><%= price %><% } %> <span class="text-sm text-blue-500">per bulan</span>
+                <div class="flex flex-col lg:flex-row gap-8">
+                    <!-- Room Type Image -->
+                    <div class="lg:w-1/3">
+                        <div class="h-48 lg:h-64 rounded-xl overflow-hidden">
+                            <% if (roomType.image_url) { %>
+                                <img src="<%= roomType.image_url %>" 
+                                     alt="<%= roomType.name %>" 
+                                     class="w-full h-full object-cover"
+                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+                            <% } else { %>
+                                <img src="/images/<%= roomType.name.replace(/\s+/g, '-') %>/<%= roomType.name.replace(/\s+/g, '-') %>.jpg" 
+                                     alt="<%= roomType.name %>" 
+                                     class="w-full h-full object-cover"
+                                     onerror="this.src='https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=600&h=400&fit=crop'; this.onerror=function(){this.style.display='none'; this.nextElementSibling.style.display='flex'}">
+                            <% } %>
+                            <div class="bg-gradient-to-br from-amber-400 to-amber-600 w-full h-full items-center justify-center" style="display: none;">
+                                <div class="text-center text-white">
+                                    <i class="fas fa-home text-4xl mb-3"></i>
+                                    <div class="font-bold text-xl"><%= roomType.name %></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     
-                    <!-- Facilities -->
-                    <div class="lg:w-1/3">
-                        <h3 class="font-semibold text-gold-dark mb-3">Fasilitas Lengkap:</h3>
-                        <div class="flex flex-wrap gap-2">
-                            <% if (roomType.facilities) { %>
-                                <% try { %>
-                                    <% const facilities = JSON.parse(roomType.facilities); %>
-                                    <% facilities.forEach(facility => { %>
-                                        <span class="glossy-white text-blue-600 text-sm px-3 py-1 rounded-full border border-blue-200">
-                                            <i class="fas fa-check mr-1"></i><%= facility %>
-                                        </span>
-                                    <% }); %>
-                                <% } catch(e) { %>
-                                    <span class="text-sm text-blue-500">Fasilitas lengkap tersedia</span>
+                    <!-- Room Type Details -->
+                    <div class="lg:w-2/3">
+                        <div class="mb-6">
+                            <h1 class="text-3xl font-bold text-gold-dark mb-2"><%= roomType.name %></h1>
+                            <p class="text-gold mb-4"><%= roomType.description %></p>
+                            <div class="text-2xl font-bold text-amber-600">
+                                Rp <% 
+                                    const price = parseInt(roomType.base_price);
+                                    if (price >= 1000000) {
+                                        const millions = price / 1000000;
+                                        if (millions % 1 === 0) {
+                                %><%= millions %> Juta<% } else { %><%= millions.toFixed(1) %> Juta<% } 
+                                    } else if (price >= 1000) {
+                                        const thousands = price / 1000;
+                                %><%= thousands %> Ribu<% } else { %><%= price %><% } %> <span class="text-sm text-blue-500">per bulan</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Facilities -->
+                        <div>
+                            <h3 class="font-semibold text-gold-dark mb-3">Fasilitas Lengkap:</h3>
+                            <div class="flex flex-wrap gap-2">
+                                <% if (roomType.facilities) { %>
+                                    <% try { %>
+                                        <% const facilities = JSON.parse(roomType.facilities); %>
+                                        <% facilities.forEach(facility => { %>
+                                            <span class="glossy-white text-blue-600 text-sm px-3 py-1 rounded-full border border-blue-200">
+                                                <i class="fas fa-check mr-1"></i><%= facility %>
+                                            </span>
+                                        <% }); %>
+                                    <% } catch(e) { %>
+                                        <span class="text-sm text-blue-500">Fasilitas lengkap tersedia</span>
+                                    <% } %>
                                 <% } %>
-                            <% } %>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -137,8 +163,8 @@
                 <% rooms.forEach(room => { %>
                     <div class="glossy-white rounded-2xl overflow-hidden glossy-card">
                         <div class="h-32 relative overflow-hidden">
-                            <% if (room.image_url && room.image_url !== '/images/' + room.type_name.replace(/\s+/g, '-') + '/' + room.type_name.replace(/\s+/g, '-') + '.jpg') { %>
-                                <img src="<%= room.image_url %>" 
+                            <% if (room.type_image_url) { %>
+                                <img src="<%= room.type_image_url %>" 
                                      alt="Kamar <%= room.room_number %>" 
                                      class="w-full h-full object-cover"
                                      onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
