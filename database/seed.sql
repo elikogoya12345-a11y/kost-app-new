@@ -58,6 +58,5 @@ UPDATE room_types SET base_price = 1200000 WHERE name = 'Superior Room';
 UPDATE room_types SET base_price = 1500000 WHERE name = 'Deluxe Room';
 UPDATE room_types SET base_price = 1800000 WHERE name = 'Suite Room';
 UPDATE room_types SET base_price = 800000 WHERE name = 'Share Room';
-
 UPDATE room_types SET base_price = 2000000 WHERE name = 'Large Room';
 UPDATE room_types SET base_price = 2500000 WHERE name = 'President Room';

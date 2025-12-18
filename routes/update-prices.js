@@ -8,7 +8,6 @@ router.get('/update-prices', async (req, res) => {
         await db.execute("UPDATE room_types SET base_price = 800000 WHERE name = 'Share Room'");
         await db.execute("UPDATE room_types SET base_price = 1000000 WHERE name = 'Standard Room'");
         await db.execute("UPDATE room_types SET base_price = 1200000 WHERE name = 'Superior Room'");
-        await db.execute("UPDATE room_types SET base_price = 1300000 WHERE name = 'Twin Room'");
         await db.execute("UPDATE room_types SET base_price = 1500000 WHERE name = 'Deluxe Room'");
         await db.execute("UPDATE room_types SET base_price = 1800000 WHERE name = 'Suite Room'");
         await db.execute("UPDATE room_types SET base_price = 2000000 WHERE name = 'Large Room'");
