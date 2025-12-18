@@ -147,12 +147,12 @@
                 <div class="flex items-center justify-center mb-4">
                     <span class="badge-gold mr-3">🏠 KAMAR TERSEDIA</span>
                 </div>
-                <h2 class="text-3xl font-bold text-gray-800 mb-4">Tipe Kamar Tersedia</h2>
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">7 Tipe Kamar Tersedia</h2>
                 <p class="text-gray-600">Pilih kamar yang sesuai dengan kebutuhan Anda</p>
             </div>
             
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <% roomTypes.forEach((room, index) => { %>
+                <% roomTypes.slice(0, 3).forEach((room, index) => { %>
                     <div class="glossy-white rounded-2xl overflow-hidden glossy-card">
                         <div class="h-56 relative overflow-hidden">
                             <% 
@@ -216,6 +216,14 @@
                     </div>
                 <% }); %>
             </div>
+            
+            <% if (roomTypes.length > 3) { %>
+                <div class="text-center mt-12">
+                    <button onclick="showRegisterModal()" class="glossy-gold text-white px-8 py-4 rounded-xl font-semibold glossy-card">
+                        <i class="fas fa-eye mr-2"></i>Lihat <%= roomTypes.length - 3 %> Kamar Lainnya
+                    </button>
+                </div>
+            <% } %>
         </div>
 
         <!-- Facilities -->

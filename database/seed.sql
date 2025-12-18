@@ -35,7 +35,6 @@ INSERT INTO rooms (room_type_id, room_number, status) VALUES
 (5, 'SHR-006', 'available'), (5, 'SHR-007', 'available'), (5, 'SHR-008', 'available'), (5, 'SHR-009', 'available'), (5, 'SHR-010', 'available'),
 (5, 'SHR-011', 'available'), (5, 'SHR-012', 'available'), (5, 'SHR-013', 'available'), (5, 'SHR-014', 'available'), (5, 'SHR-015', 'available'),
 (5, 'SHR-016', 'available'), (5, 'SHR-017', 'available'), (5, 'SHR-018', 'available'), (5, 'SHR-019', 'available'), (5, 'SHR-020', 'available'),
-
 -- Large Room (8 rooms)
 (7, 'LRG-001', 'available'), (7, 'LRG-002', 'available'), (7, 'LRG-003', 'available'), (7, 'LRG-004', 'available'),
 (7, 'LRG-005', 'available'), (7, 'LRG-006', 'available'), (7, 'LRG-007', 'available'), (7, 'LRG-008', 'available'),
