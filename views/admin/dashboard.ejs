@@ -224,8 +224,8 @@
                         <% } %>
                     </a>
                     <button onclick="fixImages()" class="flex flex-col items-center p-4 bg-green-600 text-white rounded-xl glossy-card">
-                        <i class="fas fa-images text-2xl mb-3"></i>
-                        <span class="text-sm font-medium">Fix Gambar Kamar</span>
+                        <i class="fas fa-magic text-2xl mb-3"></i>
+                        <span class="text-sm font-medium">Fix Gambar & Kamar</span>
                     </button>
                 </div>
             </div>
@@ -263,7 +263,7 @@
 
     <script>
         async function fixImages() {
-            if (confirm('Apakah Anda yakin ingin mengupdate semua gambar tipe kamar?')) {
+            if (confirm('Apakah Anda yakin ingin:\n1. Update semua gambar tipe kamar\n2. Buat kamar yang hilang untuk semua tipe?')) {
                 try {
                     const response = await fetch('/fix/fix-images-now');
                     const result = await response.json();

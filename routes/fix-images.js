@@ -2,10 +2,10 @@ const express = require('express');
 const router = express.Router();
 const db = require('../models/db');
 
-// Route untuk fix gambar langsung ke database
+// Route untuk fix gambar dan create missing rooms
 router.get('/fix-images-now', async (req, res) => {
     try {
-        // Update semua tipe kamar dengan gambar yang pasti ada
+        // 1. Update semua tipe kamar dengan gambar yang pasti ada
         const imageUpdates = [
             ['Standard Room', 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=600&h=400&fit=crop'],
             ['Superior Room', 'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=600&h=400&fit=crop'],
@@ -26,10 +26,46 @@ router.get('/fix-images-now', async (req, res) => {
             if (result[0].affectedRows > 0) updated++;
         }
 
+        // 2. Create missing rooms for each room type
+        const roomsToCreate = [
+            {name: 'Standard Room', prefix: 'STD', count: 10},
+            {name: 'Superior Room', prefix: 'SUP', count: 12},
+            {name: 'Deluxe Room', prefix: 'DLX', count: 15},
+            {name: 'Suite Room', prefix: 'STE', count: 8},
+            {name: 'Share Room', prefix: 'SHR', count: 20},
+            {name: 'Twin Room', prefix: 'TWN', count: 10},
+            {name: 'Large Room', prefix: 'LRG', count: 8},
+            {name: 'President Room', prefix: 'PRE', count: 5}
+        ];
+
+        let roomsCreated = 0;
+        for (const roomType of roomsToCreate) {
+            // Get room type ID
+            const [typeResult] = await db.execute('SELECT id FROM room_types WHERE name = ?', [roomType.name]);
+            if (typeResult.length === 0) continue;
+            
+            const typeId = typeResult[0].id;
+            
+            // Check existing rooms count
+            const [existingRooms] = await db.execute('SELECT COUNT(*) as count FROM rooms WHERE room_type_id = ?', [typeId]);
+            const existingCount = existingRooms[0].count;
+            
+            // Create missing rooms
+            for (let i = existingCount + 1; i <= roomType.count; i++) {
+                const roomNumber = `${roomType.prefix}-${i.toString().padStart(3, '0')}`;
+                await db.execute(
+                    'INSERT INTO rooms (room_type_id, room_number, status, floor) VALUES (?, ?, ?, ?)',
+                    [typeId, roomNumber, 'available', Math.ceil(i / 10)]
+                );
+                roomsCreated++;
+            }
+        }
+
         res.json({
             success: true,
-            message: `✅ BERHASIL! ${updated} tipe kamar berhasil diupdate dengan gambar`,
-            updated: updated,
+            message: `✅ BERHASIL! ${updated} gambar diupdate, ${roomsCreated} kamar baru dibuat`,
+            imagesUpdated: updated,
+            roomsCreated: roomsCreated,
             total: imageUpdates.length
         });
 
