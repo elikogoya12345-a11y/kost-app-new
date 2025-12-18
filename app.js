@@ -19,7 +19,7 @@ app.get('/favicon.ico', (req, res) => {
 
 // CSP Headers
 app.use((req, res, next) => {
-    res.setHeader('Content-Security-Policy', "default-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com; img-src 'self' data:; font-src 'self' https://cdnjs.cloudflare.com;");
+    res.setHeader('Content-Security-Policy', "default-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com; img-src 'self' data: https://images.unsplash.com https://*.unsplash.com; font-src 'self' https://cdnjs.cloudflare.com;");
     next();
 });
 app.use(session({
