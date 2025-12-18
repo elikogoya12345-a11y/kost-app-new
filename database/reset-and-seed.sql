@@ -1,4 +1,4 @@
--- Seed data for Kost Professional
+-- Reset and seed database with 35 rooms
 USE kost_professional;
 
 -- Clear existing data
@@ -7,11 +7,6 @@ DELETE FROM occupants;
 DELETE FROM bookings;
 DELETE FROM rooms;
 DELETE FROM room_types WHERE name = 'Twin Room';
-
--- Insert admin user (Password: admin123)
-INSERT INTO users (name, username, email, password, role) VALUES 
-('Administrator', 'admin', 'admin@kostapp.com', '$2a$10$AdFI1Gt4ru.Nj8w.6srR/eW0LTQm54TRAwbnFYN2H3MEhBrJKKxra', 'admin')
-ON DUPLICATE KEY UPDATE password = VALUES(password);
 
 -- Insert room types
 INSERT INTO room_types (name, base_price, description, facilities, image_url) VALUES
@@ -28,7 +23,7 @@ description = VALUES(description),
 facilities = VALUES(facilities),
 image_url = VALUES(image_url);
 
--- Insert all rooms as available (35 rooms total, 5 per type)
+-- Insert 35 rooms (5 per type)
 INSERT INTO rooms (room_type_id, room_number, status, floor) VALUES
 -- Standard Room (5 rooms)
 (1, 'STD-001', 'available', 1), (1, 'STD-002', 'available', 1), (1, 'STD-003', 'available', 1), (1, 'STD-004', 'available', 1), (1, 'STD-005', 'available', 1),
@@ -44,18 +39,6 @@ INSERT INTO rooms (room_type_id, room_number, status, floor) VALUES
 (6, 'LRG-001', 'available', 5), (6, 'LRG-002', 'available', 5), (6, 'LRG-003', 'available', 5), (6, 'LRG-004', 'available', 5), (6, 'LRG-005', 'available', 5),
 -- President Room (5 rooms)
 (7, 'PRE-001', 'available', 6), (7, 'PRE-002', 'available', 6), (7, 'PRE-003', 'available', 6), (7, 'PRE-004', 'available', 6), (7, 'PRE-005', 'available', 6);
-
--- Insert sample users (Password: user123)
-INSERT INTO users (name, username, email, password, phone, role) VALUES
-('John Doe', 'johndoe', 'john@example.com', '$2a$10$AdFI1Gt4ru.Nj8w.6srR/eW0LTQm54TRAwbnFYN2H3MEhBrJKKxra', '081234567890', 'user'),
-('Jane Smith', 'janesmith', 'jane@example.com', '$2a$10$AdFI1Gt4ru.Nj8w.6srR/eW0LTQm54TRAwbnFYN2H3MEhBrJKKxra', '081234567891', 'user'),
-('Bob Wilson', 'bobwilson', 'bob@example.com', '$2a$10$AdFI1Gt4ru.Nj8w.6srR/eW0LTQm54TRAwbnFYN2H3MEhBrJKKxra', '081234567892', 'user')
-ON DUPLICATE KEY UPDATE password = VALUES(password);
-
--- Insert sample notifications
-INSERT INTO notifications (user_id, title, message, type, is_read) VALUES
-(NULL, 'Selamat Datang', 'Selamat datang di Kost Professional! Sistem siap digunakan.', 'general', false),
-(NULL, 'Info Pembayaran', 'Pembayaran dapat dilakukan setiap tanggal 1-10 setiap bulannya.', 'payment', false);
 
 -- Verify results
 SELECT 'Room Types Count:' as info, COUNT(*) as count FROM room_types;
