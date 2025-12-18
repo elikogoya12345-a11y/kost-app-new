@@ -136,7 +136,7 @@
                                 <% if (booking.status === 'confirmed') { %>
                                     <form action="/user/bookings/<%= booking.id %>/activate" method="POST" style="display: inline;">
                                         <button type="submit" class="glossy-gold text-white px-4 py-2 rounded-xl glossy-card">
-                                            <i class="fas fa-credit-card mr-2"></i>Aktifkan Pembayaran
+                                            <i class="fas fa-money-check-alt mr-2"></i>Ajukan Pembayaran
                                         </button>
                                     </form>
                                     <button onclick="printBooking('<%= booking.id %>')" 
