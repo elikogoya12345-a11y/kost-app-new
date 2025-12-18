@@ -12,7 +12,6 @@ INSERT INTO room_types (name, base_price, description, facilities, image_url) VA
 ('Deluxe Room', 1500000, 'Kamar deluxe dengan fasilitas premium', '["AC", "WiFi", "Kasur King", "Lemari", "Meja Kerja", "TV"]', '/images/Deluxe-room/Deluxe-room.jpg'),
 ('Suite Room', 1800000, 'Kamar suite dengan fasilitas mewah', '["AC", "WiFi", "Kasur King", "Lemari", "Meja Kerja", "TV", "Kulkas Mini"]', '/images/Suite-room/Suite-room.jpg'),
 ('Share Room', 800000, 'Kamar berbagi dengan 2 kasur', '["AC", "WiFi", "2 Kasur Single", "Lemari Bersama"]', '/images/Share-room/Share-room.jpg'),
-('Twin Room', 1300000, 'Kamar twin dengan 2 kasur terpisah', '["AC", "WiFi", "2 Kasur Single", "2 Lemari", "Meja Kerja"]', '/images/Twin-room/Twin-room.jpg'),
 ('Large Room', 2000000, 'Kamar besar dengan ruang luas', '["AC", "WiFi", "Kasur King", "Lemari Besar", "Meja Kerja", "TV", "Sofa"]', '/images/Large-room/Large-room.jpg'),
 ('President Room', 2500000, 'Kamar presiden dengan fasilitas terlengkap', '["AC", "WiFi", "Kasur King", "Walk-in Closet", "Meja Kerja", "TV 55 inch", "Kulkas", "Sofa", "Balkon"]', '/images/President-room/President-room.jpg');
 
@@ -36,9 +35,7 @@ INSERT INTO rooms (room_type_id, room_number, status) VALUES
 (5, 'SHR-006', 'available'), (5, 'SHR-007', 'available'), (5, 'SHR-008', 'available'), (5, 'SHR-009', 'available'), (5, 'SHR-010', 'available'),
 (5, 'SHR-011', 'available'), (5, 'SHR-012', 'available'), (5, 'SHR-013', 'available'), (5, 'SHR-014', 'available'), (5, 'SHR-015', 'available'),
 (5, 'SHR-016', 'available'), (5, 'SHR-017', 'available'), (5, 'SHR-018', 'available'), (5, 'SHR-019', 'available'), (5, 'SHR-020', 'available'),
--- Twin Room (10 rooms)
-(6, 'TWN-001', 'available'), (6, 'TWN-002', 'available'), (6, 'TWN-003', 'available'), (6, 'TWN-004', 'available'), (6, 'TWN-005', 'available'),
-(6, 'TWN-006', 'available'), (6, 'TWN-007', 'available'), (6, 'TWN-008', 'available'), (6, 'TWN-009', 'available'), (6, 'TWN-010', 'available'),
+
 -- Large Room (8 rooms)
 (7, 'LRG-001', 'available'), (7, 'LRG-002', 'available'), (7, 'LRG-003', 'available'), (7, 'LRG-004', 'available'),
 (7, 'LRG-005', 'available'), (7, 'LRG-006', 'available'), (7, 'LRG-007', 'available'), (7, 'LRG-008', 'available'),
@@ -62,6 +59,6 @@ UPDATE room_types SET base_price = 1200000 WHERE name = 'Superior Room';
 UPDATE room_types SET base_price = 1500000 WHERE name = 'Deluxe Room';
 UPDATE room_types SET base_price = 1800000 WHERE name = 'Suite Room';
 UPDATE room_types SET base_price = 800000 WHERE name = 'Share Room';
-UPDATE room_types SET base_price = 1300000 WHERE name = 'Twin Room';
+
 UPDATE room_types SET base_price = 2000000 WHERE name = 'Large Room';
 UPDATE room_types SET base_price = 2500000 WHERE name = 'President Room';

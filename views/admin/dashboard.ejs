@@ -223,14 +223,8 @@
                             </span>
                         <% } %>
                     </a>
-                    <button onclick="fixImages()" class="flex flex-col items-center p-4 bg-green-600 text-white rounded-xl glossy-card">
-                        <i class="fas fa-magic text-2xl mb-3"></i>
-                        <span class="text-sm font-medium">Fix Gambar & Kamar</span>
-                    </button>
-                    <button onclick="fixTwinRoom()" class="flex flex-col items-center p-4 bg-purple-600 text-white rounded-xl glossy-card">
-                        <i class="fas fa-bed text-2xl mb-3"></i>
-                        <span class="text-sm font-medium">Fix Twin Room</span>
-                    </button>
+
+
                 </div>
             </div>
 
@@ -266,43 +260,7 @@
     </div>
 
     <script>
-        async function fixImages() {
-            if (confirm('Apakah Anda yakin ingin:\n1. Update semua gambar tipe kamar\n2. Buat kamar yang hilang untuk semua tipe?')) {
-                try {
-                    const response = await fetch('/fix/fix-images-now');
-                    const result = await response.json();
-                    
-                    if (result.success) {
-                        alert('✅ BERHASIL! ' + result.message);
-                        window.location.reload();
-                    } else {
-                        alert('❌ Error: ' + result.message);
-                    }
-                } catch (error) {
-                    alert('❌ Error: ' + error.message);
-                }
-            }
-        }
-        
-        async function fixTwinRoom() {
-            if (confirm('Fix Twin Room khusus?\nIni akan hapus dan buat ulang 10 Twin Room.')) {
-                try {
-                    const response = await fetch('/fix/force-create-twin-room');
-                    const result = await response.json();
-                    
-                    if (result.success) {
-                        alert('✅ BERHASIL! ' + (result.message || 'Twin Room berhasil dibuat'));
-                        window.location.reload();
-                    } else {
-                        alert('❌ Error: ' + (result.message || result.error || 'Gagal membuat Twin Room'));
-                        console.log('Full result:', result);
-                    }
-                } catch (error) {
-                    alert('❌ Error: ' + (error.message || 'Network error'));
-                    console.log('Error:', error);
-                }
-            }
-        }
+
     </script>
 </body>
 </html>
