@@ -52,6 +52,13 @@ INSERT INTO notifications (user_id, title, message, type, is_read) VALUES
 (NULL, 'Selamat Datang', 'Selamat datang di Kost Professional! Sistem siap digunakan.', 'general', false),
 (NULL, 'Info Pembayaran', 'Pembayaran dapat dilakukan setiap tanggal 1-10 setiap bulannya.', 'payment', false);
 
+-- Clean up twin-room data from database
+DELETE FROM rooms WHERE room_type_id IN (SELECT id FROM room_types WHERE name = 'Twin Room');
+DELETE FROM room_types WHERE name = 'Twin Room';
+DELETE FROM bookings WHERE room_type_id NOT IN (SELECT id FROM room_types);
+DELETE FROM occupants WHERE room_id NOT IN (SELECT id FROM rooms);
+DELETE FROM payments WHERE occupant_id NOT IN (SELECT id FROM occupants);
+
 -- Update harga kamar untuk database yang sudah ada
 UPDATE room_types SET base_price = 100000 WHERE name = 'Standard Room';
 UPDATE room_types SET base_price = 1200000 WHERE name = 'Superior Room';
@@ -60,3 +67,21 @@ UPDATE room_types SET base_price = 1800000 WHERE name = 'Suite Room';
 UPDATE room_types SET base_price = 800000 WHERE name = 'Share Room';
 UPDATE room_types SET base_price = 2000000 WHERE name = 'Large Room';
 UPDATE room_types SET base_price = 2500000 WHERE name = 'President Room';
+
+-- Clean up twin-room data from database
+USE kost_professional;
+
+-- Delete all rooms with twin-room type
+DELETE FROM rooms WHERE room_type_id IN (SELECT id FROM room_types WHERE name = 'Twin Room');
+
+-- Delete twin-room type
+DELETE FROM room_types WHERE name = 'Twin Room';
+
+-- Clean up orphaned data
+DELETE FROM bookings WHERE room_type_id NOT IN (SELECT id FROM room_types);
+DELETE FROM occupants WHERE room_id NOT IN (SELECT id FROM rooms);
+DELETE FROM payments WHERE occupant_id NOT IN (SELECT id FROM occupants);
+
+-- Verify cleanup
+SELECT 'Room Types:' as info, name FROM room_types;
+SELECT 'Total Rooms:' as info, COUNT(*) as count FROM rooms;
