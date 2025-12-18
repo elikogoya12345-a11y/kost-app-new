@@ -74,7 +74,7 @@ router.get('/rooms', async (req, res) => {
 router.get('/rooms/:typeId', async (req, res) => {
     try {
         const [rooms] = await db.execute(`
-            SELECT r.*, rt.name as type_name, rt.base_price, rt.facilities
+            SELECT r.*, rt.name as type_name, rt.base_price, rt.facilities, rt.image_url as type_image_url
             FROM rooms r
             JOIN room_types rt ON r.room_type_id = rt.id
             WHERE rt.id = ?
