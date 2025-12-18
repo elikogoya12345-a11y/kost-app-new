@@ -291,13 +291,15 @@
                     const result = await response.json();
                     
                     if (result.success) {
-                        alert('✅ BERHASIL! ' + result.message);
+                        alert('✅ BERHASIL! ' + (result.message || 'Twin Room berhasil dibuat'));
                         window.location.reload();
                     } else {
-                        alert('❌ Error: ' + result.message);
+                        alert('❌ Error: ' + (result.message || result.error || 'Gagal membuat Twin Room'));
+                        console.log('Full result:', result);
                     }
                 } catch (error) {
-                    alert('❌ Error: ' + error.message);
+                    alert('❌ Error: ' + (error.message || 'Network error'));
+                    console.log('Error:', error);
                 }
             }
         }

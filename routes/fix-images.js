@@ -108,10 +108,13 @@ router.get('/debug-twin-room', async (req, res) => {
 router.get('/force-create-twin-room', async (req, res) => {
     try {
         // Get Twin Room type ID
-        const [typeResult] = await db.execute('SELECT id FROM room_types WHERE name = "Twin Room"');
+        const [typeResult] = await db.execute("SELECT id FROM room_types WHERE name = 'Twin Room'");
         
         if (typeResult.length === 0) {
-            return res.json({ success: false, message: 'Twin Room type tidak ditemukan' });
+            return res.json({ 
+                success: false, 
+                message: 'Twin Room type tidak ditemukan di database'
+            });
         }
         
         const typeId = typeResult[0].id;
@@ -122,22 +125,33 @@ router.get('/force-create-twin-room', async (req, res) => {
         // Create 10 Twin Room rooms
         let created = 0;
         for (let i = 1; i <= 10; i++) {
-            const roomNumber = `TWN-${i.toString().padStart(3, '0')}`;
+            const roomNumber = `TWN-${String(i).padStart(3, '0')}`;
+            const floor = Math.ceil(i / 10);
+            
             await db.execute(
                 'INSERT INTO rooms (room_type_id, room_number, status, floor) VALUES (?, ?, ?, ?)',
-                [typeId, roomNumber, 'available', Math.ceil(i / 10)]
+                [typeId, roomNumber, 'available', floor]
             );
             created++;
         }
         
+        // Verify creation
+        const [verifyResult] = await db.execute('SELECT COUNT(*) as count FROM rooms WHERE room_type_id = ?', [typeId]);
+        
         res.json({
             success: true,
-            message: `✅ BERHASIL! ${created} Twin Room berhasil dibuat`,
-            created: created
+            message: `Twin Room berhasil dibuat: ${created} kamar`,
+            created: created,
+            verified: verifyResult[0].count
         });
         
     } catch (error) {
-        res.json({ success: false, error: error.message });
+        console.error('Twin Room Error:', error);
+        res.json({ 
+            success: false, 
+            message: 'Database error: ' + error.message,
+            error: error.message 
+        });
     }
 });
 
