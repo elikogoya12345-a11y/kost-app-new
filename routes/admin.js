@@ -5,6 +5,25 @@ const { requireAdmin } = require('../middleware/auth');
 
 router.use(requireAdmin);
 
+// Debug route to check database
+router.get('/debug-db', async (req, res) => {
+    try {
+        const [rooms] = await db.execute('SELECT * FROM rooms LIMIT 10');
+        const [roomTypes] = await db.execute('SELECT * FROM room_types LIMIT 10');
+        const [tables] = await db.execute('SHOW TABLES');
+        
+        res.json({
+            tables: tables.map(t => Object.values(t)[0]),
+            rooms: rooms,
+            roomTypes: roomTypes,
+            roomsCount: rooms.length,
+            roomTypesCount: roomTypes.length
+        });
+    } catch (error) {
+        res.json({ error: error.message, stack: error.stack });
+    }
+});
+
 // Dashboard
 router.get('/dashboard', async (req, res) => {
     try {
@@ -111,22 +130,61 @@ router.post('/occupants/:id/toggle-status', async (req, res) => {
 // Manage Rooms
 router.get('/rooms', async (req, res) => {
     try {
+        console.log('=== FETCHING ROOMS DATA ===');
+        
+        // Test database connection first
+        const [testQuery] = await db.execute('SELECT 1 as test');
+        console.log('Database connection OK:', testQuery[0].test === 1);
+        
+        // Get room types first
+        const [roomTypes] = await db.execute('SELECT * FROM room_types ORDER BY name');
+        console.log('Room types found:', roomTypes.length);
+        if (roomTypes.length > 0) {
+            console.log('Room types:', roomTypes.map(rt => rt.name));
+        }
+        
+        // Get all rooms without any filter
         const [rooms] = await db.execute(`
-            SELECT r.*, rt.name as type_name, rt.base_price
+            SELECT r.id, r.room_number, r.status, r.floor, r.description, r.room_type_id,
+                   rt.name as type_name, rt.base_price
             FROM rooms r
-            JOIN room_types rt ON r.room_type_id = rt.id
-            WHERE rt.name != 'Twin Room'
-            ORDER BY r.room_number
+            LEFT JOIN room_types rt ON r.room_type_id = rt.id
+            ORDER BY r.room_number ASC
         `);
         
-        const [roomTypes] = await db.execute('SELECT * FROM room_types WHERE name != "Twin Room" ORDER BY name');
+        console.log('Total rooms found:', rooms.length);
+        if (rooms.length > 0) {
+            console.log('Sample rooms:', rooms.slice(0, 3).map(r => ({ 
+                id: r.id, 
+                number: r.room_number, 
+                type: r.type_name, 
+                status: r.status 
+            })));
+        }
         
         const success = req.query.success;
         const error = req.query.error;
-        res.render('admin/rooms', { user: req.session.user, rooms, roomTypes, success, error });
+        
+        console.log('=== RENDERING ROOMS PAGE ===');
+        res.render('admin/rooms', { 
+            user: req.session.user, 
+            rooms, 
+            roomTypes, 
+            success, 
+            error 
+        });
     } catch (error) {
-        console.error(error);
-        res.render('admin/rooms', { user: req.session.user, rooms: [], roomTypes: [], success: null });
+        console.error('=== ERROR IN /admin/rooms ===');
+        console.error('Error details:', error);
+        console.error('Stack trace:', error.stack);
+        
+        res.render('admin/rooms', { 
+            user: req.session.user, 
+            rooms: [], 
+            roomTypes: [], 
+            success: null, 
+            error: 'Gagal memuat data kamar: ' + error.message 
+        });
     }
 });
 
