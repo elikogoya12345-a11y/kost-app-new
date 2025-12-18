@@ -146,8 +146,7 @@
                                 <img src="/images/<%= room.type_name.replace(/\s+/g, '-') %>/<%= room.type_name.replace(/\s+/g, '-') %>.jpg" 
                                      alt="Kamar <%= room.room_number %>" 
                                      class="w-full h-full object-cover"
-                                     onload="console.log('Image loaded:', this.src)"
-                                     onerror="console.log('Image failed:', this.src); this.style.display='none'; this.nextElementSibling.style.display='flex'">
+                                     onerror="this.src='https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=400&h=300&fit=crop'; this.onerror=function(){this.style.display='none'; this.nextElementSibling.style.display='flex'}">
                             <% } %>
                             <div class="absolute inset-0 bg-gradient-to-br from-amber-400 to-amber-600 items-center justify-center" style="display: none;">
                                 <div class="text-center text-white">
