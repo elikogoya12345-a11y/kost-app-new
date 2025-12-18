@@ -13,7 +13,6 @@ router.get('/dashboard', async (req, res) => {
             ORDER BY rt.base_price
         `);
         
-        // Add default images for each room type
         const defaultImages = {
             'Standard Room': 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=600&h=400&fit=crop',
             'Superior Room': 'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=600&h=400&fit=crop',

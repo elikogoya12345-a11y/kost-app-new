@@ -16,12 +16,6 @@
             box-shadow: 0 12px 40px rgba(251, 191, 36, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3);
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
-        .glossy-gold-light {
-            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 50%, #fbbf24 100%);
-            backdrop-filter: blur(10px);
-            box-shadow: 0 8px 25px rgba(251, 191, 36, 0.2);
-            border: 1px solid rgba(251, 191, 36, 0.3);
-        }
         .glossy-white {
             background: linear-gradient(135deg, #ffffff 0%, #fefefe 50%, #f9fafb 100%);
             backdrop-filter: blur(10px);
@@ -45,18 +39,6 @@
         }
         .text-gold-dark {
             color: #78350f;
-        }
-        .room-type-1 {
-            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 50%, #fbbf24 100%);
-        }
-        .room-type-2 {
-            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 50%, #10b981 100%);
-        }
-        .room-type-3 {
-            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 50%, #3b82f6 100%);
-        }
-        .room-type-4 {
-            background: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 50%, #ec4899 100%);
         }
     </style>
     <%- include('../partials/user-nav') %>
@@ -82,7 +64,6 @@
                                     case 'Deluxe Room': roomImageUrl = 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&h=400&fit=crop'; break;
                                     case 'Suite Room': roomImageUrl = 'https://images.unsplash.com/photo-1571508601891-ca5e7a713859?w=600&h=400&fit=crop'; break;
                                     case 'Share Room': roomImageUrl = 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=600&h=400&fit=crop'; break;
-
                                     case 'Large Room': roomImageUrl = 'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=600&h=400&fit=crop'; break;
                                     case 'President Room': roomImageUrl = 'https://images.unsplash.com/photo-1578683010236-d716f9a3f461?w=600&h=400&fit=crop'; break;
                                     default: roomImageUrl = 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=600&h=400&fit=crop';
@@ -91,12 +72,6 @@
                             <img src="<%= roomType.image_url || roomImageUrl %>" 
                                  alt="<%= roomType.name %>" 
                                  class="w-full h-full object-cover">
-                            <div class="absolute inset-0 bg-gradient-to-br from-amber-400 to-amber-600 items-center justify-center" style="display: none;">
-                                <div class="text-center text-white">
-                                    <i class="fas fa-bed text-4xl mb-3"></i>
-                                    <p class="font-bold text-xl"><%= roomType.name %></p>
-                                </div>
-                            </div>
                             <div class="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center">
                                 <div class="text-center text-white">
                                     <i class="fas fa-bed text-3xl mb-2"></i>
@@ -108,7 +83,6 @@
                             <h3 class="text-xl font-bold text-gold-dark mb-2"><%= roomType.name %></h3>
                             <p class="text-gold mb-4"><%= roomType.description %></p>
                             
-                            <!-- Facilities -->
                             <div class="mb-4">
                                 <h4 class="font-semibold text-gold-dark mb-2">Fasilitas:</h4>
                                 <div class="flex flex-wrap gap-1">
@@ -141,17 +115,6 @@
                                     %><%= thousands %> Ribu<% } else { %><%= price %><% } %>
                                 </span>
                                 <span class="text-sm text-blue-500">per bulan</span>
-                            </div>
-                            
-                            <div class="flex justify-between items-center mb-4">
-                                <div class="text-sm text-blue-600">
-                                    <span class="font-medium"><%= roomType.available_rooms || 0 %></span> tersedia dari 
-                                    <span class="font-medium"><%= roomType.total_rooms || 0 %></span> kamar
-                                </div>
-                                <div class="w-16 bg-blue-200 rounded-full h-2">
-                                    <% const percentage = roomType.total_rooms > 0 ? (roomType.available_rooms / roomType.total_rooms) * 100 : 0; %>
-                                    <div class="bg-blue-500 h-2 rounded-full" style="width: <%= percentage %>%"></div>
-                                </div>
                             </div>
                             
                             <div class="flex space-x-2">

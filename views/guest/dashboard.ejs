@@ -10,7 +10,6 @@
     <style>
         body { font-family: 'Inter', sans-serif; }
         
-        /* GUEST COLOR SCHEME */
         .glossy-white {
             background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
             backdrop-filter: blur(15px);
@@ -165,17 +164,12 @@
                                     case 'Share Room': guestImageUrl = 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=600&h=400&fit=crop'; break;
                                     case 'Large Room': guestImageUrl = 'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=600&h=400&fit=crop'; break;
                                     case 'President Room': guestImageUrl = 'https://images.unsplash.com/photo-1578683010236-d716f9a3f461?w=600&h=400&fit=crop'; break;
+                                    default: guestImageUrl = 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=600&h=400&fit=crop';
                                 }
                             %>
                             <img src="<%= room.image_url || guestImageUrl %>" 
                                  alt="<%= room.name %>" 
                                  class="w-full h-full object-cover">
-                            <div class="absolute inset-0 bg-gradient-to-br from-amber-400 to-amber-600 items-center justify-center" style="display: none;">
-                                <div class="text-center text-white">
-                                    <i class="fas fa-bed text-4xl mb-2"></i>
-                                    <p class="font-bold text-lg"><%= room.name %></p>
-                                </div>
-                            </div>
                             <div class="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center">
                                 <div class="text-center text-white">
                                     <i class="fas fa-bed text-4xl mb-2"></i>
