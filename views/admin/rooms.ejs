@@ -125,11 +125,22 @@
         </div>
 
         <!-- Action Buttons -->
-        <div class="mb-6 flex space-x-4">
+        <div class="mb-6 flex flex-wrap gap-4">
             <button onclick="openAddRoomModal()" 
                     class="glossy-gold text-white px-6 py-3 rounded-xl glossy-card font-medium">
                 <i class="fas fa-plus mr-2"></i>Tambah Kamar Baru
             </button>
+            
+            <% if (rooms.length === 0) { %>
+            <form action="/admin/seed-database" method="POST" style="display: inline;">
+                <button type="submit" 
+                        class="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-xl font-medium transition-colors"
+                        onclick="return confirm('Ini akan menambahkan 7 tipe kamar dan 35 kamar ke database. Lanjutkan?')">
+                    <i class="fas fa-database mr-2"></i>Setup Database (7 Tipe + 35 Kamar)
+                </button>
+            </form>
+            <% } %>
+            
             <button onclick="resetAllRooms()" 
                     class="glossy-blue text-white px-6 py-3 rounded-xl glossy-card font-medium"
                     id="resetButton">
