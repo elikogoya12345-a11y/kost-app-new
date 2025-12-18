@@ -122,7 +122,8 @@ router.get('/rooms', async (req, res) => {
         const [roomTypes] = await db.execute('SELECT * FROM room_types WHERE name != "Twin Room" ORDER BY name');
         
         const success = req.query.success;
-        res.render('admin/rooms', { user: req.session.user, rooms, roomTypes, success });
+        const error = req.query.error;
+        res.render('admin/rooms', { user: req.session.user, rooms, roomTypes, success, error });
     } catch (error) {
         console.error(error);
         res.render('admin/rooms', { user: req.session.user, rooms: [], roomTypes: [], success: null });
@@ -134,6 +135,16 @@ router.post('/rooms', async (req, res) => {
     try {
         const { room_number, room_type_id, status, floor, description } = req.body;
         
+        // Check if room number already exists
+        const [existing] = await db.execute(
+            'SELECT id FROM rooms WHERE room_number = ?',
+            [room_number]
+        );
+        
+        if (existing.length > 0) {
+            return res.redirect('/admin/rooms?error=Nomor kamar sudah ada');
+        }
+        
         await db.execute(
             'INSERT INTO rooms (room_number, room_type_id, status, floor, description) VALUES (?, ?, ?, ?, ?)',
             [room_number, room_type_id, status || 'available', floor || 1, description || null]
@@ -142,7 +153,7 @@ router.post('/rooms', async (req, res) => {
         res.redirect('/admin/rooms?success=Kamar berhasil ditambahkan');
     } catch (error) {
         console.error(error);
-        res.redirect('/admin/rooms?error=Gagal menambahkan kamar');
+        res.redirect('/admin/rooms?error=Gagal menambahkan kamar: ' + error.message);
     }
 });
 
@@ -152,6 +163,16 @@ router.post('/rooms/:id', async (req, res) => {
         const roomId = req.params.id;
         const { room_number, room_type_id, status, floor, description } = req.body;
         
+        // Check if room number already exists for other rooms
+        const [existing] = await db.execute(
+            'SELECT id FROM rooms WHERE room_number = ? AND id != ?',
+            [room_number, roomId]
+        );
+        
+        if (existing.length > 0) {
+            return res.redirect('/admin/rooms?error=Nomor kamar sudah digunakan kamar lain');
+        }
+        
         await db.execute(
             'UPDATE rooms SET room_number = ?, room_type_id = ?, status = ?, floor = ?, description = ? WHERE id = ?',
             [room_number, room_type_id, status, floor || 1, description || null, roomId]
@@ -160,7 +181,7 @@ router.post('/rooms/:id', async (req, res) => {
         res.redirect('/admin/rooms?success=Kamar berhasil diperbarui');
     } catch (error) {
         console.error(error);
-        res.redirect('/admin/rooms?error=Gagal memperbarui kamar');
+        res.redirect('/admin/rooms?error=Gagal memperbarui kamar: ' + error.message);
     }
 });
 
@@ -169,12 +190,27 @@ router.delete('/rooms/:id', async (req, res) => {
     try {
         const roomId = req.params.id;
         
+        // Check if room is occupied or has bookings
+        const [occupants] = await db.execute(
+            'SELECT id FROM occupants WHERE room_id = ? AND status = "active"',
+            [roomId]
+        );
+        
+        const [bookings] = await db.execute(
+            'SELECT id FROM bookings WHERE room_id = ? AND status = "confirmed"',
+            [roomId]
+        );
+        
+        if (occupants.length > 0 || bookings.length > 0) {
+            return res.json({ success: false, message: 'Kamar tidak dapat dihapus karena sedang ditempati atau ada booking aktif' });
+        }
+        
         await db.execute('DELETE FROM rooms WHERE id = ?', [roomId]);
         
-        res.json({ success: true });
+        res.json({ success: true, message: 'Kamar berhasil dihapus' });
     } catch (error) {
         console.error(error);
-        res.json({ success: false });
+        res.json({ success: false, message: 'Gagal menghapus kamar: ' + error.message });
     }
 });
 
@@ -387,15 +423,30 @@ router.post('/notifications', async (req, res) => {
 // Reset all rooms to available
 router.post('/rooms/reset-all', async (req, res) => {
     try {
+        // Start transaction
+        await db.execute('START TRANSACTION');
+        
+        // Update all rooms to available
         await db.execute('UPDATE rooms SET status = ?', ['available']);
+        
+        // Set all occupants to inactive
         await db.execute('UPDATE occupants SET status = ?', ['inactive']);
-        await db.execute('UPDATE bookings SET status = ?', ['pending']);
+        
+        // Cancel all confirmed bookings
+        await db.execute('UPDATE bookings SET status = ? WHERE status = ?', ['cancelled', 'confirmed']);
+        
+        // Delete pending payments
         await db.execute('DELETE FROM payments WHERE status = ?', ['pending']);
+        
+        // Commit transaction
+        await db.execute('COMMIT');
         
         res.redirect('/admin/rooms?success=Semua kamar berhasil direset ke status tersedia');
     } catch (error) {
+        // Rollback on error
+        await db.execute('ROLLBACK');
         console.error(error);
-        res.redirect('/admin/rooms?error=Gagal mereset kamar');
+        res.redirect('/admin/rooms?error=Gagal mereset kamar: ' + error.message);
     }
 });
 

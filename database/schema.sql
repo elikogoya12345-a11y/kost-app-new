@@ -36,6 +36,7 @@ CREATE TABLE rooms (
     room_number VARCHAR(20) UNIQUE NOT NULL,
     floor INT DEFAULT 1,
     status ENUM('available', 'occupied', 'maintenance') DEFAULT 'available',
+    description TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (room_type_id) REFERENCES room_types(id) ON DELETE CASCADE

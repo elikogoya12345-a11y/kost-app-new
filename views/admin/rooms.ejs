@@ -68,6 +68,12 @@
                 <i class="fas fa-check-circle mr-2"></i><%= success %>
             </div>
         <% } %>
+        
+        <% if (typeof error !== 'undefined' && error) { %>
+            <div class="bg-red-500 border border-red-200 text-white px-4 py-3 rounded-xl mb-6 glossy-card">
+                <i class="fas fa-exclamation-circle mr-2"></i><%= error %>
+            </div>
+        <% } %>
 
         <!-- Room Statistics -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
@@ -125,7 +131,8 @@
                 <i class="fas fa-plus mr-2"></i>Tambah Kamar Baru
             </button>
             <button onclick="resetAllRooms()" 
-                    class="glossy-blue text-white px-6 py-3 rounded-xl glossy-card font-medium">
+                    class="glossy-blue text-white px-6 py-3 rounded-xl glossy-card font-medium"
+                    id="resetButton">
                 <i class="fas fa-refresh mr-2"></i>Reset Semua Kamar ke Tersedia
             </button>
         </div>
@@ -233,14 +240,17 @@
                     
                     <div class="space-y-4">
                         <div>
-                            <label class="block text-sm font-medium text-blue-dark mb-2">Nomor Kamar</label>
+                            <label class="block text-sm font-medium text-blue-dark mb-2">Nomor Kamar *</label>
                             <input type="text" name="room_number" id="room_number" required 
                                    class="w-full px-3 py-2 border border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-500"
-                                   placeholder="Contoh: 101, A01">
+                                   placeholder="Contoh: STD-001, SUP-002"
+                                   pattern="[A-Z]{3}-[0-9]{3}"
+                                   title="Format: XXX-000 (contoh: STD-001)">
+                            <small class="text-gray-500">Format: XXX-000 (contoh: STD-001)</small>
                         </div>
                         
                         <div>
-                            <label class="block text-sm font-medium text-blue-dark mb-2">Tipe Kamar</label>
+                            <label class="block text-sm font-medium text-blue-dark mb-2">Tipe Kamar *</label>
                             <select name="room_type_id" id="room_type_id" required 
                                     class="w-full px-3 py-2 border border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-500">
                                 <option value="">Pilih tipe kamar</option>
@@ -251,8 +261,8 @@
                         </div>
                         
                         <div>
-                            <label class="block text-sm font-medium text-blue-dark mb-2">Lantai</label>
-                            <input type="number" name="floor" id="floor" required min="0" max="20"
+                            <label class="block text-sm font-medium text-blue-dark mb-2">Lantai *</label>
+                            <input type="number" name="floor" id="floor" required min="1" max="20" value="1"
                                    class="w-full px-3 py-2 border border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-500"
                                    placeholder="Nomor lantai">
                         </div>
@@ -326,38 +336,54 @@
         function deleteRoom(roomId, roomNumber) {
             if (confirm(`Yakin ingin menghapus Kamar ${roomNumber}? Tindakan ini tidak dapat dibatalkan.`)) {
                 fetch(`/admin/rooms/${roomId}`, {
-                    method: 'DELETE'
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
                 })
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
+                        alert(data.message || 'Kamar berhasil dihapus');
                         location.reload();
                     } else {
-                        alert('Gagal menghapus kamar');
+                        alert(data.message || 'Gagal menghapus kamar');
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('Terjadi kesalahan');
+                    alert('Terjadi kesalahan saat menghapus kamar');
                 });
             }
         }
 
         function resetAllRooms() {
-            if (confirm('Yakin ingin mereset semua kamar ke status tersedia? Ini akan membuat semua kamar dapat dibooking kembali.')) {
+            if (confirm('Yakin ingin mereset semua kamar ke status tersedia? Ini akan:\n- Mengubah semua kamar menjadi tersedia\n- Menonaktifkan semua penghuni\n- Membatalkan booking yang dikonfirmasi\n- Menghapus pembayaran pending')) {
+                const button = event.target;
+                button.disabled = true;
+                button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Memproses...';
+                
                 fetch('/admin/rooms/reset-all', {
-                    method: 'POST'
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
                 })
                 .then(response => {
                     if (response.ok) {
+                        alert('Semua kamar berhasil direset!');
                         location.reload();
                     } else {
                         alert('Gagal mereset kamar');
+                        button.disabled = false;
+                        button.innerHTML = '<i class="fas fa-refresh mr-2"></i>Reset Semua Kamar ke Tersedia';
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('Terjadi kesalahan');
+                    alert('Terjadi kesalahan saat mereset kamar');
+                    button.disabled = false;
+                    button.innerHTML = '<i class="fas fa-refresh mr-2"></i>Reset Semua Kamar ke Tersedia';
                 });
             }
         }
@@ -366,6 +392,44 @@
             if (e.target.id === 'roomModal') {
                 closeRoomModal();
             }
+        });
+        
+        // Form validation
+        document.getElementById('roomForm').addEventListener('submit', function(e) {
+            const roomNumber = document.getElementById('room_number').value;
+            const roomTypeId = document.getElementById('room_type_id').value;
+            const floor = document.getElementById('floor').value;
+            
+            if (!roomNumber || !roomTypeId || !floor) {
+                e.preventDefault();
+                alert('Mohon lengkapi semua field yang wajib diisi (*)');
+                return false;
+            }
+            
+            // Validate room number format
+            const roomNumberPattern = /^[A-Z]{3}-[0-9]{3}$/;
+            if (!roomNumberPattern.test(roomNumber)) {
+                e.preventDefault();
+                alert('Format nomor kamar harus XXX-000 (contoh: STD-001)');
+                return false;
+            }
+            
+            // Validate floor
+            if (floor < 1 || floor > 20) {
+                e.preventDefault();
+                alert('Lantai harus antara 1-20');
+                return false;
+            }
+            
+            return true;
+        });
+        
+        // Auto-format room number
+        document.getElementById('room_number').addEventListener('input', function(e) {
+            let value = e.target.value.toUpperCase();
+            // Remove any non-alphanumeric characters except dash
+            value = value.replace(/[^A-Z0-9-]/g, '');
+            e.target.value = value;
         });
     </script>
 </body>
