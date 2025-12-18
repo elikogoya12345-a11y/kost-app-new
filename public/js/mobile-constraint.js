@@ -8,7 +8,14 @@
     // HOME MOBILE MENU FUNCTIONALITY
     function initHomeMobileMenu() {
         // Only for home page
-        if (!window.location.pathname === '/' && !window.location.pathname === '') return;
+        const isHomePage = window.location.pathname === '/' || window.location.pathname === '';
+        if (!isHomePage) return;
+        
+        // Hide specific menu items on mobile
+        const aboutLink = document.querySelector('a[href="/about"]');
+        const guestLink = document.querySelector('a[href="/guest/dashboard"]');
+        if (aboutLink) aboutLink.style.display = 'none';
+        if (guestLink) guestLink.style.display = 'none';
         
         // Create mobile hamburger button
         if (!document.querySelector('.mobile-hamburger')) {
@@ -54,6 +61,14 @@
             overlay.addEventListener('click', function() {
                 mobileMenu.classList.remove('active');
                 overlay.classList.remove('active');
+            });
+            
+            // Close menu when clicking menu items
+            mobileMenu.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', function() {
+                    mobileMenu.classList.remove('active');
+                    overlay.classList.remove('active');
+                });
             });
         }
     }

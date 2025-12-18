@@ -91,8 +91,8 @@
         display: block !important;
     }
     
-    /* Hide desktop menu items on mobile */
-    nav .flex.items-center.space-x-4 {
+    /* Hide desktop menu items on mobile - HOME PAGE ONLY */
+    body:not(.admin-page):not(.user-page) nav .flex.items-center.space-x-4 > a:not([href="/auth/login"]):not([href="/auth/register"]) {
         display: none !important;
     }
 }
@@ -110,7 +110,7 @@
         display: none !important;
     }
     
-    nav .flex.items-center.space-x-4 {
-        display: flex !important;
+    body:not(.admin-page):not(.user-page) nav .flex.items-center.space-x-4 > a {
+        display: inline-flex !important;
     }
 }
