@@ -56,12 +56,11 @@ router.get('/dashboard', async (req, res) => {
 router.get('/rooms', async (req, res) => {
     try {
         const [roomTypes] = await db.execute(`
-            SELECT rt.id, rt.name, rt.description, rt.base_price, rt.facilities, rt.image_url,
-            COUNT(r.id) as total_rooms,
+            SELECT rt.*, COUNT(r.id) as total_rooms,
             COUNT(CASE WHEN r.status = 'available' THEN 1 END) as available_rooms
             FROM room_types rt
             LEFT JOIN rooms r ON rt.id = r.room_type_id
-            GROUP BY rt.id, rt.name, rt.description, rt.base_price, rt.facilities, rt.image_url
+            GROUP BY rt.id
             ORDER BY rt.base_price
         `);
         
