@@ -137,13 +137,13 @@
                 <% rooms.forEach(room => { %>
                     <div class="glossy-white rounded-2xl overflow-hidden glossy-card">
                         <div class="h-32 relative overflow-hidden">
-                            <% if (room.image_url && room.image_url !== '/images/' + room.type_name.replace(/\s+/g, '-') + '/' + room.type_name.replace(/\s+/g, '-') + '.jpg') { %>
+                            <% if (room.image_url && room.image_url !== '/images/' + room.type_name.replace(/\s+/g, '-') + '/Kamar Tersedia.jpg') { %>
                                 <img src="<%= room.image_url %>" 
                                      alt="Kamar <%= room.room_number %>" 
                                      class="w-full h-full object-cover"
                                      onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
                             <% } else { %>
-                                <img src="/images/<%= room.type_name.replace(/\s+/g, '-') %>/<%= room.type_name.replace(/\s+/g, '-') %>.jpg" 
+                                <img src="/images/<%= room.type_name.replace(/\s+/g, '-') %>/Kamar Tersedia.jpg" 
                                      alt="Kamar <%= room.room_number %>" 
                                      class="w-full h-full object-cover"
                                      onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
