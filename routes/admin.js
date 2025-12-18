@@ -97,10 +97,11 @@ router.get('/rooms', async (req, res) => {
             SELECT r.*, rt.name as type_name, rt.base_price
             FROM rooms r
             JOIN room_types rt ON r.room_type_id = rt.id
+            WHERE rt.name != 'Twin Room'
             ORDER BY r.room_number
         `);
         
-        const [roomTypes] = await db.execute('SELECT * FROM room_types ORDER BY name');
+        const [roomTypes] = await db.execute('SELECT * FROM room_types WHERE name != "Twin Room" ORDER BY name');
         
         const success = req.query.success;
         res.render('admin/rooms', { user: req.session.user, rooms, roomTypes, success });
@@ -383,7 +384,7 @@ router.post('/rooms/reset-all', async (req, res) => {
 // Image upload page
 router.get('/images', async (req, res) => {
     try {
-        const [roomTypes] = await db.execute('SELECT * FROM room_types ORDER BY name');
+        const [roomTypes] = await db.execute('SELECT * FROM room_types WHERE name != "Twin Room" ORDER BY name');
         res.render('admin/image-upload', { user: req.session.user, roomTypes });
     } catch (error) {
         console.error(error);
