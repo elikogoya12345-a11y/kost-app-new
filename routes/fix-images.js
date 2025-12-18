@@ -79,4 +79,66 @@ router.get('/fix-images-now', async (req, res) => {
     }
 });
 
+// Route khusus untuk debug Twin Room
+router.get('/debug-twin-room', async (req, res) => {
+    try {
+        // Cek room type Twin Room
+        const [roomTypes] = await db.execute('SELECT * FROM room_types WHERE name = "Twin Room"');
+        
+        // Cek rooms untuk Twin Room
+        const [rooms] = await db.execute(`
+            SELECT r.*, rt.name as type_name 
+            FROM rooms r 
+            JOIN room_types rt ON r.room_type_id = rt.id 
+            WHERE rt.name = "Twin Room"
+        `);
+        
+        res.json({
+            roomType: roomTypes,
+            rooms: rooms,
+            roomTypeCount: roomTypes.length,
+            roomsCount: rooms.length
+        });
+    } catch (error) {
+        res.json({ error: error.message });
+    }
+});
+
+// Route untuk force create Twin Room
+router.get('/force-create-twin-room', async (req, res) => {
+    try {
+        // Get Twin Room type ID
+        const [typeResult] = await db.execute('SELECT id FROM room_types WHERE name = "Twin Room"');
+        
+        if (typeResult.length === 0) {
+            return res.json({ success: false, message: 'Twin Room type tidak ditemukan' });
+        }
+        
+        const typeId = typeResult[0].id;
+        
+        // Delete existing Twin Room rooms first
+        await db.execute('DELETE FROM rooms WHERE room_type_id = ?', [typeId]);
+        
+        // Create 10 Twin Room rooms
+        let created = 0;
+        for (let i = 1; i <= 10; i++) {
+            const roomNumber = `TWN-${i.toString().padStart(3, '0')}`;
+            await db.execute(
+                'INSERT INTO rooms (room_type_id, room_number, status, floor) VALUES (?, ?, ?, ?)',
+                [typeId, roomNumber, 'available', Math.ceil(i / 10)]
+            );
+            created++;
+        }
+        
+        res.json({
+            success: true,
+            message: `✅ BERHASIL! ${created} Twin Room berhasil dibuat`,
+            created: created
+        });
+        
+    } catch (error) {
+        res.json({ success: false, error: error.message });
+    }
+});
+
 module.exports = router;
