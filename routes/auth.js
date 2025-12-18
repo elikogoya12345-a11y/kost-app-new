@@ -12,22 +12,22 @@ router.get('/login', redirectIfAuth, (req, res) => {
 router.post('/login', async (req, res) => {
     try {
         const { email, password } = req.body;
-        let user;
         
-        // Try to find user by username first, then by email
-        const [usersByUsername] = await db.execute('SELECT * FROM users WHERE username = ?', [email]);
-        if (usersByUsername.length > 0) {
-            user = usersByUsername[0];
-        } else {
-            // If not found by username, try by email
-            const [usersByEmail] = await db.execute('SELECT * FROM users WHERE email = ?', [email]);
-            if (usersByEmail.length > 0) {
-                user = usersByEmail[0];
-            }
+        // Find user by username OR email in single query
+        const [users] = await db.execute(
+            'SELECT * FROM users WHERE username = ? OR email = ? LIMIT 1', 
+            [email, email]
+        );
+        
+        if (users.length === 0) {
+            return res.render('auth/login', { error: 'Username/Email atau password salah' });
         }
         
-        if (!user) {
-            return res.render('auth/login', { error: 'Username/Email atau password salah' });
+        const user = users[0];
+        
+        // Check if user is active
+        if (user.status === 'inactive') {
+            return res.render('auth/login', { error: 'Akun Anda telah dinonaktifkan. Hubungi admin.' });
         }
         
         const isValid = await bcrypt.compare(password, user.password);
