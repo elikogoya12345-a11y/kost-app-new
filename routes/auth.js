@@ -14,10 +14,20 @@ router.post('/login', async (req, res) => {
         const { email, password } = req.body;
         
         // Find user by username OR email in single query
-        const [users] = await db.execute(
-            'SELECT * FROM users WHERE username = ? OR email = ? LIMIT 1', 
-            [email, email]
-        );
+        let users;
+        try {
+            [users] = await db.execute(
+                'SELECT * FROM users WHERE username = ? OR email = ? LIMIT 1', 
+                [email, email]
+            );
+        } catch (error) {
+            // Fallback if username column doesn't exist
+            console.log('Username column might not exist, trying email only');
+            [users] = await db.execute(
+                'SELECT * FROM users WHERE email = ? LIMIT 1', 
+                [email]
+            );
+        }
         
         if (users.length === 0) {
             return res.render('auth/login', { error: 'Username/Email atau password salah' });

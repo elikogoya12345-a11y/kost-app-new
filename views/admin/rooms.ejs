@@ -141,6 +141,14 @@
             </form>
             <% } %>
             
+            <form action="/admin/fix-users" method="POST" style="display: inline;">
+                <button type="submit" 
+                        class="bg-purple-500 hover:bg-purple-600 text-white px-6 py-3 rounded-xl font-medium transition-colors"
+                        onclick="return confirm('Ini akan memperbaiki username untuk semua user. Lanjutkan?')">
+                    <i class="fas fa-user-cog mr-2"></i>Fix User Usernames
+                </button>
+            </form>
+            
             <button onclick="resetAllRooms()" 
                     class="glossy-blue text-white px-6 py-3 rounded-xl glossy-card font-medium"
                     id="resetButton">

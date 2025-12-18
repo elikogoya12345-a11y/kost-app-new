@@ -24,6 +24,28 @@ router.get('/debug-db', async (req, res) => {
     }
 });
 
+// Fix users to have usernames
+router.post('/fix-users', async (req, res) => {
+    try {
+        console.log('Fixing users to have usernames...');
+        
+        // Get all users without username
+        const [users] = await db.execute('SELECT id, email FROM users WHERE username IS NULL OR username = ""');
+        
+        for (const user of users) {
+            const username = user.email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
+            await db.execute('UPDATE users SET username = ? WHERE id = ?', [username, user.id]);
+        }
+        
+        console.log(`Fixed ${users.length} users with usernames`);
+        res.redirect('/admin/rooms?success=User usernames berhasil diperbaiki!');
+        
+    } catch (error) {
+        console.error('Fix users error:', error);
+        res.redirect('/admin/rooms?error=Gagal memperbaiki user usernames: ' + error.message);
+    }
+});
+
 // Seed database with initial data
 router.post('/seed-database', async (req, res) => {
     try {
