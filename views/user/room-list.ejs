@@ -137,16 +137,16 @@
                 <% rooms.forEach(room => { %>
                     <div class="glossy-white rounded-2xl overflow-hidden glossy-card">
                         <div class="h-32 relative overflow-hidden">
-                            <% if (room.image_url && room.image_url !== '/images/' + room.type_name.replace(/\s+/g, '-') + '/Kamar Tersedia.jpg') { %>
+                            <% if (room.image_url && room.image_url !== '/images/' + room.type_name.replace(/\s+/g, '-') + '/' + room.type_name.replace(/\s+/g, '-') + '.jpg') { %>
                                 <img src="<%= room.image_url %>" 
                                      alt="Kamar <%= room.room_number %>" 
                                      class="w-full h-full object-cover"
                                      onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
                             <% } else { %>
-                                <img src="/images/<%= room.type_name.replace(/\s+/g, '-') %>/Kamar Tersedia.jpg" 
+                                <img src="/images/<%= room.type_name.replace(/\s+/g, '-') %>/<%= room.type_name.replace(/\s+/g, '-') %>.jpg" 
                                      alt="Kamar <%= room.room_number %>" 
                                      class="w-full h-full object-cover"
-                                     onerror="this.src='/images/<%= room.type_name.replace(/\s+/g, '-') %>/<%= room.type_name.replace(/\s+/g, '-') %>.jpg'; this.onerror=function(){this.style.display='none'; this.nextElementSibling.style.display='flex';}">
+                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
                             <% } %>
                             <div class="absolute inset-0 bg-gradient-to-br from-amber-400 to-amber-600 items-center justify-center" style="display: none;">
                                 <div class="text-center text-white">
