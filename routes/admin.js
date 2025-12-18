@@ -201,9 +201,9 @@ router.get('/rooms', async (req, res) => {
             console.log('Room types:', roomTypes.map(rt => rt.name));
         }
         
-        // Get all rooms without any filter
+        // Get all rooms without any filter (without description column)
         const [rooms] = await db.execute(`
-            SELECT r.id, r.room_number, r.status, r.floor, r.description, r.room_type_id,
+            SELECT r.id, r.room_number, r.status, r.floor, r.room_type_id,
                    rt.name as type_name, rt.base_price
             FROM rooms r
             LEFT JOIN room_types rt ON r.room_type_id = rt.id
@@ -262,8 +262,8 @@ router.post('/rooms', async (req, res) => {
         }
         
         await db.execute(
-            'INSERT INTO rooms (room_number, room_type_id, status, floor, description) VALUES (?, ?, ?, ?, ?)',
-            [room_number, room_type_id, status || 'available', floor || 1, description || null]
+            'INSERT INTO rooms (room_number, room_type_id, status, floor) VALUES (?, ?, ?, ?)',
+            [room_number, room_type_id, status || 'available', floor || 1]
         );
         
         res.redirect('/admin/rooms?success=Kamar berhasil ditambahkan');
@@ -290,8 +290,8 @@ router.post('/rooms/:id', async (req, res) => {
         }
         
         await db.execute(
-            'UPDATE rooms SET room_number = ?, room_type_id = ?, status = ?, floor = ?, description = ? WHERE id = ?',
-            [room_number, room_type_id, status, floor || 1, description || null, roomId]
+            'UPDATE rooms SET room_number = ?, room_type_id = ?, status = ?, floor = ? WHERE id = ?',
+            [room_number, room_type_id, status, floor || 1, roomId]
         );
         
         res.redirect('/admin/rooms?success=Kamar berhasil diperbarui');
