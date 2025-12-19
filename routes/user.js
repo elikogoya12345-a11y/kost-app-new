@@ -346,8 +346,6 @@ router.post('/booking', async (req, res) => {
         const { start_date, duration_months, rooms, notes, total_amount } = req.body;
         const userId = req.session.user.id;
         
-        console.log('Booking request:', { start_date, duration_months, rooms, total_amount });
-        
         if (!start_date || !duration_months || !total_amount) {
             return res.redirect('/user/bookings?error=Data tidak lengkap');
         }
@@ -360,7 +358,6 @@ router.post('/booking', async (req, res) => {
                 roomsArray = rooms;
             }
         } catch (e) {
-            console.error('Parse error:', e);
             return res.redirect('/user/bookings?error=Format data tidak valid');
         }
         
@@ -368,10 +365,7 @@ router.post('/booking', async (req, res) => {
             return res.redirect('/user/bookings?error=Pilih minimal satu kamar');
         }
         
-        console.log('Processing rooms:', roomsArray);
-        
-        await db.execute('START TRANSACTION');
-        
+        // Create multi booking
         const [result] = await db.execute(
             'INSERT INTO multi_bookings (user_id, start_date, duration_months, total_amount, notes, status) VALUES (?, ?, ?, ?, ?, ?)',
             [userId, start_date, duration_months, total_amount, notes || null, 'confirmed']
@@ -379,18 +373,22 @@ router.post('/booking', async (req, res) => {
         
         const multiBookingId = result.insertId;
         
+        // Process each room
         for (const room of roomsArray) {
             const roomId = room.room_id;
             const roomTypeId = room.room_type_id;
             const subtotal = room.price * duration_months;
             
+            // Create booking
             await db.execute(
                 'INSERT INTO bookings (user_id, room_id, room_type_id, start_date, duration_months, total_amount, status, multi_booking_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
                 [userId, roomId, roomTypeId, start_date, duration_months, subtotal, 'confirmed', multiBookingId]
             );
             
+            // Update room status
             await db.execute('UPDATE rooms SET status = ? WHERE id = ?', ['occupied', roomId]);
             
+            // Create occupant
             const endDate = new Date(start_date);
             endDate.setMonth(endDate.getMonth() + parseInt(duration_months));
             
@@ -401,6 +399,7 @@ router.post('/booking', async (req, res) => {
             
             const occupantId = occupantResult.insertId;
             
+            // Create payment schedule
             for (let i = 0; i < duration_months; i++) {
                 const dueDate = new Date(start_date);
                 dueDate.setMonth(dueDate.getMonth() + i);
@@ -413,17 +412,10 @@ router.post('/booking', async (req, res) => {
             }
         }
         
-        await db.execute('COMMIT');
-        console.log('Booking success, redirecting to payments');
         res.redirect('/user/payments?success=Booking berhasil! Silakan lakukan pembayaran.');
     } catch (error) {
-        try {
-            await db.execute('ROLLBACK');
-        } catch (rollbackError) {
-            console.error('Rollback error:', rollbackError);
-        }
         console.error('Booking error:', error);
-        res.redirect('/user/bookings?error=Gagal melakukan booking: ' + error.message);
+        res.redirect('/user/bookings?error=Gagal melakukan booking');
     }
 });
 
