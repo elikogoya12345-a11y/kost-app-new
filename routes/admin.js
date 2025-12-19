@@ -243,6 +243,43 @@ router.post('/occupants/:id/toggle-status', async (req, res) => {
     }
 });
 
+// Delete occupant
+router.delete('/occupants/:id', async (req, res) => {
+    try {
+        const userId = req.params.id;
+        
+        // Check if user has active occupancy or bookings
+        const [occupants] = await db.execute(
+            'SELECT id FROM occupants WHERE user_id = ? AND status = "active"',
+            [userId]
+        );
+        
+        const [bookings] = await db.execute(
+            'SELECT id FROM bookings WHERE user_id = ? AND status = "confirmed"',
+            [userId]
+        );
+        
+        if (occupants.length > 0 || bookings.length > 0) {
+            return res.json({ success: false, message: 'Penghuni tidak dapat dihapus karena masih memiliki hunian atau booking aktif' });
+        }
+        
+        // Delete related data first
+        await db.execute('DELETE FROM payments WHERE occupant_id IN (SELECT id FROM occupants WHERE user_id = ?)', [userId]);
+        await db.execute('DELETE FROM occupants WHERE user_id = ?', [userId]);
+        await db.execute('DELETE FROM bookings WHERE user_id = ?', [userId]);
+        await db.execute('DELETE FROM complaints WHERE user_id = ?', [userId]);
+        await db.execute('DELETE FROM notifications WHERE user_id = ?', [userId]);
+        
+        // Finally delete the user
+        await db.execute('DELETE FROM users WHERE id = ?', [userId]);
+        
+        res.json({ success: true, message: 'Penghuni berhasil dihapus' });
+    } catch (error) {
+        console.error(error);
+        res.json({ success: false, message: 'Gagal menghapus penghuni: ' + error.message });
+    }
+});
+
 // Manage Rooms
 router.get('/rooms', async (req, res) => {
     try {
