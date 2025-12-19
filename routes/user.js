@@ -302,6 +302,8 @@ router.post('/complaints', async (req, res) => {
         const { title, category, priority, facility_type, description } = req.body;
         const userId = req.session.user.id;
         
+        console.log('Complaint data:', { title, category, priority, facility_type, description });
+        
         const [userRoom] = await db.execute(`
             SELECT r.id as room_id FROM bookings b
             JOIN rooms r ON b.room_id = r.id
@@ -311,14 +313,24 @@ router.post('/complaints', async (req, res) => {
         
         const roomId = userRoom.length > 0 ? userRoom[0].room_id : null;
         
-        await db.execute(
-            'INSERT INTO complaints (user_id, room_id, facility, description, status) VALUES (?, ?, ?, ?, ?)',
-            [userId, roomId, facility_type || category, description, 'pending']
-        );
+        // Check if complaints table has priority column
+        try {
+            await db.execute(
+                'INSERT INTO complaints (user_id, room_id, facility, description, status, priority) VALUES (?, ?, ?, ?, ?, ?)',
+                [userId, roomId, facility_type || category, description, 'pending', priority || 'medium']
+            );
+        } catch (error) {
+            // Fallback if priority column doesn't exist
+            console.log('Priority column might not exist, using basic insert');
+            await db.execute(
+                'INSERT INTO complaints (user_id, room_id, facility, description, status) VALUES (?, ?, ?, ?, ?)',
+                [userId, roomId, facility_type || category, description, 'pending']
+            );
+        }
         
         res.redirect('/user/complaints?success=Pengaduan berhasil dikirim!');
     } catch (error) {
-        console.error(error);
+        console.error('Complaint error:', error);
         res.redirect('/user/complaints?error=Gagal mengirim pengaduan');
     }
 });

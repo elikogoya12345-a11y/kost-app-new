@@ -97,6 +97,7 @@ CREATE TABLE complaints (
     room_id INT,
     facility VARCHAR(100),
     description TEXT NOT NULL,
+    priority ENUM('low', 'medium', 'high') DEFAULT 'medium',
     status ENUM('pending', 'in_progress', 'resolved') DEFAULT 'pending',
     admin_response TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
