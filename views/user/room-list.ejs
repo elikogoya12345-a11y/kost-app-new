@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= roomType ? roomType.name : 'Kamar' %> - KostPro User</title>
+    <title>Daftar Kamar - KostPro User</title>
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -50,297 +50,107 @@
     <%- include('../partials/user-nav') %>
 
     <div class="max-w-7xl mx-auto px-4 py-8">
-        <!-- Breadcrumb -->
-        <div class="mb-6">
-            <div class="glossy-white rounded-xl p-4 glossy-card">
-                <nav class="flex" aria-label="Breadcrumb">
-                    <ol class="inline-flex items-center space-x-1 md:space-x-3">
-                        <li class="inline-flex items-center">
-                            <a href="/user/rooms" class="text-blue-600 hover:text-blue-700">
-                                <i class="fas fa-bed mr-2"></i>Kamar
-                            </a>
-                        </li>
-                        <li>
-                            <div class="flex items-center">
-                                <i class="fas fa-chevron-right text-blue-400 mx-2"></i>
-                                <span class="text-blue-600"><%= roomType ? roomType.name : 'Detail Kamar' %></span>
-                            </div>
-                        </li>
-                    </ol>
-                </nav>
+        <div class="mb-8">
+            <div class="glossy-white rounded-2xl p-6 glossy-card">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h1 class="text-3xl font-bold text-gold-dark">
+                            <% if (roomType) { %>
+                                <%= roomType.name %>
+                            <% } else { %>
+                                Daftar Kamar
+                            <% } %>
+                        </h1>
+                        <p class="text-gold mt-2">
+                            <% if (roomType) { %>
+                                Kamar tersedia untuk tipe <%= roomType.name %>
+                            <% } else { %>
+                                Lihat semua kamar yang tersedia
+                            <% } %>
+                        </p>
+                    </div>
+                    <a href="/user/rooms" class="glossy-gold-light text-gold-dark px-4 py-2 rounded-lg hover:opacity-90 transition-opacity">
+                        <i class="fas fa-arrow-left mr-2"></i>Kembali
+                    </a>
+                </div>
             </div>
         </div>
 
-        <% if (roomType) { %>
-            <!-- Room Type Info -->
-            <div class="glossy-white rounded-2xl p-8 mb-8 glossy-card">
-                <div class="flex flex-col lg:flex-row gap-8">
-                    <!-- Room Type Image -->
-                    <div class="lg:w-1/3">
-                        <div class="h-48 lg:h-64 rounded-xl overflow-hidden">
-                            <% 
-                                let typeImageUrl;
-                                switch(roomType.name) {
-                                    case 'Standard Room': typeImageUrl = 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=600&h=400&fit=crop'; break;
-                                    case 'Superior Room': typeImageUrl = 'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=600&h=400&fit=crop'; break;
-                                    case 'Deluxe Room': typeImageUrl = 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&h=400&fit=crop'; break;
-                                    case 'Suite Room': typeImageUrl = 'https://images.unsplash.com/photo-1571508601891-ca5e7a713859?w=600&h=400&fit=crop'; break;
-                                    case 'Share Room': typeImageUrl = 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=600&h=400&fit=crop'; break;
-                                    case 'Large Room': typeImageUrl = 'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=600&h=400&fit=crop'; break;
-                                    case 'President Room': typeImageUrl = 'https://images.unsplash.com/photo-1578683010236-d716f9a3f461?w=600&h=400&fit=crop'; break;
-                                    default: typeImageUrl = 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=600&h=400&fit=crop';
-                                }
-                            %>
-                            <img src="<%= roomType.image_url || typeImageUrl %>" 
-                                 alt="<%= roomType.name %>" 
-                                 class="w-full h-full object-cover">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <% rooms.forEach(room => { %>
+                <div class="glossy-white rounded-2xl overflow-hidden glossy-card">
+                    <div class="relative h-48 overflow-hidden">
+                        <% 
+                            let roomImageUrl;
+                            switch(room.type_name) {
+                                case 'Standard Room': roomImageUrl = 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=600&h=400&fit=crop'; break;
+                                case 'Superior Room': roomImageUrl = 'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=600&h=400&fit=crop'; break;
+                                case 'Deluxe Room': roomImageUrl = 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&h=400&fit=crop'; break;
+                                case 'Suite Room': roomImageUrl = 'https://images.unsplash.com/photo-1571508601891-ca5e7a713859?w=600&h=400&fit=crop'; break;
+                                case 'Share Room': roomImageUrl = 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=600&h=400&fit=crop'; break;
+                                case 'Large Room': roomImageUrl = 'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=600&h=400&fit=crop'; break;
+                                case 'President Room': roomImageUrl = 'https://images.unsplash.com/photo-1578683010236-d716f9a3f461?w=600&h=400&fit=crop'; break;
+                                default: roomImageUrl = 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=600&h=400&fit=crop';
+                            }
+                        %>
+                        <img src="<%= room.type_image_url || roomImageUrl %>" alt="Kamar <%= room.room_number %>" 
+                             class="w-full h-full object-cover">
+                        <div class="absolute top-4 left-4">
+                            <span class="glossy-gold text-white px-3 py-1 rounded-full text-sm font-semibold">
+                                Kamar <%= room.room_number %>
+                            </span>
+                        </div>
+                        <div class="absolute top-4 right-4">
+                            <span class="<%= room.status === 'available' ? 'bg-green-500' : 'bg-red-500' %> text-white px-3 py-1 rounded-full text-sm font-semibold">
+                                <%= room.status === 'available' ? 'Tersedia' : 'Terisi' %>
+                            </span>
                         </div>
                     </div>
                     
-                    <!-- Room Type Details -->
-                    <div class="lg:w-2/3">
-                        <div class="mb-6">
-                            <h1 class="text-3xl font-bold text-gold-dark mb-2"><%= roomType.name %></h1>
-                            <p class="text-gold mb-4"><%= roomType.description %></p>
-                            <div class="text-2xl font-bold text-amber-600">
-                                Rp <% 
-                                    const price = parseInt(roomType.base_price);
-                                    if (price >= 1000000) {
-                                        const millions = price / 1000000;
-                                        if (millions % 1 === 0) {
-                                %><%= millions %> Juta<% } else { %><%= millions.toFixed(1) %> Juta<% } 
-                                    } else if (price >= 1000) {
-                                        const thousands = price / 1000;
-                                %><%= thousands %> Ribu<% } else { %><%= price %><% } %> <span class="text-sm text-blue-500">per bulan</span>
-                            </div>
+                    <div class="p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-xl font-bold text-gold-dark">Kamar <%= room.room_number %></h3>
+                            <span class="text-sm text-gold"><%= room.type_name %></span>
                         </div>
                         
-                        <!-- Facilities -->
-                        <div>
-                            <h3 class="font-semibold text-gold-dark mb-3">Fasilitas Lengkap:</h3>
-                            <div class="flex flex-wrap gap-2">
-                                <% if (roomType.facilities) { %>
-                                    <% try { %>
-                                        <% const facilities = JSON.parse(roomType.facilities); %>
-                                        <% facilities.forEach(facility => { %>
-                                            <span class="glossy-white text-blue-600 text-sm px-3 py-1 rounded-full border border-blue-200">
-                                                <i class="fas fa-check mr-1"></i><%= facility %>
-                                            </span>
-                                        <% }); %>
-                                    <% } catch(e) { %>
-                                        <span class="text-sm text-blue-500">Fasilitas lengkap tersedia</span>
-                                    <% } %>
-                                <% } %>
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="text-2xl font-bold text-amber-600">
+                                Rp <%= parseInt(room.base_price).toLocaleString('id-ID') %>
                             </div>
+                            <div class="text-sm text-gold">per bulan</div>
                         </div>
-                    </div>
-                </div>
-            </div>
-        <% } %>
-
-        <!-- Available Rooms -->
-        <div class="mb-6">
-            <div class="glossy-white rounded-xl p-4 glossy-card">
-                <h2 class="text-2xl font-bold text-gold-dark">Kamar Tersedia</h2>
-            </div>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            <% if (rooms.length > 0) { %>
-                <% rooms.forEach(room => { %>
-                    <div class="glossy-white rounded-2xl overflow-hidden glossy-card">
-                        <div class="h-32 relative overflow-hidden">
-                            <% 
-                                let roomImageUrl;
-                                switch(room.type_name) {
-                                    case 'Standard Room': roomImageUrl = 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=600&h=400&fit=crop'; break;
-                                    case 'Superior Room': roomImageUrl = 'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=600&h=400&fit=crop'; break;
-                                    case 'Deluxe Room': roomImageUrl = 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&h=400&fit=crop'; break;
-                                    case 'Suite Room': roomImageUrl = 'https://images.unsplash.com/photo-1571508601891-ca5e7a713859?w=600&h=400&fit=crop'; break;
-                                    case 'Share Room': roomImageUrl = 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=600&h=400&fit=crop'; break;
-                                    case 'Large Room': roomImageUrl = 'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=600&h=400&fit=crop'; break;
-                                    case 'President Room': roomImageUrl = 'https://images.unsplash.com/photo-1578683010236-d716f9a3f461?w=600&h=400&fit=crop'; break;
-                                    default: roomImageUrl = 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=600&h=400&fit=crop';
-                                }
-                            %>
-                            <img src="<%= room.type_image_url || roomImageUrl %>" 
-                                 alt="Kamar <%= room.room_number %>" 
-                                 class="w-full h-full object-cover">
-                            <div class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
-                                <div class="text-center text-white">
-                                    <i class="fas fa-door-open text-2xl mb-2"></i>
-                                    <div class="font-bold text-lg"><%= room.room_number %></div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="p-4">
-                            <div class="flex justify-between items-center mb-3">
-                                <h3 class="font-semibold text-gold-dark">Kamar <%= room.room_number %></h3>
-                                <% if (room.status === 'available') { %>
-                                    <span class="glossy-gold-light text-green-800 text-xs px-2 py-1 rounded-full">
-                                        <i class="fas fa-check mr-1"></i>Tersedia
-                                    </span>
-                                <% } else { %>
-                                    <span class="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full">
-                                        <i class="fas fa-times mr-1"></i>Sudah Terisi
-                                    </span>
-                                <% } %>
-                            </div>
-                            
-                            <div class="text-sm text-blue-600 mb-3">
-                                <div class="flex items-center mb-1">
-                                    <i class="fas fa-layer-group mr-2 text-blue-500"></i>
-                                    Lantai <%= room.floor %>
-                                </div>
-                                <div class="flex items-center">
-                                    <i class="fas fa-tag mr-2 text-blue-500"></i>
-                                    <%= room.type_name %>
-                                </div>
-                            </div>
-                            
-                            <div class="text-lg font-bold text-amber-600 mb-3">
-                                Rp <% 
-                                    const roomPrice = parseInt(room.base_price);
-                                    if (roomPrice >= 1000000) {
-                                        const millions = roomPrice / 1000000;
-                                        if (millions % 1 === 0) {
-                                %><%= millions %> Juta<% } else { %><%= millions.toFixed(1) %> Juta<% } 
-                                    } else if (roomPrice >= 1000) {
-                                        const thousands = roomPrice / 1000;
-                                %><%= thousands %> Ribu<% } else { %><%= roomPrice %><% } %>
-                                <span class="text-xs text-blue-500">/bulan</span>
-                            </div>
-                            
+                        
+                        <div class="flex gap-2">
                             <% if (room.status === 'available') { %>
-                                <button onclick="openBookingModal('<%= room.id %>', '<%= room.room_number %>', '<%= room.base_price %>')" 
-                                        class="w-full glossy-gold text-white px-4 py-3 rounded-xl glossy-card font-medium">
+                                <a href="/user/bookings?room=<%= room.id %>" 
+                                   class="flex-1 glossy-gold text-white px-4 py-2 rounded-lg text-center hover:opacity-90 transition-opacity">
                                     <i class="fas fa-calendar-plus mr-2"></i>Booking Sekarang
-                                </button>
+                                </a>
                             <% } else { %>
                                 <button disabled 
-                                        class="w-full bg-gray-400 text-white px-4 py-3 rounded-xl cursor-not-allowed">
-                                    <i class="fas fa-times mr-2"></i>Sudah Terisi
+                                        class="flex-1 bg-gray-400 text-white px-4 py-2 rounded-lg cursor-not-allowed text-center">
+                                    <i class="fas fa-times mr-2"></i>Tidak Tersedia
                                 </button>
                             <% } %>
                         </div>
                     </div>
-                <% }); %>
-            <% } else { %>
-                <div class="col-span-full">
-                    <div class="glossy-white rounded-2xl p-12 text-center glossy-card">
-                        <i class="fas fa-door-closed text-4xl text-gold mb-4"></i>
-                        <h3 class="text-xl font-semibold text-gold-dark mb-2">Tidak Ada Kamar Tersedia</h3>
-                        <p class="text-gold mb-4">Semua kamar untuk tipe ini sedang terisi</p>
-                        <a href="/user/rooms" class="glossy-gold text-white px-6 py-3 rounded-xl glossy-card font-medium">
-                            <i class="fas fa-arrow-left mr-2"></i>Kembali ke Daftar Tipe
-                        </a>
-                    </div>
                 </div>
-            <% } %>
+            <% }); %>
         </div>
+
+        <% if (rooms.length === 0) { %>
+            <div class="glossy-white rounded-2xl p-8 text-center glossy-card">
+                <i class="fas fa-bed text-6xl text-amber-300 mb-4"></i>
+                <h3 class="text-xl font-bold text-gold-dark mb-2">Tidak Ada Kamar Tersedia</h3>
+                <p class="text-gold">
+                    <% if (roomType) { %>
+                        Saat ini tidak ada kamar tersedia untuk tipe <%= roomType.name %>.
+                    <% } else { %>
+                        Saat ini tidak ada kamar yang tersedia.
+                    <% } %>
+                </p>
+            </div>
+        <% } %>
     </div>
-
-    <!-- Booking Modal -->
-    <div id="bookingModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center z-50 p-4">
-        <div class="glossy-white rounded-2xl shadow-lg w-full max-w-md glossy-card">
-            <form action="/user/booking" method="POST">
-                <div class="p-6">
-                    <h3 class="text-lg font-bold text-gold-dark mb-4">Booking Kamar</h3>
-                    <input type="hidden" name="room_id" id="modal_room_id">
-                    
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gold mb-2">Kamar</label>
-                            <input type="text" id="modal_room_number" readonly 
-                                   class="w-full px-3 py-2 border border-amber-200 rounded-xl glossy-gold-light">
-                        </div>
-                        
-                        <div>
-                            <label class="block text-sm font-medium text-gold mb-2">Tanggal Mulai</label>
-                            <input type="date" name="start_date" required 
-                                   class="w-full px-3 py-2 border border-amber-200 rounded-xl focus:ring-2 focus:ring-amber-500">
-                        </div>
-                        
-                        <div>
-                            <label class="block text-sm font-medium text-gold mb-2">Durasi (Bulan)</label>
-                            <select name="duration_months" id="duration_select" required 
-                                    class="w-full px-3 py-2 border border-amber-200 rounded-xl focus:ring-2 focus:ring-amber-500">
-                                <option value="1">1 Bulan</option>
-                                <option value="3">3 Bulan</option>
-                                <option value="6">6 Bulan</option>
-                                <option value="12">12 Bulan</option>
-                            </select>
-                        </div>
-                        
-                        <div>
-                            <label class="block text-sm font-medium text-gold mb-2">Total Pembayaran</label>
-                            <input type="text" id="total_amount_display" readonly 
-                                   class="w-full px-3 py-2 border border-amber-200 rounded-xl glossy-gold-light font-bold text-amber-700">
-                            <input type="hidden" name="total_amount" id="total_amount_value">
-                        </div>
-                        
-                        <div>
-                            <label class="block text-sm font-medium text-gold mb-2">Catatan (Opsional)</label>
-                            <textarea name="notes" rows="3" 
-                                      class="w-full px-3 py-2 border border-amber-200 rounded-xl focus:ring-2 focus:ring-amber-500"
-                                      placeholder="Tambahkan catatan khusus..."></textarea>
-                        </div>
-                    </div>
-                </div>
-                <div class="glossy-gold-light px-6 py-4 rounded-b-2xl flex justify-end space-x-3">
-                    <button type="button" onclick="closeBookingModal()" 
-                            class="px-4 py-2 border border-amber-300 rounded-xl text-gold hover:bg-amber-100 glossy-card">
-                        Batal
-                    </button>
-                    <button type="submit" 
-                            class="px-4 py-2 glossy-gold text-white rounded-xl glossy-card">
-                        <i class="fas fa-check mr-2"></i>Konfirmasi Booking
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <script>
-        let currentRoomPrice = 0;
-
-        function openBookingModal(roomId, roomNumber, basePrice) {
-            document.getElementById('modal_room_id').value = roomId;
-            document.getElementById('modal_room_number').value = 'Kamar ' + roomNumber;
-            currentRoomPrice = parseInt(basePrice);
-            
-            calculateTotal();
-            
-            document.getElementById('bookingModal').classList.remove('hidden');
-            document.getElementById('bookingModal').classList.add('flex');
-        }
-
-        function closeBookingModal() {
-            document.getElementById('bookingModal').classList.add('hidden');
-            document.getElementById('bookingModal').classList.remove('flex');
-        }
-
-        function calculateTotal() {
-            const duration = parseInt(document.getElementById('duration_select').value);
-            const total = currentRoomPrice * duration;
-            
-            document.getElementById('total_amount_display').value = 'Rp ' + total.toLocaleString('id-ID');
-            document.getElementById('total_amount_value').value = total;
-        }
-
-        document.getElementById('duration_select').addEventListener('change', calculateTotal);
-
-        document.getElementById('bookingModal').addEventListener('click', function(e) {
-            if (e.target.id === 'bookingModal') {
-                closeBookingModal();
-            }
-        });
-
-        // Set minimum date to today
-        document.addEventListener('DOMContentLoaded', function() {
-            const today = new Date().toISOString().split('T')[0];
-            document.querySelector('input[name="start_date"]').min = today;
-        });
-    </script>
 </body>
 </html>

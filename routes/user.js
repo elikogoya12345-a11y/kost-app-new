@@ -181,7 +181,7 @@ router.get('/booking', (req, res) => {
 
 router.get('/bookings', async (req, res) => {
     try {
-        const selectedType = req.query.type;
+        const selectedRoom = req.query.room;
         
         const [roomTypes] = await db.execute(`
             SELECT rt.*, COUNT(r.id) as available_count
@@ -200,9 +200,9 @@ router.get('/bookings', async (req, res) => {
         `;
         let queryParams = [];
         
-        if (selectedType) {
-            roomsQuery += ' AND rt.id = ?';
-            queryParams.push(selectedType);
+        if (selectedRoom) {
+            roomsQuery += ' AND r.id = ?';
+            queryParams.push(selectedRoom);
         }
         
         roomsQuery += ' ORDER BY r.room_number';
@@ -226,7 +226,7 @@ router.get('/bookings', async (req, res) => {
             roomTypes, 
             rooms, 
             bookings,
-            selectedType,
+            selectedRoom,
             success 
         });
     } catch (error) {
@@ -236,7 +236,7 @@ router.get('/bookings', async (req, res) => {
             roomTypes: [], 
             rooms: [], 
             bookings: [],
-            selectedType: null,
+            selectedRoom: null,
             success: null 
         });
     }
