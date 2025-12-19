@@ -41,4 +41,13 @@ router.get('/rooms/:typeId', (req, res) => {
     res.redirect('/auth/register?message=Silakan daftar untuk melihat detail kamar');
 });
 
+// Redirect guest booking attempts to registration
+router.get('/booking', (req, res) => {
+    res.redirect('/auth/register?message=Silakan daftar untuk melakukan booking');
+});
+
+router.get('/book/:roomId', (req, res) => {
+    res.redirect('/auth/register?message=Silakan daftar untuk melakukan booking');
+});
+
 module.exports = router;

@@ -44,7 +44,24 @@ router.get('/', async (req, res) => {
 });
 
 router.get('/about', (req, res) => {
-    res.render('about');
+    res.render('about', { user: req.session.user || null });
+});
+
+// Quick access redirects
+router.get('/login', (req, res) => {
+    res.redirect('/auth/login');
+});
+
+router.get('/register', (req, res) => {
+    res.redirect('/auth/register');
+});
+
+router.get('/dashboard', (req, res) => {
+    if (req.session.user) {
+        const redirectPath = req.session.user.role === 'admin' ? '/admin/dashboard' : '/user/dashboard';
+        return res.redirect(redirectPath);
+    }
+    res.redirect('/guest/dashboard');
 });
 
 module.exports = router;

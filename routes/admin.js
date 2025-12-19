@@ -627,6 +627,19 @@ router.post('/rooms/reset-all', async (req, res) => {
     }
 });
 
+// Quick navigation redirects
+router.get('/payment-management', (req, res) => {
+    res.redirect('/admin/unified-payments');
+});
+
+router.get('/transactions', (req, res) => {
+    res.redirect('/admin/unified-payments');
+});
+
+router.get('/payment-transactions', (req, res) => {
+    res.redirect('/admin/unified-payments');
+});
+
 
 
 // Reply to payment extension request
@@ -667,20 +680,9 @@ router.post('/notifications/:id/reply', async (req, res) => {
     }
 });
 
-// Transaction Management
-router.get('/transactions', async (req, res) => {
-    try {
-        const [transactions] = await db.execute(`
-            SELECT * FROM admin_transactions 
-            ORDER BY transaction_date DESC, created_at DESC
-        `);
-        
-        const success = req.query.success;
-        res.render('admin/transactions', { user: req.session.user, transactions, success });
-    } catch (error) {
-        console.error(error);
-        res.render('admin/transactions', { user: req.session.user, transactions: [], success: null });
-    }
+// Transaction Management - DEPRECATED, redirect to unified
+router.get('/transactions', (req, res) => {
+    res.redirect('/admin/unified-payments');
 });
 
 router.get('/transactions/reports', async (req, res) => {
@@ -795,14 +797,9 @@ router.post('/transactions/:id/delete', async (req, res) => {
     }
 });
 
-// Payment Transaction Management (synced with payments)
-router.get('/payment-transactions', async (req, res) => {
-    try {
-        res.render('admin/payment-transactions', { user: req.session.user });
-    } catch (error) {
-        console.error(error);
-        res.redirect('/admin/payments?error=Gagal memuat halaman transaksi');
-    }
+// Payment Transaction Management (synced with payments) - DEPRECATED, redirect to unified
+router.get('/payment-transactions', (req, res) => {
+    res.redirect('/admin/unified-payments');
 });
 
 router.get('/api/payment-transactions', async (req, res) => {
@@ -857,6 +854,23 @@ router.get('/unified-payments', async (req, res) => {
         console.error(error);
         res.redirect('/admin/dashboard?error=Gagal memuat halaman pembayaran');
     }
+});
+
+// Legacy route redirects for backward compatibility
+router.get('/users', (req, res) => {
+    res.redirect('/admin/occupants');
+});
+
+router.get('/bookings', (req, res) => {
+    res.redirect('/admin/occupants');
+});
+
+router.get('/reports', (req, res) => {
+    res.redirect('/admin/finance');
+});
+
+router.get('/settings', (req, res) => {
+    res.redirect('/admin/dashboard');
 });
 
 

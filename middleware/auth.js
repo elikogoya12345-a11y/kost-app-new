@@ -1,19 +1,28 @@
 const requireAuth = (req, res, next) => {
     if (!req.session.user) {
+        req.session.redirectUrl = req.originalUrl;
         return res.redirect('/auth/login');
     }
     next();
 };
 
 const requireAdmin = (req, res, next) => {
-    if (!req.session.user || req.session.user.role !== 'admin') {
+    if (!req.session.user) {
+        req.session.redirectUrl = req.originalUrl;
+        return res.redirect('/auth/login');
+    }
+    if (req.session.user.role !== 'admin') {
         return res.status(403).render('error/403');
     }
     next();
 };
 
 const requireUser = (req, res, next) => {
-    if (!req.session.user || req.session.user.role !== 'user') {
+    if (!req.session.user) {
+        req.session.redirectUrl = req.originalUrl;
+        return res.redirect('/auth/login');
+    }
+    if (req.session.user.role !== 'user') {
         return res.status(403).render('error/403');
     }
     next();

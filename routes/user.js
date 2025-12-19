@@ -182,6 +182,24 @@ router.get('/booking', (req, res) => {
     res.redirect('/user/bookings');
 });
 
+// Single room booking redirect
+router.get('/book/:roomId', (req, res) => {
+    res.redirect(`/user/bookings?room=${req.params.roomId}`);
+});
+
+// Quick access redirects
+router.get('/room-types', (req, res) => {
+    res.redirect('/user/rooms');
+});
+
+router.get('/payment-history', (req, res) => {
+    res.redirect('/user/payments');
+});
+
+router.get('/complaint', (req, res) => {
+    res.redirect('/user/complaints');
+});
+
 router.get('/api/available-rooms', async (req, res) => {
     try {
         const [rooms] = await db.execute(`
@@ -410,7 +428,7 @@ router.get('/activate-payment/:id', async (req, res) => {
         const userId = req.session.user.id;
         
         const [bookings] = await db.execute(
-            'SELECT b.*, rt.base_price, rt.name as room_type FROM bookings b JOIN room_types rt ON b.room_type_id = rt.id WHERE b.multi_booking_id = ? AND b.user_id = ?',
+            'SELECT b.*, rt.base_price, rt.name as room_type, r.room_number FROM bookings b JOIN room_types rt ON b.room_type_id = rt.id JOIN rooms r ON b.room_id = r.id WHERE b.multi_booking_id = ? AND b.user_id = ?',
             [multiBookingId, userId]
         );
         
@@ -453,12 +471,16 @@ router.post('/bookings/:id/activate', async (req, res) => {
         const multiBookingId = req.params.id;
         const userId = req.session.user.id;
         
+        // Start transaction
+        await db.execute('START TRANSACTION');
+        
         const [bookings] = await db.execute(
             'SELECT b.*, rt.base_price FROM bookings b JOIN room_types rt ON b.room_type_id = rt.id WHERE b.multi_booking_id = ? AND b.user_id = ?',
             [multiBookingId, userId]
         );
         
         if (bookings.length === 0) {
+            await db.execute('ROLLBACK');
             return res.redirect('/user/bookings?error=Booking tidak ditemukan');
         }
         
@@ -489,10 +511,12 @@ router.post('/bookings/:id/activate', async (req, res) => {
             }
         }
         
-        res.redirect('/user/payments?success=Pembayaran berhasil diajukan!');
+        await db.execute('COMMIT');
+        res.redirect('/user/payments?success=Pembayaran berhasil diaktifkan! Silakan lakukan pembayaran sesuai jadwal.');
     } catch (error) {
+        await db.execute('ROLLBACK');
         console.error(error);
-        res.redirect('/user/bookings?error=Gagal mengaktifkan pembayaran');
+        res.redirect('/user/bookings?error=Gagal mengaktifkan pembayaran: ' + error.message);
     }
 });
 

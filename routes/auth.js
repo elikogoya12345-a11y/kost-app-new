@@ -107,8 +107,17 @@ router.post('/login', async (req, res) => {
             id: user.id,
             name: user.name,
             email: user.email,
-            role: user.role
+            role: user.role,
+            username: user.username
         };
+        
+        // Check if there's a redirect URL in session
+        const redirectUrl = req.session.redirectUrl;
+        delete req.session.redirectUrl;
+        
+        if (redirectUrl) {
+            return res.redirect(redirectUrl);
+        }
         
         const redirectPath = user.role === 'admin' ? '/admin/dashboard' : '/user/dashboard';
         res.redirect(redirectPath);

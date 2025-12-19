@@ -74,12 +74,20 @@ app.use('/upload', require('./routes/upload'));
 // Error handlers
 app.use((err, req, res, next) => {
     console.error(err.stack);
-    res.status(500).render('error/404', { error: 'Internal Server Error' });
+    if (err.status === 403) {
+        return res.status(403).render('error/403', { user: req.session.user || null });
+    }
+    res.status(500).render('error/404', { 
+        error: 'Internal Server Error',
+        user: req.session.user || null 
+    });
 });
 
 // 404 handler
 app.use((req, res) => {
-    res.status(404).render('error/404');
+    res.status(404).render('error/404', { 
+        user: req.session.user || null 
+    });
 });
 
 app.listen(PORT, '0.0.0.0', () => {
