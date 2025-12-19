@@ -609,6 +609,9 @@ router.post('/rooms/reset-all', async (req, res) => {
         // Cancel all confirmed bookings
         await db.execute('UPDATE bookings SET status = ? WHERE status = ?', ['cancelled', 'confirmed']);
         
+        // Cancel multi bookings
+        await db.execute('UPDATE multi_bookings SET status = ? WHERE status = ?', ['cancelled', 'confirmed']);
+        
         // Delete pending payments
         await db.execute('DELETE FROM payments WHERE status = ?', ['pending']);
         
