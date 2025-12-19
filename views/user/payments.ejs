@@ -110,8 +110,13 @@
 
         <!-- Payment List -->
         <div class="glossy-white rounded-2xl overflow-hidden glossy-card">
-            <div class="p-6 border-b border-amber-200">
+            <div class="p-6 border-b border-amber-200 flex justify-between items-center">
                 <h2 class="text-xl font-bold text-gold-dark">Daftar Pembayaran</h2>
+                <% if (payments.length > 0) { %>
+                    <button onclick="exportToPDF()" class="glossy-gold text-white px-4 py-2 rounded-lg glossy-card">
+                        <i class="fas fa-file-pdf mr-2"></i>Export PDF
+                    </button>
+                <% } %>
             </div>
             
             <div class="overflow-x-auto">
@@ -207,13 +212,105 @@
         </div>
     </div>
 
-    <% if (typeof success !== 'undefined' && success) { %>
-        <script>
+    <script>
+        function exportToPDF() {
+            // Create a new window for PDF content
+            const printWindow = window.open('', '_blank');
+            const currentDate = new Date().toLocaleDateString('id-ID');
+            
+            const pdfContent = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Laporan Pembayaran Kost</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; margin: 20px; }
+                        .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 20px; }
+                        .info { margin-bottom: 20px; }
+                        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                        th { background-color: #f2f2f2; font-weight: bold; }
+                        .status-paid { color: green; font-weight: bold; }
+                        .status-pending { color: orange; font-weight: bold; }
+                        .status-overdue { color: red; font-weight: bold; }
+                        .total { font-weight: bold; background-color: #f9f9f9; }
+                        @media print { body { margin: 0; } }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h1>LAPORAN PEMBAYARAN KOST</h1>
+                        <h2>Kost Putra Bu Hartini</h2>
+                        <p>Tanggal Cetak: ${currentDate}</p>
+                        <p>Nama: <%= user.name %> | Email: <%= user.email %></p>
+                    </div>
+                    
+                    <div class="info">
+                        <h3>Ringkasan Pembayaran</h3>
+                        <p><strong>Total Dibayar:</strong> Rp <%= payments.filter(p => p.status === 'paid').reduce((sum, p) => sum + parseFloat(p.amount), 0).toLocaleString('id-ID') %></p>
+                        <p><strong>Pembayaran Pending:</strong> <%= payments.filter(p => p.status === 'pending').length %> tagihan</p>
+                        <p><strong>Pembayaran Terlambat:</strong> <%= payments.filter(p => p.status === 'overdue').length %> tagihan</p>
+                    </div>
+                    
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th>Periode</th>
+                                <th>Kamar</th>
+                                <th>Jumlah</th>
+                                <th>Jatuh Tempo</th>
+                                <th>Status</th>
+                                <th>Tanggal Bayar</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% payments.forEach((payment, index) => { %>
+                                <tr>
+                                    <td><%= index + 1 %></td>
+                                    <td><%= payment.month_year || 'N/A' %></td>
+                                    <td>Kamar <%= payment.room_number %> - <%= payment.room_type %></td>
+                                    <td>Rp <%= parseFloat(payment.amount).toLocaleString('id-ID') %></td>
+                                    <td><%= new Date(payment.due_date).toLocaleDateString('id-ID') %></td>
+                                    <td class="status-<%= payment.status %>">
+                                        <% if (payment.status === 'paid') { %>Lunas<% } %>
+                                        <% if (payment.status === 'pending') { %>Pending<% } %>
+                                        <% if (payment.status === 'overdue') { %>Terlambat<% } %>
+                                    </td>
+                                    <td><%= payment.payment_date ? new Date(payment.payment_date).toLocaleDateString('id-ID') : '-' %></td>
+                                </tr>
+                            <% }); %>
+                            <tr class="total">
+                                <td colspan="3"><strong>TOTAL</strong></td>
+                                <td><strong>Rp <%= payments.reduce((sum, p) => sum + parseFloat(p.amount), 0).toLocaleString('id-ID') %></strong></td>
+                                <td colspan="3"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                    <div style="margin-top: 30px; text-align: center; font-size: 12px; color: #666;">
+                        <p>Dokumen ini dicetak secara otomatis dari sistem Kost Putra Bu Hartini</p>
+                        <p>Untuk pertanyaan, hubungi pengelola kost</p>
+                    </div>
+                </body>
+                </html>
+            `;
+            
+            printWindow.document.write(pdfContent);
+            printWindow.document.close();
+            
+            // Wait for content to load then print
+            printWindow.onload = function() {
+                printWindow.print();
+            };
+        }
+        
+        <% if (typeof success !== 'undefined' && success) { %>
             setTimeout(() => {
-                const alert = document.querySelector('.bg-green-50');
+                const alert = document.querySelector('.glossy-gold-light');
                 if (alert) alert.remove();
             }, 5000);
-        </script>
-    <% } %>
+        <% } %>
+    </script>
 </body>
 </html>
