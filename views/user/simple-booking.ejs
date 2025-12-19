@@ -92,17 +92,16 @@
     </div>
 
     <script>
-        const checkboxes = document.querySelectorAll('.room-checkbox');
-        const summary = document.getElementById('summary');
-        const roomsData = document.getElementById('roomsData');
-        const totalAmount = document.getElementById('totalAmount');
-        const durationSelect = document.querySelector('select[name="duration_months"]');
-
         function updateSummary() {
-            const selected = Array.from(checkboxes).filter(cb => cb.checked);
-            const duration = parseInt(durationSelect.value) || 1;
+            const checkboxes = document.querySelectorAll('.room-checkbox:checked');
+            const duration = parseInt(document.querySelector('select[name="duration_months"]').value) || 1;
+            const summary = document.getElementById('summary');
+            const roomsData = document.getElementById('roomsData');
+            const totalAmount = document.getElementById('totalAmount');
             
-            if (selected.length === 0) {
+            console.log('Selected rooms:', checkboxes.length);
+            
+            if (checkboxes.length === 0) {
                 summary.innerHTML = '<p class="text-gray-600">Pilih kamar untuk melihat total</p>';
                 roomsData.value = '[]';
                 totalAmount.value = '0';
@@ -113,10 +112,11 @@
             const rooms = [];
             let html = '<div class="space-y-2">';
 
-            selected.forEach(cb => {
+            checkboxes.forEach(cb => {
                 const price = parseInt(cb.dataset.price);
                 const roomNumber = cb.parentElement.querySelector('label').textContent;
-                total += price * duration;
+                const subtotal = price * duration;
+                total += subtotal;
                 
                 rooms.push({
                     room_id: parseInt(cb.value),
@@ -126,7 +126,7 @@
 
                 html += `<div class="flex justify-between text-sm">
                     <span>${roomNumber}</span>
-                    <span>Rp ${(price * duration).toLocaleString('id-ID')}</span>
+                    <span>Rp ${subtotal.toLocaleString('id-ID')}</span>
                 </div>`;
             });
 
@@ -140,15 +140,44 @@
             summary.innerHTML = html;
             roomsData.value = JSON.stringify(rooms);
             totalAmount.value = total;
+            
+            console.log('Updated data:', { rooms: rooms.length, total });
         }
 
-        checkboxes.forEach(cb => cb.addEventListener('change', updateSummary));
-        durationSelect.addEventListener('change', updateSummary);
+        // Event listeners
+        document.addEventListener('change', function(e) {
+            if (e.target.classList.contains('room-checkbox') || e.target.name === 'duration_months') {
+                updateSummary();
+            }
+        });
 
-        // Set default date
-        document.querySelector('input[name="start_date"]').value = new Date().toISOString().split('T')[0];
-        
-        updateSummary();
+        // Form validation
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const selected = document.querySelectorAll('.room-checkbox:checked');
+            if (selected.length === 0) {
+                e.preventDefault();
+                alert('Silakan pilih minimal satu kamar!');
+                return false;
+            }
+            
+            const startDate = document.querySelector('input[name="start_date"]').value;
+            if (!startDate) {
+                e.preventDefault();
+                alert('Silakan pilih tanggal mulai!');
+                return false;
+            }
+            
+            console.log('Form submitted with:', {
+                rooms: document.getElementById('roomsData').value,
+                total: document.getElementById('totalAmount').value
+            });
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelector('input[name="start_date"]').value = new Date().toISOString().split('T')[0];
+            updateSummary();
+        });
     </script>
 </body>
 </html>

@@ -346,20 +346,29 @@ router.post('/booking', async (req, res) => {
         const { start_date, duration_months, rooms, notes, total_amount } = req.body;
         const userId = req.session.user.id;
         
-        if (!start_date || !duration_months || !rooms || !total_amount) {
+        console.log('Booking request:', { start_date, duration_months, rooms, total_amount });
+        
+        if (!start_date || !duration_months || !total_amount) {
             return res.redirect('/user/bookings?error=Data tidak lengkap');
         }
         
         let roomsArray = [];
-        if (typeof rooms === 'string') {
-            roomsArray = JSON.parse(rooms);
-        } else if (Array.isArray(rooms)) {
-            roomsArray = rooms;
+        try {
+            if (typeof rooms === 'string') {
+                roomsArray = JSON.parse(rooms);
+            } else if (Array.isArray(rooms)) {
+                roomsArray = rooms;
+            }
+        } catch (e) {
+            console.error('Parse error:', e);
+            return res.redirect('/user/bookings?error=Format data tidak valid');
         }
         
-        if (roomsArray.length === 0) {
+        if (!roomsArray || roomsArray.length === 0) {
             return res.redirect('/user/bookings?error=Pilih minimal satu kamar');
         }
+        
+        console.log('Processing rooms:', roomsArray);
         
         await db.execute('START TRANSACTION');
         
@@ -382,7 +391,6 @@ router.post('/booking', async (req, res) => {
             
             await db.execute('UPDATE rooms SET status = ? WHERE id = ?', ['occupied', roomId]);
             
-            // Auto create occupant and payments
             const endDate = new Date(start_date);
             endDate.setMonth(endDate.getMonth() + parseInt(duration_months));
             
@@ -406,11 +414,16 @@ router.post('/booking', async (req, res) => {
         }
         
         await db.execute('COMMIT');
+        console.log('Booking success, redirecting to payments');
         res.redirect('/user/payments?success=Booking berhasil! Silakan lakukan pembayaran.');
     } catch (error) {
-        await db.execute('ROLLBACK');
-        console.error(error);
-        res.redirect('/user/bookings?error=Gagal melakukan booking');
+        try {
+            await db.execute('ROLLBACK');
+        } catch (rollbackError) {
+            console.error('Rollback error:', rollbackError);
+        }
+        console.error('Booking error:', error);
+        res.redirect('/user/bookings?error=Gagal melakukan booking: ' + error.message);
     }
 });
 
