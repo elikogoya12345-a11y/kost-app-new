@@ -119,6 +119,30 @@ CREATE TABLE notifications (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
+-- Admin Transactions table
+CREATE TABLE admin_transactions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    transaction_date DATE NOT NULL,
+    type ENUM('income', 'expense') NOT NULL,
+    category VARCHAR(100) NOT NULL,
+    description TEXT,
+    total_amount DECIMAL(12,2) NOT NULL DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Admin Transaction Items table
+CREATE TABLE admin_transaction_items (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    transaction_id INT NOT NULL,
+    description VARCHAR(255) NOT NULL,
+    quantity INT NOT NULL DEFAULT 1,
+    unit_price DECIMAL(12,2) NOT NULL,
+    total DECIMAL(12,2) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (transaction_id) REFERENCES admin_transactions(id) ON DELETE CASCADE
+);
+
 -- Create indexes for better performance
 CREATE INDEX idx_users_email ON users(email);
 CREATE INDEX idx_users_username ON users(username);
@@ -129,3 +153,5 @@ CREATE INDEX idx_payments_occupant_id ON payments(occupant_id);
 CREATE INDEX idx_payments_status ON payments(status);
 CREATE INDEX idx_complaints_user_id ON complaints(user_id);
 CREATE INDEX idx_notifications_user_id ON notifications(user_id);
+CREATE INDEX idx_admin_transactions_date ON admin_transactions(transaction_date);
+CREATE INDEX idx_admin_transaction_items_transaction_id ON admin_transaction_items(transaction_id);

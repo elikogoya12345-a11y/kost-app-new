@@ -664,6 +664,134 @@ router.post('/notifications/:id/reply', async (req, res) => {
     }
 });
 
+// Transaction Management
+router.get('/transactions', async (req, res) => {
+    try {
+        const [transactions] = await db.execute(`
+            SELECT * FROM admin_transactions 
+            ORDER BY transaction_date DESC, created_at DESC
+        `);
+        
+        const success = req.query.success;
+        res.render('admin/transactions', { user: req.session.user, transactions, success });
+    } catch (error) {
+        console.error(error);
+        res.render('admin/transactions', { user: req.session.user, transactions: [], success: null });
+    }
+});
+
+router.get('/transactions/reports', async (req, res) => {
+    try {
+        res.render('admin/transaction-reports', { user: req.session.user });
+    } catch (error) {
+        console.error(error);
+        res.redirect('/admin/transactions?error=Gagal memuat laporan');
+    }
+});
+
+router.post('/transactions', async (req, res) => {
+    try {
+        const { transaction_date, type, category, description, total_amount, items } = req.body;
+        
+        // Start transaction
+        await db.execute('START TRANSACTION');
+        
+        // Insert main transaction
+        const [result] = await db.execute(
+            'INSERT INTO admin_transactions (transaction_date, type, category, description, total_amount) VALUES (?, ?, ?, ?, ?)',
+            [transaction_date, type, category, description || null, total_amount]
+        );
+        
+        const transactionId = result.insertId;
+        
+        // Insert transaction items
+        if (items && typeof items === 'object') {
+            const itemsArray = Array.isArray(items) ? items : Object.values(items);
+            
+            for (const item of itemsArray) {
+                if (item.description && item.quantity && item.unit_price) {
+                    await db.execute(
+                        'INSERT INTO admin_transaction_items (transaction_id, description, quantity, unit_price, total) VALUES (?, ?, ?, ?, ?)',
+                        [transactionId, item.description, item.quantity, item.unit_price, item.total || (item.quantity * item.unit_price)]
+                    );
+                }
+            }
+        }
+        
+        await db.execute('COMMIT');
+        res.redirect('/admin/transactions?success=Transaksi berhasil disimpan');
+    } catch (error) {
+        await db.execute('ROLLBACK');
+        console.error('Transaction error:', error);
+        res.redirect('/admin/transactions?error=Gagal menyimpan transaksi');
+    }
+});
+
+router.get('/api/transactions', async (req, res) => {
+    try {
+        const [transactions] = await db.execute(`
+            SELECT t.*, COUNT(ti.id) as item_count
+            FROM admin_transactions t
+            LEFT JOIN admin_transaction_items ti ON t.id = ti.transaction_id
+            GROUP BY t.id
+            ORDER BY t.transaction_date DESC, t.created_at DESC
+        `);
+        res.json({ transactions });
+    } catch (error) {
+        console.error('Error fetching transactions:', error);
+        res.status(500).json({ error: 'Gagal memuat transaksi' });
+    }
+});
+
+router.get('/transactions/:id', async (req, res) => {
+    try {
+        const [transactions] = await db.execute(
+            'SELECT * FROM admin_transactions WHERE id = ?',
+            [req.params.id]
+        );
+        
+        if (transactions.length === 0) {
+            return res.redirect('/admin/transactions?error=Transaksi tidak ditemukan');
+        }
+        
+        const [items] = await db.execute(
+            'SELECT * FROM admin_transaction_items WHERE transaction_id = ? ORDER BY id',
+            [req.params.id]
+        );
+        
+        res.render('admin/transaction-detail', {
+            user: req.session.user,
+            transaction: transactions[0],
+            items
+        });
+    } catch (error) {
+        console.error(error);
+        res.redirect('/admin/transactions?error=Gagal memuat detail transaksi');
+    }
+});
+
+router.post('/transactions/:id/delete', async (req, res) => {
+    try {
+        const transactionId = req.params.id;
+        
+        // Start transaction
+        await db.execute('START TRANSACTION');
+        
+        // Delete transaction items first
+        await db.execute('DELETE FROM admin_transaction_items WHERE transaction_id = ?', [transactionId]);
+        
+        // Delete main transaction
+        await db.execute('DELETE FROM admin_transactions WHERE id = ?', [transactionId]);
+        
+        await db.execute('COMMIT');
+        res.redirect('/admin/transactions?success=Transaksi berhasil dihapus');
+    } catch (error) {
+        await db.execute('ROLLBACK');
+        console.error(error);
+        res.redirect('/admin/transactions?error=Gagal menghapus transaksi');
+    }
+});
+
 
 
 module.exports = router;

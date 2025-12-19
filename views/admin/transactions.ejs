@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kelola Transaksi - KostPro Admin</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-gray-50">
+    <%- include('../partials/admin-nav') %>
+
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        <div class="mb-8">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-800">Kelola Transaksi</h1>
+                    <p class="text-gray-600 mt-2">Kelola semua transaksi keuangan kost</p>
+                </div>
+                <div class="flex gap-3">
+                    <a href="/admin/transactions/reports" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium">
+                        <i class="fas fa-chart-bar mr-2"></i>Laporan
+                    </a>
+                    <button onclick="openTransactionModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium">
+                        <i class="fas fa-plus mr-2"></i>Transaksi Baru
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <% if (typeof success !== 'undefined' && success) { %>
+            <div class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg mb-6">
+                <i class="fas fa-check-circle mr-2"></i><%= success %>
+            </div>
+        <% } %>
+
+        <!-- Transaction Statistics -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-6 text-white">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-blue-100 text-sm">Total Transaksi</p>
+                        <h3 class="text-2xl font-bold"><%= transactions.length %></h3>
+                    </div>
+                    <i class="fas fa-receipt text-3xl text-blue-200"></i>
+                </div>
+            </div>
+
+            <div class="bg-gradient-to-r from-green-500 to-green-600 rounded-xl p-6 text-white">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-green-100 text-sm">Total Pemasukan</p>
+                        <h3 class="text-lg font-bold">
+                            Rp <%= transactions.filter(t => t.type === 'income').reduce((sum, t) => sum + parseFloat(t.total_amount), 0).toLocaleString('id-ID') %>
+                        </h3>
+                    </div>
+                    <i class="fas fa-arrow-up text-3xl text-green-200"></i>
+                </div>
+            </div>
+
+            <div class="bg-gradient-to-r from-red-500 to-red-600 rounded-xl p-6 text-white">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-red-100 text-sm">Total Pengeluaran</p>
+                        <h3 class="text-lg font-bold">
+                            Rp <%= transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + parseFloat(t.total_amount), 0).toLocaleString('id-ID') %>
+                        </h3>
+                    </div>
+                    <i class="fas fa-arrow-down text-3xl text-red-200"></i>
+                </div>
+            </div>
+
+            <div class="bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl p-6 text-white">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-purple-100 text-sm">Saldo Bersih</p>
+                        <h3 class="text-lg font-bold">
+                            Rp <%= (transactions.filter(t => t.type === 'income').reduce((sum, t) => sum + parseFloat(t.total_amount), 0) - transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + parseFloat(t.total_amount), 0)).toLocaleString('id-ID') %>
+                        </h3>
+                    </div>
+                    <i class="fas fa-balance-scale text-3xl text-purple-200"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Transactions List -->
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+            <div class="p-6 border-b border-gray-200">
+                <h2 class="text-xl font-bold text-gray-800">Daftar Transaksi</h2>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kategori</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Deskripsi</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipe</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jumlah</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        <% if (transactions.length > 0) { %>
+                            <% transactions.forEach(transaction => { %>
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-medium text-gray-900">#TRX-<%= String(transaction.id).padStart(5, '0') %></div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900"><%= new Date(transaction.transaction_date).toLocaleDateString('id-ID') %></div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900"><%= transaction.category %></div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="text-sm text-gray-900"><%= transaction.description || '-' %></div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <% if (transaction.type === 'income') { %>
+                                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                                                <i class="fas fa-arrow-up mr-1"></i>Pemasukan
+                                            </span>
+                                        <% } else { %>
+                                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
+                                                <i class="fas fa-arrow-down mr-1"></i>Pengeluaran
+                                            </span>
+                                        <% } %>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-bold <%= transaction.type === 'income' ? 'text-green-600' : 'text-red-600' %>">
+                                            Rp <%= parseFloat(transaction.total_amount).toLocaleString('id-ID') %>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <button onclick="viewTransaction(<%= transaction.id %>)" class="text-blue-600 hover:text-blue-900 mr-3">
+                                            <i class="fas fa-eye mr-1"></i>Detail
+                                        </button>
+                                        <button onclick="editTransaction(<%= transaction.id %>)" class="text-yellow-600 hover:text-yellow-900 mr-3">
+                                            <i class="fas fa-edit mr-1"></i>Edit
+                                        </button>
+                                        <button onclick="deleteTransaction(<%= transaction.id %>)" class="text-red-600 hover:text-red-900">
+                                            <i class="fas fa-trash mr-1"></i>Hapus
+                                        </button>
+                                    </td>
+                                </tr>
+                            <% }); %>
+                        <% } else { %>
+                            <tr>
+                                <td colspan="7" class="px-6 py-12 text-center">
+                                    <i class="fas fa-receipt text-4xl text-gray-400 mb-4"></i>
+                                    <h3 class="text-lg font-semibold text-gray-600 mb-2">Belum Ada Transaksi</h3>
+                                    <p class="text-gray-500">Klik tombol "Transaksi Baru" untuk menambah transaksi</p>
+                                </td>
+                            </tr>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transaction Modal -->
+    <div id="transactionModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
+        <div class="relative top-20 mx-auto p-5 border w-11/12 max-w-4xl shadow-lg rounded-md bg-white">
+            <div class="mt-3">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-bold text-gray-900" id="modalTitle">Transaksi Baru</h3>
+                    <button onclick="closeTransactionModal()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+                
+                <form id="transactionForm" action="/admin/transactions" method="POST">
+                    <input type="hidden" id="transactionId" name="id">
+                    
+                    <!-- Transaction Header -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Tanggal Transaksi</label>
+                            <input type="date" name="transaction_date" id="transaction_date" required
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Tipe</label>
+                            <select name="type" id="type" required
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="">Pilih tipe...</option>
+                                <option value="income">Pemasukan</option>
+                                <option value="expense">Pengeluaran</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Kategori</label>
+                            <select name="category" id="category" required
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="">Pilih kategori...</option>
+                                <option value="Pembayaran Sewa">Pembayaran Sewa</option>
+                                <option value="Deposit">Deposit</option>
+                                <option value="Utilitas">Utilitas</option>
+                                <option value="Maintenance">Maintenance</option>
+                                <option value="Operasional">Operasional</option>
+                                <option value="Lainnya">Lainnya</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Deskripsi</label>
+                        <textarea name="description" id="description" rows="2" placeholder="Deskripsi transaksi..."
+                                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                    </div>
+
+                    <!-- Transaction Items -->
+                    <div class="mb-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h4 class="text-lg font-medium text-gray-900">Detail Transaksi</h4>
+                            <button type="button" onclick="addTransactionItem()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-md text-sm">
+                                <i class="fas fa-plus mr-1"></i>Tambah Item
+                            </button>
+                        </div>
+                        
+                        <div id="transactionItems" class="space-y-3">
+                            <!-- Initial item -->
+                            <div class="transaction-item bg-gray-50 rounded-lg p-4 border">
+                                <div class="flex justify-between items-center mb-3">
+                                    <span class="text-sm font-medium text-gray-700">Item #1</span>
+                                    <button type="button" onclick="removeTransactionItem(this)" class="text-red-500 hover:text-red-700 text-sm" style="display: none;">
+                                        <i class="fas fa-trash mr-1"></i>Hapus
+                                    </button>
+                                </div>
+                                
+                                <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                                    <div class="md:col-span-2">
+                                        <input type="text" name="items[0][description]" placeholder="Deskripsi item..." required
+                                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    </div>
+                                    
+                                    <div>
+                                        <input type="number" name="items[0][quantity]" placeholder="Qty" min="1" value="1" required
+                                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                               onchange="calculateItemTotal(this)">
+                                    </div>
+                                    
+                                    <div>
+                                        <input type="number" name="items[0][unit_price]" placeholder="Harga satuan" min="0" step="1000" required
+                                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                               onchange="calculateItemTotal(this)">
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-2">
+                                    <div class="text-right">
+                                        <span class="text-sm text-gray-600">Total: </span>
+                                        <span class="text-lg font-bold text-blue-600 item-total">Rp 0</span>
+                                        <input type="hidden" name="items[0][total]" value="0">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Grand Total -->
+                        <div class="mt-4 pt-4 border-t border-gray-200">
+                            <div class="flex justify-between items-center">
+                                <span class="text-xl font-bold text-gray-900">Total Keseluruhan:</span>
+                                <span class="text-2xl font-bold text-blue-600" id="grandTotal">Rp 0</span>
+                            </div>
+                            <input type="hidden" name="total_amount" id="totalAmount" value="0">
+                        </div>
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div class="flex justify-end space-x-3">
+                        <button type="button" onclick="closeTransactionModal()" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
+                            Batal
+                        </button>
+                        <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                            <i class="fas fa-save mr-2"></i>Simpan Transaksi
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let itemCounter = 1;
+
+        // Set today's date as default
+        document.getElementById('transaction_date').value = new Date().toISOString().split('T')[0];
+
+        function openTransactionModal(transactionId = null) {
+            document.getElementById('transactionModal').classList.remove('hidden');
+            
+            if (transactionId) {
+                document.getElementById('modalTitle').textContent = 'Edit Transaksi';
+                document.getElementById('transactionForm').action = `/admin/transactions/${transactionId}`;
+                // Load transaction data here
+            } else {
+                document.getElementById('modalTitle').textContent = 'Transaksi Baru';
+                document.getElementById('transactionForm').action = '/admin/transactions';
+                document.getElementById('transactionForm').reset();
+                document.getElementById('transaction_date').value = new Date().toISOString().split('T')[0];
+            }
+        }
+
+        function closeTransactionModal() {
+            if (confirm('Apakah Anda yakin ingin menutup form? Data yang belum disimpan akan hilang.')) {
+                document.getElementById('transactionModal').classList.add('hidden');
+            }
+        }
+
+        function addTransactionItem() {
+            const container = document.getElementById('transactionItems');
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'transaction-item bg-gray-50 rounded-lg p-4 border';
+            
+            itemDiv.innerHTML = `
+                <div class="flex justify-between items-center mb-3">
+                    <span class="text-sm font-medium text-gray-700">Item #${itemCounter + 1}</span>
+                    <button type="button" onclick="removeTransactionItem(this)" class="text-red-500 hover:text-red-700 text-sm">
+                        <i class="fas fa-trash mr-1"></i>Hapus
+                    </button>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                    <div class="md:col-span-2">
+                        <input type="text" name="items[${itemCounter}][description]" placeholder="Deskripsi item..." required
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    
+                    <div>
+                        <input type="number" name="items[${itemCounter}][quantity]" placeholder="Qty" min="1" value="1" required
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                               onchange="calculateItemTotal(this)">
+                    </div>
+                    
+                    <div>
+                        <input type="number" name="items[${itemCounter}][unit_price]" placeholder="Harga satuan" min="0" step="1000" required
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                               onchange="calculateItemTotal(this)">
+                    </div>
+                </div>
+                
+                <div class="mt-2">
+                    <div class="text-right">
+                        <span class="text-sm text-gray-600">Total: </span>
+                        <span class="text-lg font-bold text-blue-600 item-total">Rp 0</span>
+                        <input type="hidden" name="items[${itemCounter}][total]" value="0">
+                    </div>
+                </div>
+            `;
+            
+            container.appendChild(itemDiv);
+            itemCounter++;
+            updateRemoveButtons();
+        }
+
+        function removeTransactionItem(button) {
+            if (confirm('Apakah Anda yakin ingin menghapus item ini?')) {
+                const itemDiv = button.closest('.transaction-item');
+                itemDiv.remove();
+                updateRemoveButtons();
+                calculateGrandTotal();
+            }
+        }
+
+        function updateRemoveButtons() {
+            const items = document.querySelectorAll('.transaction-item');
+            items.forEach((item, index) => {
+                const removeBtn = item.querySelector('button[onclick*="removeTransactionItem"]');
+                if (items.length > 1) {
+                    removeBtn.style.display = 'inline-block';
+                } else {
+                    removeBtn.style.display = 'none';
+                }
+                
+                // Update item number
+                const itemLabel = item.querySelector('.text-sm.font-medium');
+                itemLabel.textContent = `Item #${index + 1}`;
+            });
+        }
+
+        function calculateItemTotal(input) {
+            const itemDiv = input.closest('.transaction-item');
+            const quantity = parseFloat(itemDiv.querySelector('input[name*="[quantity]"]').value) || 0;
+            const unitPrice = parseFloat(itemDiv.querySelector('input[name*="[unit_price]"]').value) || 0;
+            const total = quantity * unitPrice;
+            
+            itemDiv.querySelector('.item-total').textContent = `Rp ${total.toLocaleString('id-ID')}`;
+            itemDiv.querySelector('input[name*="[total]"]').value = total;
+            calculateGrandTotal();
+        }
+
+        function calculateGrandTotal() {
+            const totalInputs = document.querySelectorAll('input[name*="[total]"]');
+            let grandTotal = 0;
+            
+            totalInputs.forEach(input => {
+                grandTotal += parseFloat(input.value) || 0;
+            });
+            
+            document.getElementById('grandTotal').textContent = `Rp ${grandTotal.toLocaleString('id-ID')}`;
+            document.getElementById('totalAmount').value = grandTotal;
+        }
+
+        function viewTransaction(id) {
+            window.location.href = `/admin/transactions/${id}`;
+        }
+
+        function editTransaction(id) {
+            openTransactionModal(id);
+        }
+
+        function deleteTransaction(id) {
+            if (confirm('Apakah Anda yakin ingin menghapus transaksi ini? Tindakan ini tidak dapat dibatalkan.')) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = `/admin/transactions/${id}/delete`;
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+
+        // Form submission confirmation
+        document.getElementById('transactionForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            if (confirm('Apakah Anda yakin ingin menyimpan transaksi ini?')) {
+                this.submit();
+            }
+        });
+    </script>
+</body>
+</html>
