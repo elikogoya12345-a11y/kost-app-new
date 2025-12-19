@@ -181,6 +181,8 @@ router.get('/booking', (req, res) => {
 
 router.get('/bookings', async (req, res) => {
     try {
+        const selectedType = req.query.type;
+        
         const [roomTypes] = await db.execute(`
             SELECT rt.*, COUNT(r.id) as available_count
             FROM room_types rt
@@ -190,13 +192,22 @@ router.get('/bookings', async (req, res) => {
             ORDER BY rt.base_price
         `);
         
-        const [rooms] = await db.execute(`
+        let roomsQuery = `
             SELECT r.*, rt.name as type_name, rt.base_price
             FROM rooms r
             JOIN room_types rt ON r.room_type_id = rt.id
             WHERE r.status = 'available'
-            ORDER BY r.room_number
-        `);
+        `;
+        let queryParams = [];
+        
+        if (selectedType) {
+            roomsQuery += ' AND rt.id = ?';
+            queryParams.push(selectedType);
+        }
+        
+        roomsQuery += ' ORDER BY r.room_number';
+        
+        const [rooms] = await db.execute(roomsQuery, queryParams);
         
         const [bookings] = await db.execute(`
             SELECT mb.*, 
@@ -215,6 +226,7 @@ router.get('/bookings', async (req, res) => {
             roomTypes, 
             rooms, 
             bookings,
+            selectedType,
             success 
         });
     } catch (error) {
@@ -224,6 +236,7 @@ router.get('/bookings', async (req, res) => {
             roomTypes: [], 
             rooms: [], 
             bookings: [],
+            selectedType: null,
             success: null 
         });
     }
@@ -348,7 +361,7 @@ router.post('/multi-booking', async (req, res) => {
         }
         
         await db.execute('COMMIT');
-        res.redirect('/user/bookings?success=Booking berhasil! Silakan ajukan pembayaran.');
+        res.redirect('/user/bookings?success=Booking berhasil! Silakan lanjutkan pembayaran.');
     } catch (error) {
         await db.execute('ROLLBACK');
         console.error(error);

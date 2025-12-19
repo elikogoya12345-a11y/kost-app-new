@@ -89,32 +89,38 @@
                         </div>
 
                         <div class="mb-6">
-                            <h3 class="text-lg font-semibold text-gold-dark mb-4">Kamar Tersedia</h3>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="roomsGrid">
-                                <% rooms.forEach((room, index) => { %>
-                                    <div class="border border-amber-200 rounded-lg p-4 room-card">
-                                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-lg font-semibold text-gold-dark">Kamar Terpilih</h3>
+                                <button type="button" onclick="showRoomSelector()" 
+                                        class="glossy-gold-light text-gold-dark px-4 py-2 rounded-lg hover:opacity-90">
+                                    <i class="fas fa-plus mr-2"></i>Tambah Kamar
+                                </button>
+                            </div>
+                            
+                            <div id="selectedRoomsContainer" class="space-y-3 mb-4">
+                                <% if (selectedType && rooms.length > 0) { %>
+                                    <div class="border border-amber-200 rounded-lg p-4 selected-room-card">
+                                        <div class="flex items-center justify-between">
                                             <div>
-                                                <h4 class="font-semibold text-gold-dark">Kamar <%= room.room_number %></h4>
-                                                <p class="text-sm text-gold"><%= room.type_name %></p>
+                                                <h4 class="font-semibold text-gold-dark">Kamar <%= rooms[0].room_number %></h4>
+                                                <p class="text-sm text-gold"><%= rooms[0].type_name %></p>
                                             </div>
                                             <div class="text-right">
                                                 <div class="text-lg font-bold text-amber-600">
-                                                    Rp <%= parseInt(room.base_price).toLocaleString('id-ID') %>
+                                                    Rp <%= parseInt(rooms[0].base_price).toLocaleString('id-ID') %>
                                                 </div>
                                                 <div class="text-xs text-gold">per bulan</div>
                                             </div>
                                         </div>
-                                        <label class="flex items-center cursor-pointer">
-                                            <input type="checkbox" name="selected_rooms" value="<%= room.id %>" 
-                                                   data-price="<%= room.base_price %>" 
-                                                   data-room-number="<%= room.room_number %>"
-                                                   data-type-name="<%= room.type_name %>"
-                                                   class="room-checkbox mr-3">
-                                            <span class="text-sm text-gold-dark">Pilih kamar ini</span>
-                                        </label>
+                                        <input type="hidden" name="selected_rooms" value="<%= rooms[0].id %>" 
+                                               data-price="<%= rooms[0].base_price %>" 
+                                               data-room-number="<%= rooms[0].room_number %>"
+                                               data-type-name="<%= rooms[0].type_name %>"
+                                               class="room-checkbox" checked>
                                     </div>
-                                <% }); %>
+                                <% } else { %>
+                                    <p class="text-gold text-center py-4">Belum ada kamar dipilih. Klik "Tambah Kamar" untuk memilih.</p>
+                                <% } %>
                             </div>
                         </div>
 
@@ -155,8 +161,8 @@
                         </div>
                     </div>
                     
-                    <button type="submit" form="multiBookingForm" id="bookingButton" disabled
-                            class="w-full glossy-gold text-white px-6 py-3 rounded-lg mt-6 disabled:opacity-50 disabled:cursor-not-allowed">
+                    <button type="submit" form="multiBookingForm" id="bookingButton" 
+                            class="w-full glossy-gold text-white px-6 py-3 rounded-lg mt-6">
                         <i class="fas fa-calendar-plus mr-2"></i>Booking Sekarang
                     </button>
                 </div>
@@ -204,13 +210,13 @@
                                         <td class="px-4 py-3">
                                             <div class="flex gap-2">
                                                 <form action="/user/bookings/<%= booking.id %>/activate" method="POST" class="inline">
-                                                    <button type="submit" class="text-blue-600 hover:text-blue-800 text-sm">
-                                                        <i class="fas fa-play mr-1"></i>Ajukan Pembayaran
+                                                    <button type="submit" class="glossy-gold text-white px-3 py-1 rounded text-sm">
+                                                        <i class="fas fa-credit-card mr-1"></i>Lanjutkan Pembayaran
                                                     </button>
                                                 </form>
                                                 <a href="/user/bookings/<%= booking.id %>/print" target="_blank" 
-                                                   class="text-green-600 hover:text-green-800 text-sm">
-                                                    <i class="fas fa-print mr-1"></i>Print
+                                                   class="glossy-gold-light text-gold-dark px-3 py-1 rounded text-sm">
+                                                    <i class="fas fa-print mr-1"></i>Print PDF
                                                 </a>
                                             </div>
                                         </td>
@@ -230,25 +236,23 @@
     </div>
 
     <script>
-        const roomCheckboxes = document.querySelectorAll('.room-checkbox');
         const durationSelect = document.getElementById('durationSelect');
         const selectedRoomsList = document.getElementById('selectedRoomsList');
         const subtotalDisplay = document.getElementById('subtotalDisplay');
         const totalDisplay = document.getElementById('totalDisplay');
         const durationDisplay = document.getElementById('durationDisplay');
-        const bookingButton = document.getElementById('bookingButton');
         const totalAmountInput = document.getElementById('totalAmount');
         const roomsDataInput = document.getElementById('roomsData');
 
         function updateSummary() {
-            const selectedRooms = Array.from(roomCheckboxes).filter(cb => cb.checked);
+            const roomCheckboxes = document.querySelectorAll('.room-checkbox');
+            const selectedRooms = Array.from(roomCheckboxes).filter(cb => cb.checked || cb.type === 'hidden');
             const duration = parseInt(durationSelect.value);
             
             if (selectedRooms.length === 0) {
                 selectedRoomsList.innerHTML = '<p class="text-gold text-sm">Belum ada kamar dipilih</p>';
                 subtotalDisplay.textContent = 'Rp 0';
                 totalDisplay.textContent = 'Rp 0';
-                bookingButton.disabled = true;
                 return;
             }
 
@@ -288,15 +292,33 @@
             
             totalAmountInput.value = total;
             roomsDataInput.value = JSON.stringify(roomsData);
-            
-            bookingButton.disabled = false;
         }
 
-        roomCheckboxes.forEach(checkbox => {
-            checkbox.addEventListener('change', updateSummary);
-        });
+        function showRoomSelector() {
+            window.location.href = '/user/rooms';
+        }
 
         durationSelect.addEventListener('change', updateSummary);
+        updateSummary();
     </script>
+
+    <!-- Room Selector Modal -->
+    <div id="roomModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="glossy-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+                <div class="p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-2xl font-bold text-gold-dark">Pilih Kamar Tambahan</h2>
+                        <button onclick="closeRoomModal()" class="text-gold hover:text-gold-dark">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="availableRooms">
+                        <!-- Rooms will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
