@@ -792,6 +792,59 @@ router.post('/transactions/:id/delete', async (req, res) => {
     }
 });
 
+// Payment Transaction Management (synced with payments)
+router.get('/payment-transactions', async (req, res) => {
+    try {
+        res.render('admin/payment-transactions', { user: req.session.user });
+    } catch (error) {
+        console.error(error);
+        res.redirect('/admin/payments?error=Gagal memuat halaman transaksi');
+    }
+});
+
+router.get('/api/payment-transactions', async (req, res) => {
+    try {
+        const [transactions] = await db.execute(`
+            SELECT p.*, u.name as user_name, u.email as user_email, 
+                   r.room_number, rt.name as room_type
+            FROM payments p
+            JOIN occupants o ON p.occupant_id = o.id
+            JOIN users u ON o.user_id = u.id
+            JOIN rooms r ON o.room_id = r.id
+            JOIN room_types rt ON r.room_type_id = rt.id
+            ORDER BY p.due_date DESC, p.created_at DESC
+        `);
+        res.json({ transactions });
+    } catch (error) {
+        console.error('Error fetching payment transactions:', error);
+        res.status(500).json({ error: 'Gagal memuat transaksi pembayaran' });
+    }
+});
+
+router.get('/api/payment-transactions/:id', async (req, res) => {
+    try {
+        const [transactions] = await db.execute(`
+            SELECT p.*, u.name as user_name, u.email as user_email, 
+                   r.room_number, rt.name as room_type
+            FROM payments p
+            JOIN occupants o ON p.occupant_id = o.id
+            JOIN users u ON o.user_id = u.id
+            JOIN rooms r ON o.room_id = r.id
+            JOIN room_types rt ON r.room_type_id = rt.id
+            WHERE p.id = ?
+        `, [req.params.id]);
+        
+        if (transactions.length === 0) {
+            return res.status(404).json({ error: 'Transaksi tidak ditemukan' });
+        }
+        
+        res.json({ transaction: transactions[0] });
+    } catch (error) {
+        console.error('Error fetching payment transaction detail:', error);
+        res.status(500).json({ error: 'Gagal memuat detail transaksi' });
+    }
+});
+
 
 
 module.exports = router;
