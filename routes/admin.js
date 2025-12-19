@@ -845,6 +845,17 @@ router.get('/api/payment-transactions/:id', async (req, res) => {
     }
 });
 
+// Unified Payments Page
+router.get('/unified-payments', async (req, res) => {
+    try {
+        const success = req.query.success;
+        res.render('admin/unified-payments', { user: req.session.user, success });
+    } catch (error) {
+        console.error(error);
+        res.redirect('/admin/dashboard?error=Gagal memuat halaman pembayaran');
+    }
+});
+
 
 
 module.exports = router;
