@@ -417,42 +417,55 @@
         
         // Form validation before submit
         document.getElementById('multiBookingForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
             const roomCheckboxes = document.querySelectorAll('.room-checkbox:checked');
             const startDate = document.querySelector('input[name="start_date"]').value;
             const duration = document.querySelector('select[name="duration_months"]').value;
             
+            console.log('Form validation:', {
+                roomsCount: roomCheckboxes.length,
+                startDate: startDate,
+                duration: duration
+            });
+            
             if (roomCheckboxes.length === 0) {
-                e.preventDefault();
-                alert('Silakan pilih minimal satu kamar!');
+                alert('Silakan pilih minimal satu kamar dengan klik "Tambah Kamar"!');
                 return false;
             }
             
             if (!startDate) {
-                e.preventDefault();
                 alert('Silakan pilih tanggal mulai!');
                 return false;
             }
             
             if (!duration) {
-                e.preventDefault();
                 alert('Silakan pilih durasi!');
                 return false;
             }
             
-            // Update data before submit
             updateSummary();
             
-            // Show loading
+            const roomsData = document.getElementById('roomsData').value;
+            const totalAmount = document.getElementById('totalAmount').value;
+            
+            if (!roomsData || roomsData === '[]' || !totalAmount || totalAmount === '0') {
+                alert('Data booking tidak valid. Silakan pilih kamar terlebih dahulu.');
+                return false;
+            }
+            
+            console.log('Submitting form:', {
+                rooms: roomsData,
+                total_amount: totalAmount,
+                start_date: startDate,
+                duration_months: duration
+            });
+            
             const submitBtn = document.getElementById('bookingButton');
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Memproses...';
             submitBtn.disabled = true;
             
-            console.log('Form data:', {
-                rooms: document.getElementById('roomsData').value,
-                total_amount: document.getElementById('totalAmount').value,
-                start_date: startDate,
-                duration_months: duration
-            });
+            this.submit();
         });
         
         // Initialize on page load
