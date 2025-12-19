@@ -343,10 +343,10 @@ router.post('/payment-extension', async (req, res) => {
 
 router.post('/booking', async (req, res) => {
     try {
-        const { start_date, duration_months, rooms, notes, total_amount } = req.body;
+        const { start_date, duration_months, rooms, notes } = req.body;
         const userId = req.session.user.id;
         
-        if (!start_date || !duration_months || !total_amount) {
+        if (!start_date || !duration_months) {
             return res.redirect('/user/bookings?error=Data tidak lengkap');
         }
         
@@ -361,24 +361,17 @@ router.post('/booking', async (req, res) => {
             return res.redirect('/user/bookings?error=Pilih minimal satu kamar');
         }
         
-        // Create multi booking
-        const [result] = await db.execute(
-            'INSERT INTO multi_bookings (user_id, start_date, duration_months, total_amount, notes, status) VALUES (?, ?, ?, ?, ?, ?)',
-            [userId, start_date, duration_months, total_amount, notes || null, 'confirmed']
-        );
-        
-        const multiBookingId = result.insertId;
-        
-        // Process each room
+        // Process each room separately (simple approach)
         for (const room of roomsArray) {
             const roomId = room.room_id;
             const roomTypeId = room.room_type_id;
-            const subtotal = room.price * duration_months;
+            const monthlyPrice = room.price;
+            const totalAmount = monthlyPrice * duration_months;
             
-            // Create booking
+            // Create booking for each room
             await db.execute(
-                'INSERT INTO bookings (user_id, room_id, room_type_id, start_date, duration_months, total_amount, status, multi_booking_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-                [userId, roomId, roomTypeId, start_date, duration_months, subtotal, 'confirmed', multiBookingId]
+                'INSERT INTO bookings (user_id, room_id, room_type_id, start_date, duration_months, total_amount, status) VALUES (?, ?, ?, ?, ?, ?, ?)',
+                [userId, roomId, roomTypeId, start_date, duration_months, totalAmount, 'confirmed']
             );
             
             // Update room status
@@ -390,7 +383,7 @@ router.post('/booking', async (req, res) => {
             
             const [occupantResult] = await db.execute(
                 'INSERT INTO occupants (user_id, room_id, start_date, end_date, monthly_rent, status) VALUES (?, ?, ?, ?, ?, ?)',
-                [userId, roomId, start_date, endDate.toISOString().slice(0, 10), room.price, 'active']
+                [userId, roomId, start_date, endDate.toISOString().slice(0, 10), monthlyPrice, 'active']
             );
             
             const occupantId = occupantResult.insertId;
@@ -403,7 +396,7 @@ router.post('/booking', async (req, res) => {
                 
                 await db.execute(
                     'INSERT INTO payments (occupant_id, amount, due_date, status) VALUES (?, ?, ?, ?)',
-                    [occupantId, room.price, dueDate.toISOString().slice(0, 10), 'pending']
+                    [occupantId, monthlyPrice, dueDate.toISOString().slice(0, 10), 'pending']
                 );
             }
         }
