@@ -193,7 +193,7 @@ router.get('/bookings', async (req, res) => {
         `);
         
         let roomsQuery = `
-            SELECT r.*, rt.name as type_name, rt.base_price
+            SELECT r.*, rt.name as type_name, rt.base_price, rt.id as room_type_id
             FROM rooms r
             JOIN room_types rt ON r.room_type_id = rt.id
             WHERE r.status = 'available'
