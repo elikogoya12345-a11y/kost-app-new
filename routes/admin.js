@@ -229,11 +229,24 @@ router.get('/occupants', async (req, res) => {
 router.post('/occupants/:id/toggle-status', async (req, res) => {
     try {
         const userId = req.params.id;
-        const { status } = req.body;
+        
+        // Get current user status
+        const [users] = await db.execute(
+            'SELECT status FROM users WHERE id = ?',
+            [userId]
+        );
+        
+        if (users.length === 0) {
+            return res.redirect('/admin/occupants?error=Penghuni tidak ditemukan');
+        }
+        
+        // Toggle status
+        const currentStatus = users[0].status;
+        const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
         
         await db.execute(
             'UPDATE users SET status = ? WHERE id = ?',
-            [status, userId]
+            [newStatus, userId]
         );
         
         res.redirect('/admin/occupants?success=Status penghuni berhasil diperbarui');
