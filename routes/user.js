@@ -177,6 +177,23 @@ router.get('/booking', (req, res) => {
     res.redirect('/user/bookings');
 });
 
+router.get('/api/available-rooms', async (req, res) => {
+    try {
+        const [rooms] = await db.execute(`
+            SELECT r.*, rt.name as type_name, rt.base_price, rt.id as room_type_id
+            FROM rooms r
+            JOIN room_types rt ON r.room_type_id = rt.id
+            WHERE r.status = 'available'
+            ORDER BY rt.name, r.room_number
+        `);
+        
+        res.json({ rooms });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Gagal memuat kamar' });
+    }
+});
+
 
 
 router.get('/bookings', async (req, res) => {
@@ -347,16 +364,27 @@ router.post('/multi-booking', async (req, res) => {
         );
         
         const multiBookingId = result.insertId;
-        const roomsArray = Array.isArray(rooms) ? rooms : Object.values(rooms);
+        let roomsArray;
+        if (typeof rooms === 'string') {
+            roomsArray = JSON.parse(rooms);
+        } else if (Array.isArray(rooms)) {
+            roomsArray = rooms;
+        } else {
+            roomsArray = Object.values(rooms);
+        }
         
         for (const room of roomsArray) {
-            if (room.room_id && room.room_type_id && room.subtotal) {
+            const roomId = room.room_id || room;
+            const roomTypeId = room.room_type_id;
+            const subtotal = room.subtotal || room.price * duration_months;
+            
+            if (roomId) {
                 await db.execute(
                     'INSERT INTO bookings (user_id, room_id, room_type_id, start_date, duration_months, total_amount, status, multi_booking_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-                    [userId, room.room_id, room.room_type_id, start_date, duration_months, room.subtotal, 'confirmed', multiBookingId]
+                    [userId, roomId, roomTypeId, start_date, duration_months, subtotal, 'confirmed', multiBookingId]
                 );
                 
-                await db.execute('UPDATE rooms SET status = ? WHERE id = ?', ['occupied', room.room_id]);
+                await db.execute('UPDATE rooms SET status = ? WHERE id = ?', ['occupied', roomId]);
             }
         }
         

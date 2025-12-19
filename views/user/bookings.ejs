@@ -301,7 +301,109 @@
         }
 
         function showRoomSelector() {
-            window.location.href = '/user/rooms';
+            document.getElementById('roomModal').classList.remove('hidden');
+            loadAvailableRooms();
+        }
+        
+        function closeRoomModal() {
+            document.getElementById('roomModal').classList.add('hidden');
+        }
+        
+        function loadAvailableRooms() {
+            fetch('/user/api/available-rooms')
+                .then(response => response.json())
+                .then(data => {
+                    const container = document.getElementById('availableRooms');
+                    container.innerHTML = '';
+                    
+                    data.rooms.forEach(room => {
+                        const roomCard = `
+                            <div class="border border-amber-200 rounded-lg p-4">
+                                <div class="flex items-center justify-between mb-3">
+                                    <div>
+                                        <h4 class="font-semibold text-gold-dark">Kamar ${room.room_number}</h4>
+                                        <p class="text-sm text-gold">${room.type_name}</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="text-lg font-bold text-amber-600">
+                                            Rp ${parseInt(room.base_price).toLocaleString('id-ID')}
+                                        </div>
+                                        <div class="text-xs text-gold">per bulan</div>
+                                    </div>
+                                </div>
+                                <button onclick="addRoom(${room.id}, '${room.room_number}', '${room.type_name}', ${room.base_price}, ${room.room_type_id})" 
+                                        class="w-full glossy-gold text-white px-4 py-2 rounded-lg hover:opacity-90">
+                                    <i class="fas fa-plus mr-2"></i>Tambah Kamar
+                                </button>
+                            </div>
+                        `;
+                        container.innerHTML += roomCard;
+                    });
+                })
+                .catch(error => {
+                    console.error('Error loading rooms:', error);
+                });
+        }
+        
+        function addRoom(roomId, roomNumber, typeName, price, roomTypeId) {
+            const container = document.getElementById('selectedRoomsContainer');
+            
+            // Check if room already selected
+            const existing = container.querySelector(`input[value="${roomId}"]`);
+            if (existing) {
+                alert('Kamar sudah dipilih!');
+                return;
+            }
+            
+            const roomCard = `
+                <div class="border border-green-200 bg-green-50 rounded-lg p-4 selected-room-card">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h4 class="font-semibold text-gold-dark">Kamar ${roomNumber}</h4>
+                            <p class="text-sm text-gold">${typeName}</p>
+                            <span class="text-xs text-green-600"><i class="fas fa-check mr-1"></i>Terpilih</span>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-lg font-bold text-amber-600">
+                                Rp ${parseInt(price).toLocaleString('id-ID')}
+                            </div>
+                            <div class="text-xs text-gold">per bulan</div>
+                            <button onclick="removeRoom(this)" class="text-red-500 hover:text-red-700 text-xs mt-1">
+                                <i class="fas fa-times mr-1"></i>Hapus
+                            </button>
+                        </div>
+                    </div>
+                    <input type="checkbox" name="selected_rooms" value="${roomId}" 
+                           data-price="${price}" 
+                           data-room-number="${roomNumber}"
+                           data-type-name="${typeName}"
+                           data-room-type-id="${roomTypeId}"
+                           class="room-checkbox" checked style="display: none;">
+                </div>
+            `;
+            
+            // Remove "no rooms selected" message if exists
+            const noRoomsMsg = container.querySelector('p');
+            if (noRoomsMsg && noRoomsMsg.textContent.includes('Belum ada kamar')) {
+                noRoomsMsg.remove();
+            }
+            
+            container.innerHTML += roomCard;
+            updateSummary();
+            closeRoomModal();
+        }
+        
+        function removeRoom(button) {
+            const roomCard = button.closest('.selected-room-card');
+            roomCard.remove();
+            
+            // Show "no rooms selected" message if no rooms left
+            const container = document.getElementById('selectedRoomsContainer');
+            if (container.children.length === 0) {
+                container.innerHTML = '<p class="text-gold text-center py-4">Belum ada kamar dipilih. Klik "Tambah Kamar" untuk memilih.</p>';
+            }
+            
+            updateSummary();
         }
 
         durationSelect.addEventListener('change', updateSummary);
@@ -327,7 +429,10 @@
                         </button>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="availableRooms">
-                        <!-- Rooms will be loaded here -->
+                        <div class="col-span-full text-center py-8">
+                            <i class="fas fa-spinner fa-spin text-2xl text-amber-500"></i>
+                            <p class="mt-2 text-gold">Memuat kamar tersedia...</p>
+                        </div>
                     </div>
                 </div>
             </div>
