@@ -13,6 +13,8 @@ router.post('/login', async (req, res) => {
     try {
         const { email, password } = req.body;
         
+        console.log('Login attempt:', { email, passwordLength: password?.length });
+        
         // Find user by username OR email in single query
         let users;
         try {
@@ -20,13 +22,15 @@ router.post('/login', async (req, res) => {
                 'SELECT * FROM users WHERE username = ? OR email = ? LIMIT 1', 
                 [email, email]
             );
+            console.log('Users found:', users.length);
         } catch (error) {
             // Fallback if username column doesn't exist
-            console.log('Username column might not exist, trying email only');
+            console.log('Username column might not exist, trying email only:', error.message);
             [users] = await db.execute(
                 'SELECT * FROM users WHERE email = ? LIMIT 1', 
                 [email]
             );
+            console.log('Users found (email only):', users.length);
         }
         
         if (users.length === 0) {

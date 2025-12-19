@@ -5,6 +5,19 @@ const { requireAdmin } = require('../middleware/auth');
 
 router.use(requireAdmin);
 
+// Debug route to check users
+router.get('/debug-users', async (req, res) => {
+    try {
+        const [users] = await db.execute('SELECT id, name, username, email, role, status FROM users LIMIT 10');
+        res.json({
+            users: users,
+            userCount: users.length
+        });
+    } catch (error) {
+        res.json({ error: error.message });
+    }
+});
+
 // Debug route to check database
 router.get('/debug-db', async (req, res) => {
     try {
