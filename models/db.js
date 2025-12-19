@@ -20,6 +20,13 @@ const dbConfig = {
     reconnect: true
 };
 
+console.log('Database config:', {
+    host: dbConfig.host,
+    port: dbConfig.port,
+    database: dbConfig.database,
+    user: dbConfig.user
+});
+
 const pool = mysql.createPool(dbConfig);
 
 module.exports = pool;
