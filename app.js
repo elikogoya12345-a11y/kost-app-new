@@ -3,6 +3,35 @@ const session = require('express-session');
 const path = require('path');
 require('dotenv').config();
 
+// Keep Aiven MySQL alive
+if (process.env.AIVEN_PASSWORD) {
+    const mysql = require('mysql2/promise');
+    
+    const aivenConfig = {
+        host: 'mysql-3ac5af41-suryananda7963-ff8c.f.aivencloud.com',
+        port: 15388,
+        user: 'avnadmin',
+        password: process.env.AIVEN_PASSWORD,
+        database: 'defaultdb',
+        ssl: { rejectUnauthorized: false }
+    };
+    
+    async function keepAivenAlive() {
+        try {
+            const connection = await mysql.createConnection(aivenConfig);
+            await connection.execute('SELECT 1');
+            await connection.end();
+            console.log('✅ Aiven kept alive:', new Date().toISOString());
+        } catch (error) {
+            console.log('❌ Aiven ping failed:', error.message);
+        }
+    }
+    
+    // Ping every 10 minutes
+    setInterval(keepAivenAlive, 10 * 60 * 1000);
+    keepAivenAlive(); // Initial ping
+}
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
