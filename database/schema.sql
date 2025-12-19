@@ -42,7 +42,21 @@ CREATE TABLE rooms (
     FOREIGN KEY (room_type_id) REFERENCES room_types(id) ON DELETE CASCADE
 );
 
--- Bookings table
+-- Multi Bookings table (for multiple room bookings)
+CREATE TABLE multi_bookings (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    start_date DATE NOT NULL,
+    duration_months INT NOT NULL,
+    total_amount DECIMAL(12,2) NOT NULL,
+    notes TEXT,
+    status ENUM('pending', 'confirmed', 'cancelled') DEFAULT 'pending',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Bookings table (updated to support multi-booking)
 CREATE TABLE bookings (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
@@ -53,11 +67,13 @@ CREATE TABLE bookings (
     total_amount DECIMAL(10,2) NOT NULL,
     notes TEXT,
     status ENUM('pending', 'confirmed', 'cancelled') DEFAULT 'pending',
+    multi_booking_id INT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (room_type_id) REFERENCES room_types(id) ON DELETE CASCADE,
-    FOREIGN KEY (room_id) REFERENCES rooms(id) ON DELETE CASCADE
+    FOREIGN KEY (room_id) REFERENCES rooms(id) ON DELETE CASCADE,
+    FOREIGN KEY (multi_booking_id) REFERENCES multi_bookings(id) ON DELETE SET NULL
 );
 
 -- Occupants table

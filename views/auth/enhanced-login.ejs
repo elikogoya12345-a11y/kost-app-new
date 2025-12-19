@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Kost Professional</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .glossy-card {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            border-radius: 16px;
+        }
+        .glossy-gold {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 12px 40px rgba(251, 191, 36, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .glossy-blue {
+            background: linear-gradient(135deg, #3b82f6 0%, #1e40af 50%, #1d4ed8 100%);
+            backdrop-filter: blur(15px);
+            box-shadow: 0 10px 35px rgba(59, 130, 246, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .notification {
+            animation: slideIn 0.5s ease-out;
+        }
+        @keyframes slideIn {
+            from { transform: translateY(-100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .form-group {
+            position: relative;
+        }
+        .form-input {
+            transition: all 0.3s ease;
+        }
+        .form-input:focus {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+        }
+        .validation-message {
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+        }
+        .validation-message.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-amber-50">
+    <!-- Notification Area -->
+    <div id="notificationArea" class="fixed top-4 right-4 z-50 space-y-2">
+        <!-- Notifications will be inserted here -->
+    </div>
+
+    <div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-md w-full space-y-8">
+            <!-- Header -->
+            <div class="text-center">
+                <div class="glossy-gold w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-home text-3xl text-white"></i>
+                </div>
+                <h2 class="text-3xl font-bold text-gray-900 mb-2">Selamat Datang</h2>
+                <p class="text-gray-600">Masuk ke akun Kost Professional Anda</p>
+            </div>
+
+            <!-- Login Form -->
+            <div class="glossy-card p-8">
+                <form id="loginForm" action="/auth/login" method="POST" novalidate>
+                    <div class="space-y-6">
+                        <!-- Email/Username Field -->
+                        <div class="form-group">
+                            <label for="login" class="block text-sm font-medium text-gray-700 mb-2">
+                                Email atau Username
+                            </label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-user text-gray-400"></i>
+                                </div>
+                                <input id="login" name="login" type="text" required
+                                       class="form-input w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                       placeholder="Masukkan email atau username"
+                                       autocomplete="username">
+                            </div>
+                            <div id="loginError" class="validation-message text-red-600"></div>
+                        </div>
+
+                        <!-- Password Field -->
+                        <div class="form-group">
+                            <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
+                                Password
+                            </label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-lock text-gray-400"></i>
+                                </div>
+                                <input id="password" name="password" type="password" required
+                                       class="form-input w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                       placeholder="Masukkan password"
+                                       autocomplete="current-password">
+                                <button type="button" onclick="togglePassword()" class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                                    <i id="passwordToggle" class="fas fa-eye text-gray-400 hover:text-gray-600"></i>
+                                </button>
+                            </div>
+                            <div id="passwordError" class="validation-message text-red-600"></div>
+                        </div>
+
+                        <!-- Remember Me -->
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <input id="remember" name="remember" type="checkbox" 
+                                       class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                <label for="remember" class="ml-2 block text-sm text-gray-700">
+                                    Ingat saya
+                                </label>
+                            </div>
+                            <div class="text-sm">
+                                <a href="/auth/forgot-password" class="font-medium text-blue-600 hover:text-blue-500">
+                                    Lupa password?
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div>
+                            <button type="submit" id="submitBtn"
+                                    class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white glossy-blue hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-300">
+                                <span class="absolute left-0 inset-y-0 flex items-center pl-3">
+                                    <i class="fas fa-sign-in-alt text-blue-300 group-hover:text-blue-200"></i>
+                                </span>
+                                <span id="submitText">Masuk</span>
+                                <div id="loadingSpinner" class="hidden ml-2">
+                                    <i class="fas fa-spinner fa-spin"></i>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- Divider -->
+                <div class="mt-6">
+                    <div class="relative">
+                        <div class="absolute inset-0 flex items-center">
+                            <div class="w-full border-t border-gray-300"></div>
+                        </div>
+                        <div class="relative flex justify-center text-sm">
+                            <span class="px-2 bg-white text-gray-500">Atau</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Register Link -->
+                <div class="mt-6 text-center">
+                    <p class="text-sm text-gray-600">
+                        Belum punya akun?
+                        <a href="/auth/register" class="font-medium text-blue-600 hover:text-blue-500">
+                            Daftar sekarang
+                        </a>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Back to Home -->
+            <div class="text-center">
+                <a href="/" class="inline-flex items-center text-sm text-gray-600 hover:text-gray-900">
+                    <i class="fas fa-arrow-left mr-2"></i>
+                    Kembali ke beranda
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Form validation
+        const loginForm = document.getElementById('loginForm');
+        const loginInput = document.getElementById('login');
+        const passwordInput = document.getElementById('password');
+        const submitBtn = document.getElementById('submitBtn');
+        const submitText = document.getElementById('submitText');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+
+        // Real-time validation
+        loginInput.addEventListener('blur', validateLogin);
+        passwordInput.addEventListener('blur', validatePassword);
+        loginInput.addEventListener('input', clearError);
+        passwordInput.addEventListener('input', clearError);
+
+        function validateLogin() {
+            const value = loginInput.value.trim();
+            const errorDiv = document.getElementById('loginError');
+            
+            if (!value) {
+                showError(errorDiv, 'Email atau username harus diisi');
+                return false;
+            }
+            
+            if (value.length < 3) {
+                showError(errorDiv, 'Email atau username minimal 3 karakter');
+                return false;
+            }
+            
+            // Email validation if contains @
+            if (value.includes('@')) {\n                const emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;\n                if (!emailRegex.test(value)) {\n                    showError(errorDiv, 'Format email tidak valid');\n                    return false;\n                }\n            }\n            \n            hideError(errorDiv);\n            return true;\n        }\n\n        function validatePassword() {\n            const value = passwordInput.value;\n            const errorDiv = document.getElementById('passwordError');\n            \n            if (!value) {\n                showError(errorDiv, 'Password harus diisi');\n                return false;\n            }\n            \n            if (value.length < 6) {\n                showError(errorDiv, 'Password minimal 6 karakter');\n                return false;\n            }\n            \n            hideError(errorDiv);\n            return true;\n        }\n\n        function showError(element, message) {\n            element.textContent = message;\n            element.classList.add('show');\n            element.parentElement.querySelector('input').classList.add('border-red-500');\n        }\n\n        function hideError(element) {\n            element.classList.remove('show');\n            element.parentElement.querySelector('input').classList.remove('border-red-500');\n        }\n\n        function clearError(event) {\n            const errorDiv = event.target.parentElement.parentElement.querySelector('.validation-message');\n            if (errorDiv.classList.contains('show')) {\n                hideError(errorDiv);\n            }\n        }\n\n        function togglePassword() {\n            const passwordField = document.getElementById('password');\n            const toggleIcon = document.getElementById('passwordToggle');\n            \n            if (passwordField.type === 'password') {\n                passwordField.type = 'text';\n                toggleIcon.classList.remove('fa-eye');\n                toggleIcon.classList.add('fa-eye-slash');\n            } else {\n                passwordField.type = 'password';\n                toggleIcon.classList.remove('fa-eye-slash');\n                toggleIcon.classList.add('fa-eye');\n            }\n        }\n\n        // Form submission\n        loginForm.addEventListener('submit', function(e) {\n            e.preventDefault();\n            \n            const isLoginValid = validateLogin();\n            const isPasswordValid = validatePassword();\n            \n            if (!isLoginValid || !isPasswordValid) {\n                showNotification('Harap perbaiki kesalahan pada form', 'error');\n                return;\n            }\n            \n            // Show loading state\n            submitBtn.disabled = true;\n            submitText.textContent = 'Memproses...';\n            loadingSpinner.classList.remove('hidden');\n            \n            // Submit form\n            setTimeout(() => {\n                this.submit();\n            }, 500);\n        });\n\n        // Notification system\n        function showNotification(message, type = 'info') {\n            const notificationArea = document.getElementById('notificationArea');\n            const notification = document.createElement('div');\n            \n            const bgColor = type === 'error' ? 'bg-red-500' : type === 'success' ? 'bg-green-500' : 'bg-blue-500';\n            const icon = type === 'error' ? 'fa-exclamation-circle' : type === 'success' ? 'fa-check-circle' : 'fa-info-circle';\n            \n            notification.className = `notification ${bgColor} text-white px-6 py-4 rounded-lg shadow-lg flex items-center space-x-3 max-w-sm`;\n            notification.innerHTML = `\n                <i class=\"fas ${icon}\"></i>\n                <span class=\"flex-1\">${message}</span>\n                <button onclick=\"this.parentElement.remove()\" class=\"text-white hover:text-gray-200\">\n                    <i class=\"fas fa-times\"></i>\n                </button>\n            `;\n            \n            notificationArea.appendChild(notification);\n            \n            // Auto remove after 5 seconds\n            setTimeout(() => {\n                if (notification.parentElement) {\n                    notification.remove();\n                }\n            }, 5000);\n        }\n\n        // Show server messages\n        <% if (typeof error !== 'undefined' && error) { %>\n            showNotification('<%= error %>', 'error');\n        <% } %>\n        \n        <% if (typeof success !== 'undefined' && success) { %>\n            showNotification('<%= success %>', 'success');\n        <% } %>\n\n        // Auto-focus first input\n        document.getElementById('login').focus();\n    </script>\n</body>\n</html>

@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking Kamar - Kost Professional</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .glossy-gold {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 12px 40px rgba(251, 191, 36, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .glossy-gold-light {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 50%, #fbbf24 100%);
+            backdrop-filter: blur(15px);
+            box-shadow: 0 8px 25px rgba(251, 191, 36, 0.3);
+            border: 1px solid rgba(251, 191, 36, 0.2);
+        }
+        .glossy-blue {
+            background: linear-gradient(135deg, #3b82f6 0%, #1e40af 50%, #1d4ed8 100%);
+            backdrop-filter: blur(15px);
+            box-shadow: 0 10px 35px rgba(59, 130, 246, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .glossy-white {
+            background: linear-gradient(135deg, #ffffff 0%, #fefefe 50%, #f8fafc 100%);
+            backdrop-filter: blur(15px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
+        .glossy-card {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 16px;
+        }
+        .glossy-card:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15), 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        .user-bg {
+            background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 30%, #fde68a 70%, #fbbf24 100%);
+            min-height: 100vh;
+        }
+        @media print {
+            body * { visibility: hidden; }
+            #printArea, #printArea * { visibility: visible; }
+            #printArea { position: absolute; left: 0; top: 0; width: 100%; }
+            .no-print { display: none !important; }
+        }
+    </style>
+</head>
+<body class="user-bg">
+    <%- include('../partials/user-nav') %>
+
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        <div class="mb-8">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h1 class="text-3xl font-bold text-amber-900">Booking Kamar</h1>
+                    <p class="text-amber-700 mt-2">Pesan beberapa kamar sekaligus dengan mudah</p>
+                </div>
+                <div class="flex gap-3 no-print">
+                    <button onclick="viewBookingHistory()" class="glossy-blue text-white px-4 py-2 rounded-xl glossy-card font-medium">
+                        <i class="fas fa-history mr-2"></i>Riwayat Booking
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <% if (typeof success !== 'undefined' && success) { %>
+            <div class="glossy-gold-light border border-amber-300 text-amber-800 px-4 py-3 rounded-xl mb-6 glossy-card">
+                <i class="fas fa-check-circle mr-2"></i><%= success %>
+            </div>
+        <% } %>
+
+        <!-- Multi-Room Booking Form -->
+        <div class="glossy-white rounded-2xl p-8 mb-8 glossy-card">
+            <h2 class="text-2xl font-bold text-amber-900 mb-6">Form Booking Multi-Kamar</h2>
+            
+            <form id="multiBookingForm" action="/user/multi-booking" method="POST">
+                <!-- Booking Header -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <div>
+                        <label class="block text-sm font-medium text-amber-800 mb-2">Tanggal Mulai Sewa</label>
+                        <input type="date" name="start_date" id="start_date" required
+                               class="w-full px-4 py-3 border border-amber-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 glossy-card">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-amber-800 mb-2">Durasi Sewa (Bulan)</label>
+                        <select name="duration_months" id="duration_months" required
+                                class="w-full px-4 py-3 border border-amber-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 glossy-card">
+                            <option value="">Pilih durasi...</option>
+                            <option value="1">1 Bulan</option>
+                            <option value="3">3 Bulan</option>
+                            <option value="6">6 Bulan</option>
+                            <option value="12">12 Bulan</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Room Selection -->
+                <div class="mb-8">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-bold text-amber-900">Pilih Kamar</h3>
+                        <button type="button" onclick="addRoomSelection()" class="glossy-gold text-white px-4 py-2 rounded-xl glossy-card font-medium">
+                            <i class="fas fa-plus mr-2"></i>Tambah Kamar
+                        </button>
+                    </div>
+                    
+                    <div id="roomSelections" class="space-y-4">
+                        <!-- Initial room selection -->
+                        <div class="room-selection glossy-gold-light rounded-xl p-6 border border-amber-300 glossy-card">
+                            <div class="flex justify-between items-center mb-4">
+                                <h4 class="text-lg font-medium text-amber-900">Kamar #1</h4>
+                                <button type="button" onclick="removeRoomSelection(this)" class="text-red-600 hover:text-red-800 font-medium" style="display: none;">
+                                    <i class="fas fa-trash mr-1"></i>Hapus
+                                </button>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-amber-800 mb-2">Tipe Kamar</label>
+                                    <select name="rooms[0][room_type_id]" required onchange="loadAvailableRooms(this, 0)"
+                                            class="w-full px-3 py-2 border border-amber-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500">
+                                        <option value="">Pilih tipe kamar...</option>
+                                        <% roomTypes.forEach(type => { %>
+                                            <option value="<%= type.id %>" data-price="<%= type.base_price %>">
+                                                <%= type.name %> - Rp <%= parseInt(type.base_price).toLocaleString('id-ID') %>/bulan
+                                            </option>
+                                        <% }); %>
+                                    </select>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-amber-800 mb-2">Nomor Kamar</label>
+                                    <select name="rooms[0][room_id]" required onchange="calculateRoomTotal(0)"
+                                            class="w-full px-3 py-2 border border-amber-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500">
+                                        <option value="">Pilih kamar...</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-4">
+                                <div class="text-right">
+                                    <span class="text-sm text-amber-700">Subtotal: </span>
+                                    <span class="text-xl font-bold text-amber-900 room-subtotal">Rp 0</span>
+                                    <input type="hidden" name="rooms[0][subtotal]" value="0">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Notes -->
+                <div class="mb-8">
+                    <label class="block text-sm font-medium text-amber-800 mb-2">Catatan Tambahan</label>
+                    <textarea name="notes" rows="3" placeholder="Catatan atau permintaan khusus..."
+                              class="w-full px-4 py-3 border border-amber-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 resize-none glossy-card"></textarea>
+                </div>
+
+                <!-- Total Summary -->
+                <div class="glossy-gold rounded-xl p-6 mb-8 glossy-card">
+                    <div class="flex justify-between items-center text-white">
+                        <span class="text-xl font-bold">Total Keseluruhan:</span>
+                        <span class="text-3xl font-bold" id="grandTotal">Rp 0</span>
+                    </div>
+                    <input type="hidden" name="total_amount" id="totalAmount" value="0">
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="w-full glossy-gold text-white py-4 rounded-xl glossy-card font-bold text-lg">
+                    <i class="fas fa-calendar-check mr-2"></i>Konfirmasi Booking Multi-Kamar
+                </button>
+            </form>
+        </div>
+
+        <!-- Booking History Section -->
+        <div id="bookingHistorySection" class="glossy-white rounded-2xl p-8 glossy-card" style="display: none;">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-amber-900">Riwayat Booking</h2>
+                <div class="flex gap-3">
+                    <button onclick="printBookingHistory()" class="glossy-blue text-white px-4 py-2 rounded-xl glossy-card font-medium">
+                        <i class="fas fa-print mr-2"></i>Cetak
+                    </button>
+                    <button onclick="hideBookingHistory()" class="glossy-gold-light text-amber-800 px-4 py-2 rounded-xl glossy-card font-medium">
+                        <i class="fas fa-times mr-2"></i>Tutup
+                    </button>
+                </div>
+            </div>
+
+            <!-- Search & Filter -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div>
+                    <input type="text" id="bookingSearch" placeholder="Cari booking ID atau kamar..."
+                           class="w-full px-4 py-3 border border-amber-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500">
+                </div>
+                <div>
+                    <select id="statusFilter"
+                            class="w-full px-4 py-3 border border-amber-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500">
+                        <option value="">Semua Status</option>
+                        <option value="confirmed">Terkonfirmasi</option>
+                        <option value="pending">Pending</option>
+                        <option value="cancelled">Dibatalkan</option>
+                    </select>
+                </div>
+                <div>
+                    <button onclick="filterBookings()" class="w-full glossy-gold text-white py-3 rounded-xl glossy-card font-medium">
+                        <i class="fas fa-filter mr-2"></i>Filter
+                    </button>
+                </div>
+            </div>
+
+            <div id="printArea">
+                <!-- Print Header -->
+                <div class="hidden print:block mb-8">
+                    <div class="text-center">
+                        <h1 class="text-3xl font-bold text-gray-800 mb-2">Kost Professional</h1>
+                        <h2 class="text-xl font-semibold text-gray-700 mb-4">Riwayat Booking Kamar</h2>
+                        <p class="text-sm text-gray-500">Dicetak pada: <span id="printDate"></span></p>
+                    </div>
+                </div>
+
+                <!-- Booking History List -->
+                <div id="bookingHistoryList" class="space-y-4">
+                    <!-- Booking history will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let roomCounter = 1;
+        let availableRooms = {};
+
+        // Set today's date as minimum
+        document.getElementById('start_date').min = new Date().toISOString().split('T')[0];
+        document.getElementById('start_date').value = new Date().toISOString().split('T')[0];
+
+        // Load available rooms for each room type
+        <% roomTypes.forEach(type => { %>
+            availableRooms[<%= type.id %>] = <%= JSON.stringify(rooms.filter(r => r.room_type_id == type.id && r.status === 'available')) %>;
+        <% }); %>
+
+        function addRoomSelection() {
+            const container = document.getElementById('roomSelections');
+            const roomDiv = document.createElement('div');
+            roomDiv.className = 'room-selection glossy-gold-light rounded-xl p-6 border border-amber-300 glossy-card';
+            
+            roomDiv.innerHTML = `
+                <div class="flex justify-between items-center mb-4">
+                    <h4 class="text-lg font-medium text-amber-900">Kamar #${roomCounter + 1}</h4>
+                    <button type="button" onclick="removeRoomSelection(this)" class="text-red-600 hover:text-red-800 font-medium">
+                        <i class="fas fa-trash mr-1"></i>Hapus
+                    </button>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-amber-800 mb-2">Tipe Kamar</label>
+                        <select name="rooms[${roomCounter}][room_type_id]" required onchange="loadAvailableRooms(this, ${roomCounter})"
+                                class="w-full px-3 py-2 border border-amber-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500">
+                            <option value="">Pilih tipe kamar...</option>
+                            <% roomTypes.forEach(type => { %>
+                                <option value="<%= type.id %>" data-price="<%= type.base_price %>">
+                                    <%= type.name %> - Rp <%= parseInt(type.base_price).toLocaleString('id-ID') %>/bulan
+                                </option>
+                            <% }); %>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-amber-800 mb-2">Nomor Kamar</label>
+                        <select name="rooms[${roomCounter}][room_id]" required onchange="calculateRoomTotal(${roomCounter})"
+                                class="w-full px-3 py-2 border border-amber-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500">
+                            <option value="">Pilih kamar...</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="mt-4">
+                    <div class="text-right">
+                        <span class="text-sm text-amber-700">Subtotal: </span>
+                        <span class="text-xl font-bold text-amber-900 room-subtotal">Rp 0</span>
+                        <input type="hidden" name="rooms[${roomCounter}][subtotal]" value="0">
+                    </div>
+                </div>
+            `;
+            
+            container.appendChild(roomDiv);
+            roomCounter++;
+            updateRemoveButtons();
+        }
+
+        function removeRoomSelection(button) {
+            if (confirm('Apakah Anda yakin ingin menghapus pilihan kamar ini?')) {
+                const roomDiv = button.closest('.room-selection');
+                roomDiv.remove();
+                updateRemoveButtons();
+                calculateGrandTotal();
+            }
+        }
+
+        function updateRemoveButtons() {
+            const rooms = document.querySelectorAll('.room-selection');
+            rooms.forEach((room, index) => {
+                const removeBtn = room.querySelector('button[onclick*="removeRoomSelection"]');
+                if (rooms.length > 1) {
+                    removeBtn.style.display = 'inline-block';
+                } else {
+                    removeBtn.style.display = 'none';
+                }
+                
+                // Update room number
+                const roomLabel = room.querySelector('h4');
+                roomLabel.textContent = `Kamar #${index + 1}`;
+            });
+        }
+
+        function loadAvailableRooms(select, index) {
+            const roomTypeId = select.value;
+            const roomSelect = document.querySelector(`select[name="rooms[${index}][room_id]"]`);
+            
+            roomSelect.innerHTML = '<option value="">Pilih kamar...</option>';
+            
+            if (roomTypeId && availableRooms[roomTypeId]) {
+                // Get already selected rooms to exclude them
+                const selectedRooms = Array.from(document.querySelectorAll('select[name*="[room_id]"]'))
+                    .map(s => s.value).filter(v => v);
+                
+                availableRooms[roomTypeId].forEach(room => {
+                    if (!selectedRooms.includes(room.id.toString()) || 
+                        document.querySelector(`select[name="rooms[${index}][room_id]"]`).value === room.id.toString()) {
+                        const option = document.createElement('option');
+                        option.value = room.id;
+                        option.textContent = `Kamar ${room.room_number}`;
+                        roomSelect.appendChild(option);
+                    }
+                });
+            }
+            
+            calculateRoomTotal(index);
+        }
+
+        function calculateRoomTotal(index) {
+            const typeSelect = document.querySelector(`select[name="rooms[${index}][room_type_id]"]`);
+            const roomSelect = document.querySelector(`select[name="rooms[${index}][room_id]"]`);
+            const durationSelect = document.getElementById('duration_months');
+            
+            const price = typeSelect.selectedOptions[0]?.dataset.price || 0;
+            const duration = parseInt(durationSelect.value) || 0;
+            const total = price * duration;
+            
+            const subtotalSpan = document.querySelectorAll('.room-subtotal')[index];
+            const subtotalInput = document.querySelector(`input[name="rooms[${index}][subtotal]"]`);
+            
+            subtotalSpan.textContent = `Rp ${total.toLocaleString('id-ID')}`;
+            subtotalInput.value = total;
+            
+            calculateGrandTotal();
+        }
+
+        function calculateGrandTotal() {
+            const subtotalInputs = document.querySelectorAll('input[name*="[subtotal]"]');
+            let grandTotal = 0;
+            
+            subtotalInputs.forEach(input => {
+                grandTotal += parseFloat(input.value) || 0;
+            });
+            
+            document.getElementById('grandTotal').textContent = `Rp ${grandTotal.toLocaleString('id-ID')}`;
+            document.getElementById('totalAmount').value = grandTotal;
+        }
+
+        // Recalculate when duration changes
+        document.getElementById('duration_months').addEventListener('change', function() {
+            const rooms = document.querySelectorAll('.room-selection');
+            rooms.forEach((room, index) => {
+                calculateRoomTotal(index);
+            });
+        });
+
+        // Form submission
+        document.getElementById('multiBookingForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Validate at least one room is selected
+            const roomSelects = document.querySelectorAll('select[name*="[room_id]"]');
+            let hasValidRoom = false;
+            
+            roomSelects.forEach(select => {
+                if (select.value) hasValidRoom = true;
+            });
+            
+            if (!hasValidRoom) {
+                alert('Harap pilih minimal satu kamar');
+                return;
+            }
+            
+            if (parseFloat(document.getElementById('totalAmount').value) <= 0) {
+                alert('Total booking harus lebih dari 0');
+                return;
+            }
+            
+            if (confirm('Apakah Anda yakin ingin melakukan booking multi-kamar ini?')) {
+                this.submit();
+            }
+        });
+
+        async function viewBookingHistory() {
+            try {
+                const response = await fetch('/user/api/booking-history');
+                const data = await response.json();
+                renderBookingHistory(data.bookings || []);
+                document.getElementById('bookingHistorySection').style.display = 'block';
+            } catch (error) {
+                console.error('Error loading booking history:', error);
+                alert('Gagal memuat riwayat booking');
+            }
+        }
+
+        function hideBookingHistory() {
+            document.getElementById('bookingHistorySection').style.display = 'none';
+        }
+
+        function renderBookingHistory(bookings) {
+            const container = document.getElementById('bookingHistoryList');
+            
+            if (bookings.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-8 text-amber-600">
+                        <i class="fas fa-calendar-times text-4xl mb-4"></i>
+                        <p class="text-lg font-medium">Belum ada riwayat booking</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = bookings.map(booking => `
+                <div class="glossy-gold-light rounded-xl p-6 border border-amber-300 glossy-card booking-item" 
+                     data-search="${booking.id} ${booking.room_numbers} ${booking.status}">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h4 class="text-lg font-bold text-amber-900">#BOOK-${String(booking.id).padStart(5, '0')}</h4>
+                            <p class="text-amber-700">${new Date(booking.start_date).toLocaleDateString('id-ID')}</p>
+                        </div>
+                        <span class="px-3 py-1 rounded-full text-sm font-medium ${getStatusClass(booking.status)}">
+                            ${getStatusText(booking.status)}
+                        </span>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <p class="text-sm text-amber-700">Kamar:</p>
+                            <p class="font-medium text-amber-900">${booking.room_numbers}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-amber-700">Durasi:</p>
+                            <p class="font-medium text-amber-900">${booking.duration_months} bulan</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-between items-center pt-4 border-t border-amber-200">
+                        <span class="text-amber-700">Total:</span>
+                        <span class="text-xl font-bold text-amber-900">Rp ${parseInt(booking.total_amount).toLocaleString('id-ID')}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterBookings() {
+            const searchTerm = document.getElementById('bookingSearch').value.toLowerCase();
+            const status = document.getElementById('statusFilter').value;
+            const bookingItems = document.querySelectorAll('.booking-item');
+            
+            bookingItems.forEach(item => {
+                const searchData = item.getAttribute('data-search').toLowerCase();
+                const matchesSearch = searchData.includes(searchTerm);
+                const matchesStatus = !status || searchData.includes(status);
+                
+                if (matchesSearch && matchesStatus) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        function printBookingHistory() {
+            document.getElementById('printDate').textContent = new Date().toLocaleDateString('id-ID', {
+                year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
+            });
+            window.print();
+        }
+
+        function getStatusClass(status) {
+            switch (status) {
+                case 'confirmed': return 'bg-green-100 text-green-800';
+                case 'pending': return 'bg-yellow-100 text-yellow-800';
+                case 'cancelled': return 'bg-red-100 text-red-800';
+                default: return 'bg-gray-100 text-gray-800';
+            }
+        }
+
+        function getStatusText(status) {
+            switch (status) {
+                case 'confirmed': return 'Terkonfirmasi';
+                case 'pending': return 'Pending';
+                case 'cancelled': return 'Dibatalkan';
+                default: return status;
+            }
+        }
+    </script>
+</body>
+</html>
