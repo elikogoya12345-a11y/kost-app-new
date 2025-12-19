@@ -5,6 +5,26 @@ const { requireAdmin } = require('../middleware/auth');
 
 router.use(requireAdmin);
 
+// Test database connection
+router.get('/test-db', async (req, res) => {
+    try {
+        const [result] = await db.execute('SELECT 1 as test');
+        const [tables] = await db.execute('SHOW TABLES');
+        
+        res.json({
+            connection: 'OK',
+            test: result[0].test,
+            tables: tables.map(t => Object.values(t)[0])
+        });
+    } catch (error) {
+        res.json({ 
+            connection: 'FAILED',
+            error: error.message,
+            code: error.code
+        });
+    }
+});
+
 // Debug route to check users
 router.get('/debug-users', async (req, res) => {
     try {
@@ -14,7 +34,10 @@ router.get('/debug-users', async (req, res) => {
             userCount: users.length
         });
     } catch (error) {
-        res.json({ error: error.message });
+        res.json({ 
+            error: error.message,
+            code: error.code
+        });
     }
 });
 

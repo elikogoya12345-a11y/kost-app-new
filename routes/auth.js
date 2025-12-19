@@ -60,8 +60,18 @@ router.post('/login', async (req, res) => {
         const redirectPath = user.role === 'admin' ? '/admin/dashboard' : '/user/dashboard';
         res.redirect(redirectPath);
     } catch (error) {
-        console.error(error);
-        res.render('auth/login', { error: 'Terjadi kesalahan sistem' });
+        console.error('Login error:', error);
+        let errorMessage = 'Terjadi kesalahan sistem';
+        
+        if (error.code === 'ECONNREFUSED') {
+            errorMessage = 'Database tidak dapat diakses';
+        } else if (error.code === 'ER_NO_SUCH_TABLE') {
+            errorMessage = 'Tabel users tidak ditemukan';
+        } else if (error.sqlMessage) {
+            errorMessage = 'Database error: ' + error.sqlMessage;
+        }
+        
+        res.render('auth/login', { error: errorMessage });
     }
 });
 
@@ -109,9 +119,21 @@ router.post('/register', async (req, res) => {
         
         res.redirect('/auth/login?success=Registrasi berhasil! Silakan login dengan username atau email dan password Anda.');
     } catch (error) {
-        console.error(error);
+        console.error('Register error:', error);
+        let errorMessage = 'Terjadi kesalahan sistem';
+        
+        if (error.code === 'ECONNREFUSED') {
+            errorMessage = 'Database tidak dapat diakses';
+        } else if (error.code === 'ER_NO_SUCH_TABLE') {
+            errorMessage = 'Tabel users tidak ditemukan';
+        } else if (error.code === 'ER_DUP_ENTRY') {
+            errorMessage = 'Email sudah terdaftar';
+        } else if (error.sqlMessage) {
+            errorMessage = 'Database error: ' + error.sqlMessage;
+        }
+        
         res.render('auth/register', { 
-            error: 'Terjadi kesalahan sistem',
+            error: errorMessage,
             formData: req.body
         });
     }
