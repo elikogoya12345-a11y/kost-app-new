@@ -232,7 +232,7 @@ router.get('/bookings', async (req, res) => {
         const success = req.query.success;
         const error = req.query.error;
         
-        res.render('user/simple-booking', { 
+        res.render('user/single-booking', { 
             user: req.session.user, 
             rooms,
             success,
@@ -240,7 +240,7 @@ router.get('/bookings', async (req, res) => {
         });
     } catch (error) {
         console.error(error);
-        res.render('user/simple-booking', { 
+        res.render('user/single-booking', { 
             user: req.session.user, 
             rooms: [],
             success: null,
@@ -343,73 +343,56 @@ router.post('/payment-extension', async (req, res) => {
 
 router.post('/booking', async (req, res) => {
     try {
-        const { start_date, duration_months, rooms, notes, total_amount } = req.body;
+        const { room_id, room_type_id, start_date, duration_months, notes } = req.body;
         const userId = req.session.user.id;
         
-        if (!start_date || !duration_months || !total_amount) {
+        if (!room_id || !room_type_id || !start_date || !duration_months) {
             return res.redirect('/user/bookings?error=Data tidak lengkap');
         }
         
-        let roomsArray = [];
-        try {
-            if (typeof rooms === 'string') {
-                roomsArray = JSON.parse(rooms);
-            } else if (Array.isArray(rooms)) {
-                roomsArray = rooms;
-            }
-        } catch (e) {
-            return res.redirect('/user/bookings?error=Format data tidak valid');
-        }
-        
-        if (!roomsArray || roomsArray.length === 0) {
-            return res.redirect('/user/bookings?error=Pilih minimal satu kamar');
-        }
-        
-        // Create multi booking
-        const [result] = await db.execute(
-            'INSERT INTO multi_bookings (user_id, start_date, duration_months, total_amount, notes, status) VALUES (?, ?, ?, ?, ?, ?)',
-            [userId, start_date, duration_months, total_amount, notes || null, 'confirmed']
+        // Get room price
+        const [roomData] = await db.execute(
+            'SELECT rt.base_price FROM room_types rt WHERE rt.id = ?',
+            [room_type_id]
         );
         
-        const multiBookingId = result.insertId;
+        if (roomData.length === 0) {
+            return res.redirect('/user/bookings?error=Tipe kamar tidak ditemukan');
+        }
         
-        // Process each room
-        for (const room of roomsArray) {
-            const roomId = room.room_id;
-            const roomTypeId = room.room_type_id;
-            const subtotal = room.price * duration_months;
+        const monthlyPrice = roomData[0].base_price;
+        const totalAmount = monthlyPrice * duration_months;
+        
+        // Create booking
+        await db.execute(
+            'INSERT INTO bookings (user_id, room_id, room_type_id, start_date, duration_months, total_amount, status) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            [userId, room_id, room_type_id, start_date, duration_months, totalAmount, 'confirmed']
+        );
+        
+        // Update room status
+        await db.execute('UPDATE rooms SET status = ? WHERE id = ?', ['occupied', room_id]);
+        
+        // Create occupant
+        const endDate = new Date(start_date);
+        endDate.setMonth(endDate.getMonth() + parseInt(duration_months));
+        
+        const [occupantResult] = await db.execute(
+            'INSERT INTO occupants (user_id, room_id, start_date, end_date, monthly_rent, status) VALUES (?, ?, ?, ?, ?, ?)',
+            [userId, room_id, start_date, endDate.toISOString().slice(0, 10), monthlyPrice, 'active']
+        );
+        
+        const occupantId = occupantResult.insertId;
+        
+        // Create payment schedule
+        for (let i = 0; i < duration_months; i++) {
+            const dueDate = new Date(start_date);
+            dueDate.setMonth(dueDate.getMonth() + i);
+            dueDate.setDate(10);
             
-            // Create booking
             await db.execute(
-                'INSERT INTO bookings (user_id, room_id, room_type_id, start_date, duration_months, total_amount, status, multi_booking_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-                [userId, roomId, roomTypeId, start_date, duration_months, subtotal, 'confirmed', multiBookingId]
+                'INSERT INTO payments (occupant_id, amount, due_date, status) VALUES (?, ?, ?, ?)',
+                [occupantId, monthlyPrice, dueDate.toISOString().slice(0, 10), 'pending']
             );
-            
-            // Update room status
-            await db.execute('UPDATE rooms SET status = ? WHERE id = ?', ['occupied', roomId]);
-            
-            // Create occupant
-            const endDate = new Date(start_date);
-            endDate.setMonth(endDate.getMonth() + parseInt(duration_months));
-            
-            const [occupantResult] = await db.execute(
-                'INSERT INTO occupants (user_id, room_id, start_date, end_date, monthly_rent, status) VALUES (?, ?, ?, ?, ?, ?)',
-                [userId, roomId, start_date, endDate.toISOString().slice(0, 10), room.price, 'active']
-            );
-            
-            const occupantId = occupantResult.insertId;
-            
-            // Create payment schedule
-            for (let i = 0; i < duration_months; i++) {
-                const dueDate = new Date(start_date);
-                dueDate.setMonth(dueDate.getMonth() + i);
-                dueDate.setDate(10);
-                
-                await db.execute(
-                    'INSERT INTO payments (occupant_id, amount, due_date, status) VALUES (?, ?, ?, ?)',
-                    [occupantId, room.price, dueDate.toISOString().slice(0, 10), 'pending']
-                );
-            }
         }
         
         res.redirect('/user/payments?success=Booking berhasil! Silakan lakukan pembayaran.');
