@@ -4,6 +4,31 @@ const router = express.Router();
 const db = require('../models/db');
 const { redirectIfAuth } = require('../middleware/auth');
 
+// Public debug route - no auth required
+router.get('/debug', async (req, res) => {
+    try {
+        const [result] = await db.execute('SELECT 1 as test');
+        const [tables] = await db.execute('SHOW TABLES');
+        const [users] = await db.execute('SELECT COUNT(*) as count FROM users');
+        
+        res.json({
+            status: 'OK',
+            connection: 'SUCCESS',
+            test: result[0].test,
+            tables: tables.map(t => Object.values(t)[0]),
+            userCount: users[0].count
+        });
+    } catch (error) {
+        res.json({ 
+            status: 'ERROR',
+            connection: 'FAILED',
+            error: error.message,
+            code: error.code,
+            stack: error.stack
+        });
+    }
+});
+
 router.get('/login', redirectIfAuth, (req, res) => {
     const success = req.query.success;
     res.render('auth/login', { success });
