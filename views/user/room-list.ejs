@@ -123,7 +123,8 @@
                         <div class="flex gap-2">
                             <% if (room.status === 'available') { %>
                                 <a href="/user/bookings?room=<%= room.id %>" 
-                                   class="flex-1 glossy-gold text-white px-4 py-2 rounded-lg text-center hover:opacity-90 transition-opacity">
+                                   class="flex-1 glossy-gold text-white px-4 py-2 rounded-lg text-center hover:opacity-90 transition-opacity"
+                                   onclick="return handleRoomBooking('<%= room.id %>', '<%= room.room_number %>', '<%= room.type_name %>', '<%= room.base_price %>', '<%= room.room_type_id || room.type_id %>')">
                                     <i class="fas fa-calendar-plus mr-2"></i>Booking Sekarang
                                 </a>
                             <% } else { %>
@@ -152,5 +153,62 @@
             </div>
         <% } %>
     </div>
+
+    <script>
+        function handleRoomBooking(roomId, roomNumber, typeName, price, roomTypeId) {
+            const isBookingMode = new URLSearchParams(window.location.search).has('booking');
+            
+            if (isBookingMode) {
+                // Add room to existing booking
+                const savedBooking = sessionStorage.getItem('currentBooking');
+                let bookingData = savedBooking ? JSON.parse(savedBooking) : { selected_rooms: [] };
+                
+                // Check if room already selected
+                const existing = bookingData.selected_rooms.find(r => r.room_id === roomId);
+                if (existing) {
+                    alert('Kamar sudah dipilih sebelumnya!');
+                    return false;
+                }
+                
+                // Add new room
+                bookingData.selected_rooms.push({
+                    room_id: roomId,
+                    room_number: roomNumber,
+                    type_name: typeName,
+                    price: price,
+                    room_type_id: roomTypeId
+                });
+                
+                sessionStorage.setItem('currentBooking', JSON.stringify(bookingData));
+                window.location.href = '/user/bookings';
+                return false;
+            }
+            
+            return true;
+        }
+        
+        // Show booking mode indicator
+        const isBookingMode = new URLSearchParams(window.location.search).has('booking');
+        if (isBookingMode) {
+            const savedBooking = sessionStorage.getItem('currentBooking');
+            const bookingData = savedBooking ? JSON.parse(savedBooking) : { selected_rooms: [] };
+            const selectedRoomIds = bookingData.selected_rooms.map(r => r.room_id);
+            
+            // Mark already selected rooms
+            document.querySelectorAll('.glossy-card').forEach(card => {
+                const link = card.querySelector('a[href*="bookings?room="]');
+                if (link) {
+                    const roomId = link.href.split('room=')[1];
+                    if (selectedRoomIds.includes(roomId)) {
+                        const button = card.querySelector('a');
+                        button.classList.remove('glossy-gold');
+                        button.classList.add('bg-orange-500');
+                        button.innerHTML = '<i class="fas fa-clock mr-2"></i>Dalam Proses Booking';
+                        button.onclick = () => { alert('Kamar sudah dalam proses booking!'); return false; };
+                    }
+                }
+            });
+        }
+    </script>
 </body>
 </html>

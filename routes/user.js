@@ -81,10 +81,12 @@ router.get('/rooms', async (req, res) => {
             }
         });
         
-        res.render('user/rooms', { user: req.session.user, roomTypes });
+        const isBookingMode = req.query.booking === 'true';
+        res.render('user/rooms', { user: req.session.user, roomTypes, booking: isBookingMode });
     } catch (error) {
         console.error(error);
-        res.render('user/rooms', { user: req.session.user, roomTypes: [] });
+        const isBookingMode = req.query.booking === 'true';
+        res.render('user/rooms', { user: req.session.user, roomTypes: [], booking: isBookingMode });
     }
 });
 
@@ -123,14 +125,17 @@ router.get('/rooms/:typeId', async (req, res) => {
             }
         });
         
+        const isBookingMode = req.query.booking === 'true';
         res.render('user/room-list', { 
             user: req.session.user, 
             rooms, 
-            roomType: roomType[0] || null 
+            roomType: roomType[0] || null,
+            booking: isBookingMode
         });
     } catch (error) {
         console.error(error);
-        res.render('user/room-list', { user: req.session.user, rooms: [], roomType: null });
+        const isBookingMode = req.query.booking === 'true';
+        res.render('user/room-list', { user: req.session.user, rooms: [], roomType: null, booking: isBookingMode });
     }
 });
 
