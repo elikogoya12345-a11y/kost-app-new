@@ -406,9 +406,53 @@
 
         durationSelect.addEventListener('change', updateSummary);
         
+        // Form validation before submit
+        document.getElementById('multiBookingForm').addEventListener('submit', function(e) {
+            const roomCheckboxes = document.querySelectorAll('.room-checkbox:checked');
+            const startDate = document.querySelector('input[name="start_date"]').value;
+            const duration = document.querySelector('select[name="duration_months"]').value;
+            
+            if (roomCheckboxes.length === 0) {
+                e.preventDefault();
+                alert('Silakan pilih minimal satu kamar!');
+                return false;
+            }
+            
+            if (!startDate) {
+                e.preventDefault();
+                alert('Silakan pilih tanggal mulai!');
+                return false;
+            }
+            
+            if (!duration) {
+                e.preventDefault();
+                alert('Silakan pilih durasi!');
+                return false;
+            }
+            
+            // Update data before submit
+            updateSummary();
+            
+            // Show loading
+            const submitBtn = document.getElementById('bookingButton');
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Memproses...';
+            submitBtn.disabled = true;
+            
+            console.log('Form data:', {
+                rooms: document.getElementById('roomsData').value,
+                total_amount: document.getElementById('totalAmount').value,
+                start_date: startDate,
+                duration_months: duration
+            });
+        });
+        
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', function() {
             updateSummary();
+            
+            // Set default date to today
+            const today = new Date().toISOString().split('T')[0];
+            document.querySelector('input[name="start_date"]').value = today;
         });
         
         // Update immediately

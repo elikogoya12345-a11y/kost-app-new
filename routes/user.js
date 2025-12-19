@@ -379,6 +379,14 @@ router.post('/multi-booking', async (req, res) => {
         const { start_date, duration_months, rooms, notes, total_amount } = req.body;
         const userId = req.session.user.id;
         
+        console.log('=== MULTI BOOKING REQUEST ===');
+        console.log('User ID:', userId);
+        console.log('Start Date:', start_date);
+        console.log('Duration:', duration_months);
+        console.log('Total Amount:', total_amount);
+        console.log('Rooms Data:', rooms);
+        console.log('Notes:', notes);
+        
         await db.execute('START TRANSACTION');
         
         const [result] = await db.execute(
@@ -412,6 +420,10 @@ router.post('/multi-booking', async (req, res) => {
         }
         
         await db.execute('COMMIT');
+        console.log('=== BOOKING SUCCESS ===');
+        console.log('Multi Booking ID:', multiBookingId);
+        console.log('Redirecting to:', `/user/activate-payment/${multiBookingId}`);
+        
         // Langsung redirect ke pembayaran dengan auto-activate
         res.redirect(`/user/activate-payment/${multiBookingId}`);
     } catch (error) {
@@ -426,6 +438,10 @@ router.get('/activate-payment/:id', async (req, res) => {
     try {
         const multiBookingId = req.params.id;
         const userId = req.session.user.id;
+        
+        console.log('=== PAYMENT ACTIVATION PAGE ===');
+        console.log('Multi Booking ID:', multiBookingId);
+        console.log('User ID:', userId);
         
         const [bookings] = await db.execute(
             'SELECT b.*, rt.base_price, rt.name as room_type, r.room_number FROM bookings b JOIN room_types rt ON b.room_type_id = rt.id JOIN rooms r ON b.room_id = r.id WHERE b.multi_booking_id = ? AND b.user_id = ?',
