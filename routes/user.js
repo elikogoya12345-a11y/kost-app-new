@@ -394,11 +394,57 @@ router.post('/multi-booking', async (req, res) => {
         }
         
         await db.execute('COMMIT');
-        res.redirect('/user/bookings?success=Booking berhasil! Silakan lanjutkan pembayaran.');
+        // Langsung redirect ke pembayaran dengan auto-activate
+        res.redirect(`/user/activate-payment/${multiBookingId}`);
     } catch (error) {
         await db.execute('ROLLBACK');
         console.error(error);
         res.redirect('/user/bookings?error=Gagal melakukan booking');
+    }
+});
+
+// Auto-activate payment after booking
+router.get('/activate-payment/:id', async (req, res) => {
+    try {
+        const multiBookingId = req.params.id;
+        const userId = req.session.user.id;
+        
+        const [bookings] = await db.execute(
+            'SELECT b.*, rt.base_price, rt.name as room_type FROM bookings b JOIN room_types rt ON b.room_type_id = rt.id WHERE b.multi_booking_id = ? AND b.user_id = ?',
+            [multiBookingId, userId]
+        );
+        
+        if (bookings.length === 0) {
+            return res.redirect('/user/bookings?error=Booking tidak ditemukan');
+        }
+        
+        const [multiBooking] = await db.execute('SELECT * FROM multi_bookings WHERE id = ?', [multiBookingId]);
+        const mbData = multiBooking[0];
+        
+        // Get available rooms for each room type
+        const roomTypeData = {};
+        for (const booking of bookings) {
+            if (!roomTypeData[booking.room_type_id]) {
+                const [availableRooms] = await db.execute(
+                    'SELECT COUNT(*) as count FROM rooms WHERE room_type_id = ? AND status = "available"',
+                    [booking.room_type_id]
+                );
+                roomTypeData[booking.room_type_id] = {
+                    name: booking.room_type,
+                    available_count: availableRooms[0].count
+                };
+            }
+        }
+        
+        res.render('user/payment-activation', {
+            user: req.session.user,
+            multiBooking: mbData,
+            bookings,
+            roomTypeData
+        });
+    } catch (error) {
+        console.error(error);
+        res.redirect('/user/bookings?error=Gagal memuat halaman pembayaran');
     }
 });
 

@@ -167,7 +167,7 @@
                     
                     <button type="submit" form="multiBookingForm" id="bookingButton" 
                             class="w-full glossy-gold text-white px-6 py-3 rounded-lg mt-6">
-                        <i class="fas fa-calendar-plus mr-2"></i>Booking Sekarang
+                        <i class="fas fa-credit-card mr-2"></i>Booking & Lanjut ke Pembayaran
                     </button>
                 </div>
             </div>
@@ -213,14 +213,12 @@
                                         </td>
                                         <td class="px-4 py-3">
                                             <div class="flex gap-2">
-                                                <form action="/user/bookings/<%= booking.id %>/activate" method="POST" class="inline">
-                                                    <button type="submit" class="glossy-gold text-white px-3 py-1 rounded text-sm">
-                                                        <i class="fas fa-credit-card mr-1"></i>Lanjutkan Pembayaran
-                                                    </button>
-                                                </form>
                                                 <a href="/user/bookings/<%= booking.id %>/print" target="_blank" 
                                                    class="glossy-gold-light text-gold-dark px-3 py-1 rounded text-sm">
                                                     <i class="fas fa-print mr-1"></i>Print PDF
+                                                </a>
+                                                <a href="/user/payments" class="glossy-gold text-white px-3 py-1 rounded text-sm">
+                                                    <i class="fas fa-eye mr-1"></i>Lihat Pembayaran
                                                 </a>
                                             </div>
                                         </td>
