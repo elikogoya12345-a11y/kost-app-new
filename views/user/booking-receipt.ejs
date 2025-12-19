@@ -14,78 +14,71 @@
 </head>
 <body class="bg-gray-100 p-4">
     <div class="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-8">
-        <!-- Header -->
         <div class="text-center mb-8">
             <h1 class="text-3xl font-bold text-blue-600 mb-2">KOST PROFESSIONAL</h1>
-            <p class="text-gray-600">Bukti Booking Kamar</p>
+            <p class="text-gray-600">Bukti Multi Booking Kamar</p>
             <div class="border-b-2 border-blue-600 mt-4"></div>
         </div>
 
-        <!-- Booking Info -->
         <div class="grid grid-cols-2 gap-8 mb-8">
             <div>
                 <h3 class="font-bold text-gray-800 mb-4">Informasi Penyewa:</h3>
-                <p><strong>Nama:</strong> <%= booking.user_name %></p>
-                <p><strong>Email:</strong> <%= booking.email %></p>
-                <p><strong>Telepon:</strong> <%= booking.phone || '-' %></p>
+                <p><strong>Nama:</strong> <%= multiBooking.user_name %></p>
+                <p><strong>Email:</strong> <%= multiBooking.email %></p>
+                <p><strong>Telepon:</strong> <%= multiBooking.phone || '-' %></p>
             </div>
             <div>
                 <h3 class="font-bold text-gray-800 mb-4">Detail Booking:</h3>
-                <p><strong>ID Booking:</strong> #<%= booking.id %></p>
-                <p><strong>Tanggal Booking:</strong> <%= new Date(booking.created_at).toLocaleDateString('id-ID') %></p>
+                <p><strong>ID Booking:</strong> #<%= multiBooking.id %></p>
+                <p><strong>Tanggal Booking:</strong> <%= new Date(multiBooking.created_at).toLocaleDateString('id-ID') %></p>
                 <p><strong>Status:</strong> <span class="text-green-600 font-semibold">Terkonfirmasi</span></p>
             </div>
         </div>
 
-        <!-- Room Details -->
         <div class="bg-gray-50 p-6 rounded-lg mb-8">
             <h3 class="font-bold text-gray-800 mb-4">Detail Kamar:</h3>
-            <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <p><strong>Tipe Kamar:</strong> <%= booking.room_type %></p>
-                    <p><strong>Nomor Kamar:</strong> <%= booking.room_number %></p>
+            <% bookings.forEach((booking, index) => { %>
+                <div class="<%= index > 0 ? 'border-t border-gray-300 pt-4 mt-4' : '' %>">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <p><strong>Kamar <%= index + 1 %>:</strong> <%= booking.room_number %></p>
+                            <p><strong>Tipe:</strong> <%= booking.room_type %></p>
+                        </div>
+                        <div>
+                            <p><strong>Harga/Bulan:</strong> Rp <%= parseInt(booking.base_price).toLocaleString('id-ID') %></p>
+                            <p><strong>Subtotal:</strong> Rp <%= parseInt(booking.total_amount).toLocaleString('id-ID') %></p>
+                        </div>
+                    </div>
                 </div>
-                <div>
-                    <p><strong>Tanggal Mulai:</strong> <%= new Date(booking.start_date).toLocaleDateString('id-ID') %></p>
-                    <p><strong>Durasi:</strong> <%= booking.duration_months %> Bulan</p>
+            <% }); %>
+            
+            <div class="mt-4 pt-4 border-t-2 border-gray-400">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <p><strong>Tanggal Mulai:</strong> <%= new Date(multiBooking.start_date).toLocaleDateString('id-ID') %></p>
+                        <p><strong>Durasi:</strong> <%= multiBooking.duration_months %> Bulan</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-2xl font-bold text-blue-600">
+                            Total: Rp <%= parseInt(multiBooking.total_amount).toLocaleString('id-ID') %>
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Payment Summary -->
-        <div class="border-t-2 border-gray-200 pt-6 mb-8">
-            <h3 class="font-bold text-gray-800 mb-4">Ringkasan Pembayaran:</h3>
-            <div class="flex justify-between items-center mb-2">
-                <span>Harga per bulan:</span>
-                <span>Rp <%= parseInt(booking.base_price).toLocaleString('id-ID') %></span>
-            </div>
-            <div class="flex justify-between items-center mb-2">
-                <span>Durasi:</span>
-                <span><%= booking.duration_months %> bulan</span>
-            </div>
-            <div class="border-t border-gray-300 pt-2 mt-4">
-                <div class="flex justify-between items-center font-bold text-lg">
-                    <span>Total Pembayaran:</span>
-                    <span class="text-blue-600">Rp <%= parseInt(booking.total_amount).toLocaleString('id-ID') %></span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Notes -->
-        <% if (booking.notes) { %>
+        <% if (multiBooking.notes) { %>
         <div class="bg-yellow-50 p-4 rounded-lg mb-8">
             <h4 class="font-semibold text-gray-800 mb-2">Catatan:</h4>
-            <p class="text-gray-700"><%= booking.notes %></p>
+            <p class="text-gray-700"><%= multiBooking.notes %></p>
         </div>
         <% } %>
 
-        <!-- Footer -->
         <div class="text-center text-sm text-gray-500 mt-8">
             <p>Terima kasih telah memilih Kost Professional</p>
             <p>Dokumen ini dicetak pada <%= new Date().toLocaleDateString('id-ID') %></p>
         </div>
 
-        <!-- Print Button -->
         <div class="text-center mt-8 no-print">
             <button onclick="window.print()" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 mr-4">
                 <i class="fas fa-print mr-2"></i>Cetak Bukti

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Booking Saya - Kos Putra Bu Hartini</title>
+    <title>Booking Kamar - KostPro User</title>
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -52,8 +52,8 @@
     <div class="max-w-7xl mx-auto px-4 py-8">
         <div class="mb-8">
             <div class="glossy-white rounded-2xl p-6 glossy-card">
-                <h1 class="text-3xl font-bold text-gold-dark">Booking Saya</h1>
-                <p class="text-gold mt-2">Riwayat booking kamar di Kos Putra Bu Hartini</p>
+                <h1 class="text-3xl font-bold text-gold-dark">Multi Booking Kamar</h1>
+                <p class="text-gold mt-2">Booking satu atau beberapa kamar sekaligus</p>
             </div>
         </div>
 
@@ -63,282 +63,240 @@
             </div>
         <% } %>
 
-        <div class="grid grid-cols-1 gap-6">
-            <% if (bookings.length > 0) { %>
-                <% bookings.forEach(booking => { %>
-                    <div class="glossy-white rounded-2xl p-6 glossy-card">
-                        <div class="flex justify-between items-start mb-4">
+        <!-- Booking Form -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-2">
+                <div class="glossy-white rounded-2xl p-6 glossy-card">
+                    <h2 class="text-xl font-bold text-gold-dark mb-6">Pilih Kamar</h2>
+                    
+                    <form id="multiBookingForm" action="/user/multi-booking" method="POST">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                             <div>
-                                <h3 class="text-xl font-bold text-gold-dark">
-                                    <i class="fas fa-door-open text-amber-600 mr-2"></i>
-                                    Kamar <%= booking.room_number %>
-                                </h3>
-                                <p class="text-gold"><%= booking.room_type %></p>
+                                <label class="block text-sm font-medium text-gold-dark mb-2">Tanggal Mulai</label>
+                                <input type="date" name="start_date" required 
+                                       class="w-full px-4 py-2 border border-amber-300 rounded-lg focus:ring-2 focus:ring-amber-500">
                             </div>
-                            <div class="text-right">
-                                <% if (booking.status === 'confirmed') { %>
-                                    <span class="inline-flex px-3 py-1 text-sm font-semibold rounded-full bg-green-100 text-green-800">
-                                        <i class="fas fa-check mr-1"></i>Terkonfirmasi
-                                    </span>
-                                <% } else if (booking.status === 'pending') { %>
-                                    <span class="inline-flex px-3 py-1 text-sm font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                                        <i class="fas fa-clock mr-1"></i>Menunggu Konfirmasi
-                                    </span>
-                                <% } else { %>
-                                    <span class="inline-flex px-3 py-1 text-sm font-semibold rounded-full bg-gray-100 text-gray-800">
-                                        <%= booking.status %>
-                                    </span>
-                                <% } %>
+                            <div>
+                                <label class="block text-sm font-medium text-gold-dark mb-2">Durasi (Bulan)</label>
+                                <select name="duration_months" id="durationSelect" required 
+                                        class="w-full px-4 py-2 border border-amber-300 rounded-lg focus:ring-2 focus:ring-amber-500">
+                                    <option value="1">1 Bulan</option>
+                                    <option value="3">3 Bulan</option>
+                                    <option value="6">6 Bulan</option>
+                                    <option value="12">12 Bulan</option>
+                                </select>
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                            <div class="glossy-gold-light rounded-xl p-4 glossy-card">
-                                <div class="flex items-center mb-2">
-                                    <i class="fas fa-calendar-alt text-amber-600 mr-2"></i>
-                                    <span class="font-semibold text-gold-dark">Tanggal Mulai</span>
-                                </div>
-                                <p class="text-gold"><%= new Date(booking.start_date).toLocaleDateString('id-ID') %></p>
-                            </div>
-
-                            <div class="glossy-gold-light rounded-xl p-4 glossy-card">
-                                <div class="flex items-center mb-2">
-                                    <i class="fas fa-clock text-amber-600 mr-2"></i>
-                                    <span class="font-semibold text-gold-dark">Durasi</span>
-                                </div>
-                                <p class="text-gold"><%= booking.duration_months %> Bulan</p>
-                            </div>
-
-                            <div class="glossy-gold rounded-xl p-4 glossy-card">
-                                <div class="flex items-center mb-2">
-                                    <i class="fas fa-money-bill-wave text-white mr-2"></i>
-                                    <span class="font-semibold text-white">Total Bayar</span>
-                                </div>
-                                <p class="text-white font-bold">Rp <%= parseFloat(booking.total_amount).toLocaleString('id-ID') %></p>
-                            </div>
-                        </div>
-
-                        <% if (booking.notes) { %>
-                            <div class="glossy-gold-light rounded-xl p-4 mb-4 glossy-card">
-                                <h4 class="font-semibold text-gold-dark mb-2">
-                                    <i class="fas fa-sticky-note text-amber-600 mr-2"></i>Catatan
-                                </h4>
-                                <p class="text-gold"><%= booking.notes %></p>
-                            </div>
-                        <% } %>
-
-                        <div class="flex items-center justify-between pt-4 border-t border-amber-200">
-                            <div class="text-sm text-gold">
-                                <i class="fas fa-calendar mr-1"></i>
-                                Dibooking pada <%= new Date(booking.created_at).toLocaleDateString('id-ID') %>
-                            </div>
-                            <div class="flex space-x-3">
-                                <% if (booking.status === 'confirmed') { %>
-                                    <form action="/user/bookings/<%= booking.id %>/activate" method="POST" style="display: inline;">
-                                        <button type="submit" class="glossy-gold text-white px-4 py-2 rounded-xl glossy-card">
-                                            <i class="fas fa-money-check-alt mr-2"></i>Ajukan Pembayaran
-                                        </button>
-                                    </form>
-                                    <button onclick="printBooking('<%= booking.id %>')" 
-                                            class="glossy-gold-light text-gold-dark px-4 py-2 rounded-xl glossy-card">
-                                        <i class="fas fa-print mr-2"></i>Print / Save PDF
-                                    </button>
-                                <% } %>
+                        <div class="mb-6">
+                            <h3 class="text-lg font-semibold text-gold-dark mb-4">Kamar Tersedia</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="roomsGrid">
+                                <% rooms.forEach((room, index) => { %>
+                                    <div class="border border-amber-200 rounded-lg p-4 room-card">
+                                        <div class="flex items-center justify-between mb-3">
+                                            <div>
+                                                <h4 class="font-semibold text-gold-dark">Kamar <%= room.room_number %></h4>
+                                                <p class="text-sm text-gold"><%= room.type_name %></p>
+                                            </div>
+                                            <div class="text-right">
+                                                <div class="text-lg font-bold text-amber-600">
+                                                    Rp <%= parseInt(room.base_price).toLocaleString('id-ID') %>
+                                                </div>
+                                                <div class="text-xs text-gold">per bulan</div>
+                                            </div>
+                                        </div>
+                                        <label class="flex items-center cursor-pointer">
+                                            <input type="checkbox" name="selected_rooms" value="<%= room.id %>" 
+                                                   data-price="<%= room.base_price %>" 
+                                                   data-room-number="<%= room.room_number %>"
+                                                   data-type-name="<%= room.type_name %>"
+                                                   class="room-checkbox mr-3">
+                                            <span class="text-sm text-gold-dark">Pilih kamar ini</span>
+                                        </label>
+                                    </div>
+                                <% }); %>
                             </div>
                         </div>
-                    </div>
-                <% }); %>
-            <% } else { %>
-                <div class="glossy-white rounded-2xl p-12 text-center glossy-card">
-                    <i class="fas fa-calendar-times text-4xl text-gold mb-4"></i>
-                    <h3 class="text-xl font-semibold text-gold-dark mb-2">Belum Ada Booking</h3>
-                    <p class="text-gold mb-6">Anda belum melakukan booking kamar</p>
-                    <a href="/user/rooms" class="glossy-gold text-white px-6 py-3 rounded-xl glossy-card">
-                        <i class="fas fa-bed mr-2"></i>Lihat Kamar Tersedia
-                    </a>
-                </div>
-            <% } %>
-        </div>
-    </div>
 
-    <!-- Print Modal -->
-    <div id="printModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center z-50 p-4">
-        <div class="glossy-white rounded-2xl shadow-lg w-full max-w-md glossy-card">
-            <div id="printContent" class="p-8" style="font-family: Arial, sans-serif;">
-                <div class="text-center mb-8" style="text-align: center; margin-bottom: 32px;">
-                    <h2 class="text-3xl font-bold text-gray-800" style="font-size: 28px; font-weight: bold; margin-bottom: 8px;">Kos Putra Bu Hartini</h2>
-                    <p class="text-gray-600" style="color: #666; margin-bottom: 20px;">Bukti Booking Kamar</p>
-                    <hr style="border: 1px solid #333; margin: 20px 0;">
-                </div>
-                
-                <div id="bookingDetails" class="space-y-4" style="margin: 20px 0;">
-                    <!-- Content will be filled by JavaScript -->
-                </div>
-                
-                <div class="mt-8 pt-6 border-t text-center" style="margin-top: 40px; padding-top: 24px; border-top: 1px solid #ccc; text-align: center;">
-                    <p style="color: #666; font-size: 14px; margin-bottom: 5px;">Terima kasih telah memilih Kos Putra Bu Hartini</p>
-                    <p style="color: #666; font-size: 14px;">Lokasi: Beringin Lestari, dekat UMN</p>
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium text-gold-dark mb-2">Catatan (Opsional)</label>
+                            <textarea name="notes" rows="3" 
+                                      class="w-full px-4 py-2 border border-amber-300 rounded-lg focus:ring-2 focus:ring-amber-500"
+                                      placeholder="Tambahkan catatan khusus..."></textarea>
+                        </div>
+
+                        <input type="hidden" name="total_amount" id="totalAmount">
+                        <input type="hidden" name="rooms" id="roomsData">
+                    </form>
                 </div>
             </div>
-            
-            <div class="glossy-gold-light px-6 py-4 rounded-b-2xl flex justify-end space-x-3">
-                <button onclick="closePrintModal()" 
-                        class="px-4 py-2 border border-amber-300 rounded-xl text-gold hover:bg-amber-100 glossy-card">
-                    Tutup
-                </button>
-                <button onclick="printDocument()" 
-                        class="px-4 py-2 glossy-gold text-white rounded-xl glossy-card">
-                    <i class="fas fa-print mr-2"></i>Print
-                </button>
+
+            <!-- Summary -->
+            <div class="lg:col-span-1">
+                <div class="glossy-white rounded-2xl p-6 glossy-card sticky top-8">
+                    <h3 class="text-lg font-bold text-gold-dark mb-4">Ringkasan Booking</h3>
+                    
+                    <div id="selectedRoomsList" class="mb-4">
+                        <p class="text-gold text-sm">Belum ada kamar dipilih</p>
+                    </div>
+                    
+                    <div class="border-t border-amber-200 pt-4">
+                        <div class="flex justify-between mb-2">
+                            <span class="text-gold">Durasi:</span>
+                            <span id="durationDisplay" class="text-gold-dark">1 bulan</span>
+                        </div>
+                        <div class="flex justify-between mb-2">
+                            <span class="text-gold">Subtotal:</span>
+                            <span id="subtotalDisplay" class="text-gold-dark">Rp 0</span>
+                        </div>
+                        <div class="flex justify-between text-lg font-bold border-t border-amber-200 pt-2">
+                            <span class="text-gold-dark">Total:</span>
+                            <span id="totalDisplay" class="text-amber-600">Rp 0</span>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" form="multiBookingForm" id="bookingButton" disabled
+                            class="w-full glossy-gold text-white px-6 py-3 rounded-lg mt-6 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <i class="fas fa-calendar-plus mr-2"></i>Booking Sekarang
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Booking History -->
+        <div class="mt-12">
+            <div class="glossy-white rounded-2xl p-6 glossy-card">
+                <h2 class="text-xl font-bold text-gold-dark mb-6">Riwayat Booking</h2>
+                
+                <% if (bookings.length > 0) { %>
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead class="glossy-gold-light">
+                                <tr>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gold uppercase">Tanggal</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gold uppercase">Kamar</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gold uppercase">Durasi</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gold uppercase">Total</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gold uppercase">Status</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gold uppercase">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-amber-200">
+                                <% bookings.forEach(booking => { %>
+                                    <tr class="hover:bg-amber-50">
+                                        <td class="px-4 py-3 text-sm text-gold-dark">
+                                            <%= new Date(booking.created_at).toLocaleDateString('id-ID') %>
+                                        </td>
+                                        <td class="px-4 py-3 text-sm text-gold-dark">
+                                            <%= booking.room_numbers || 'Multiple rooms' %>
+                                        </td>
+                                        <td class="px-4 py-3 text-sm text-gold-dark">
+                                            <%= booking.duration_months %> bulan
+                                        </td>
+                                        <td class="px-4 py-3 text-sm font-semibold text-amber-600">
+                                            Rp <%= parseInt(booking.total_amount).toLocaleString('id-ID') %>
+                                        </td>
+                                        <td class="px-4 py-3">
+                                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                                                <%= booking.status %>
+                                            </span>
+                                        </td>
+                                        <td class="px-4 py-3">
+                                            <div class="flex gap-2">
+                                                <form action="/user/bookings/<%= booking.id %>/activate" method="POST" class="inline">
+                                                    <button type="submit" class="text-blue-600 hover:text-blue-800 text-sm">
+                                                        <i class="fas fa-play mr-1"></i>Ajukan Pembayaran
+                                                    </button>
+                                                </form>
+                                                <a href="/user/bookings/<%= booking.id %>/print" target="_blank" 
+                                                   class="text-green-600 hover:text-green-800 text-sm">
+                                                    <i class="fas fa-print mr-1"></i>Print
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <% }); %>
+                            </tbody>
+                        </table>
+                    </div>
+                <% } else { %>
+                    <div class="text-center py-8">
+                        <i class="fas fa-calendar-times text-4xl text-amber-300 mb-4"></i>
+                        <p class="text-gold">Belum ada riwayat booking</p>
+                    </div>
+                <% } %>
             </div>
         </div>
     </div>
 
     <script>
-        const bookingsData = <%- JSON.stringify(bookings) %>;
-        const userName = '<%= user.name %>';
+        const roomCheckboxes = document.querySelectorAll('.room-checkbox');
+        const durationSelect = document.getElementById('durationSelect');
+        const selectedRoomsList = document.getElementById('selectedRoomsList');
+        const subtotalDisplay = document.getElementById('subtotalDisplay');
+        const totalDisplay = document.getElementById('totalDisplay');
+        const durationDisplay = document.getElementById('durationDisplay');
+        const bookingButton = document.getElementById('bookingButton');
+        const totalAmountInput = document.getElementById('totalAmount');
+        const roomsDataInput = document.getElementById('roomsData');
 
-        function printBooking(bookingId) {
-            const booking = bookingsData.find(b => b.id == bookingId);
-            if (!booking) return;
+        function updateSummary() {
+            const selectedRooms = Array.from(roomCheckboxes).filter(cb => cb.checked);
+            const duration = parseInt(durationSelect.value);
             
-            const bookingDetails = document.getElementById('bookingDetails');
-            bookingDetails.innerHTML = `
-                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                    <span style="font-weight: bold;">Nama Penyewa:</span>
-                    <span>${userName}</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                    <span style="font-weight: bold;">Nomor Kamar:</span>
-                    <span>${booking.room_number}</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                    <span style="font-weight: bold;">Tipe Kamar:</span>
-                    <span>${booking.room_type}</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                    <span style="font-weight: bold;">Tanggal Mulai:</span>
-                    <span>${new Date(booking.start_date).toLocaleDateString('id-ID')}</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                    <span style="font-weight: bold;">Durasi:</span>
-                    <span>${booking.duration_months} Bulan</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                    <span style="font-weight: bold;">Harga per Bulan:</span>
-                    <span>Rp ${parseFloat(booking.base_price).toLocaleString('id-ID')}</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; margin-bottom: 8px; border-top: 1px solid #ccc; padding-top: 8px;">
-                    <span style="font-weight: bold;">Total Pembayaran:</span>
-                    <span style="font-weight: bold;">Rp ${parseFloat(booking.total_amount).toLocaleString('id-ID')}</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                    <span style="font-weight: bold;">Status:</span>
-                    <span style="color: green; font-weight: bold;">Terkonfirmasi</span>
-                </div>
-                <div style="display: flex; justify-content: space-between;">
-                    <span style="font-weight: bold;">Tanggal Booking:</span>
-                    <span>${new Date(booking.created_at).toLocaleDateString('id-ID')}</span>
-                </div>
-            `;
-            
-            document.getElementById('printModal').classList.remove('hidden');
-            document.getElementById('printModal').classList.add('flex');
-        }
-
-        function closePrintModal() {
-            document.getElementById('printModal').classList.add('hidden');
-            document.getElementById('printModal').classList.remove('flex');
-        }
-
-        function printDocument() {
-            const printContent = document.getElementById('printContent');
-            const newWindow = window.open('', '_blank');
-            newWindow.document.write(`
-                <!DOCTYPE html>
-                <html>
-                <head>
-                    <title>Bukti Booking Kamar</title>
-                    <style>
-                        body {
-                            font-family: Arial, sans-serif;
-                            margin: 30px;
-                            line-height: 1.6;
-                        }
-                        .header {
-                            text-align: center;
-                            margin-bottom: 30px;
-                        }
-                        .title {
-                            font-size: 28px;
-                            font-weight: bold;
-                            margin-bottom: 8px;
-                        }
-                        .subtitle {
-                            color: #666;
-                            margin-bottom: 20px;
-                        }
-                        hr {
-                            border: 1px solid #333;
-                            margin: 20px 0;
-                        }
-                        table {
-                            width: 100%;
-                            border-collapse: collapse;
-                            font-size: 16px;
-                            line-height: 1.6;
-                        }
-                        td {
-                            padding: 8px 0;
-                            vertical-align: top;
-                        }
-                        .label {
-                            font-weight: bold;
-                            width: 40%;
-                        }
-                        .total-row {
-                            border-top: 2px solid #333;
-                        }
-                        .total-row td {
-                            padding: 12px 0 8px 0;
-                            font-size: 18px;
-                            font-weight: bold;
-                        }
-                        .status {
-                            color: #22c55e;
-                            font-weight: bold;
-                        }
-                        .footer {
-                            text-align: center;
-                            margin-top: 40px;
-                            color: #666;
-                            font-size: 14px;
-                        }
-                        @media print {
-                            @page {
-                                margin: 15mm;
-                                size: A4;
-                            }
-                        }
-                    </style>
-                </head>
-                <body>
-                    ${printContent.innerHTML}
-                </body>
-                </html>
-            `);
-            newWindow.document.close();
-            newWindow.print();
-            newWindow.close();
-        }
-
-        document.getElementById('printModal').addEventListener('click', function(e) {
-            if (e.target.id === 'printModal') {
-                closePrintModal();
+            if (selectedRooms.length === 0) {
+                selectedRoomsList.innerHTML = '<p class="text-gold text-sm">Belum ada kamar dipilih</p>';
+                subtotalDisplay.textContent = 'Rp 0';
+                totalDisplay.textContent = 'Rp 0';
+                bookingButton.disabled = true;
+                return;
             }
+
+            let html = '<div class="space-y-2">';
+            let subtotal = 0;
+            const roomsData = [];
+
+            selectedRooms.forEach(checkbox => {
+                const price = parseInt(checkbox.dataset.price);
+                const roomNumber = checkbox.dataset.roomNumber;
+                const typeName = checkbox.dataset.typeName;
+                
+                subtotal += price;
+                roomsData.push({
+                    room_id: checkbox.value,
+                    room_number: roomNumber,
+                    type_name: typeName,
+                    price: price,
+                    subtotal: price * duration
+                });
+
+                html += `
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gold">Kamar ${roomNumber}</span>
+                        <span class="text-gold-dark">Rp ${price.toLocaleString('id-ID')}</span>
+                    </div>
+                `;
+            });
+            html += '</div>';
+
+            const total = subtotal * duration;
+
+            selectedRoomsList.innerHTML = html;
+            subtotalDisplay.textContent = `Rp ${subtotal.toLocaleString('id-ID')}`;
+            totalDisplay.textContent = `Rp ${total.toLocaleString('id-ID')}`;
+            durationDisplay.textContent = `${duration} bulan`;
+            
+            totalAmountInput.value = total;
+            roomsDataInput.value = JSON.stringify(roomsData);
+            
+            bookingButton.disabled = false;
+        }
+
+        roomCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', updateSummary);
         });
+
+        durationSelect.addEventListener('change', updateSummary);
     </script>
-
-
 </body>
 </html>
