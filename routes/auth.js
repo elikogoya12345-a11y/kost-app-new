@@ -25,8 +25,13 @@ router.get('/debug', async (req, res) => {
         res.json({
             status: 'OK',
             connection: 'SUCCESS',
-            database: process.env.DB_NAME || 'not set',
-            host: process.env.DB_HOST ? 'set' : 'not set',
+            config: {
+                database: process.env.DB_NAME || 'not set',
+                host: process.env.DB_HOST ? process.env.DB_HOST.substring(0, 20) + '...' : 'not set',
+                user: process.env.DB_USER ? 'set' : 'not set',
+                password: process.env.DB_PASSWORD ? 'set' : 'not set',
+                port: process.env.DB_PORT || 'not set'
+            },
             test: result[0].test,
             tables: tables.map(t => Object.values(t)[0]),
             userCount: userCount
@@ -36,12 +41,18 @@ router.get('/debug', async (req, res) => {
         res.json({ 
             status: 'ERROR',
             connection: 'FAILED',
-            database: process.env.DB_NAME || 'not set',
-            host: process.env.DB_HOST ? 'set' : 'not set',
+            config: {
+                database: process.env.DB_NAME || 'not set',
+                host: process.env.DB_HOST ? process.env.DB_HOST.substring(0, 20) + '...' : 'not set',
+                user: process.env.DB_USER ? 'set' : 'not set',
+                password: process.env.DB_PASSWORD ? 'set' : 'not set',
+                port: process.env.DB_PORT || 'not set'
+            },
             error: error.message,
             code: error.code,
             errno: error.errno,
-            sqlState: error.sqlState
+            sqlState: error.sqlState,
+            fullHost: process.env.DB_HOST || 'not set'
         });
     }
 });
