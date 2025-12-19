@@ -7,24 +7,41 @@ const { redirectIfAuth } = require('../middleware/auth');
 // Public debug route - no auth required
 router.get('/debug', async (req, res) => {
     try {
+        console.log('Testing database connection...');
         const [result] = await db.execute('SELECT 1 as test');
+        console.log('Basic test passed');
+        
         const [tables] = await db.execute('SHOW TABLES');
-        const [users] = await db.execute('SELECT COUNT(*) as count FROM users');
+        console.log('Tables query passed');
+        
+        let userCount = 0;
+        try {
+            const [users] = await db.execute('SELECT COUNT(*) as count FROM users');
+            userCount = users[0].count;
+        } catch (userError) {
+            console.log('Users table error:', userError.message);
+        }
         
         res.json({
             status: 'OK',
             connection: 'SUCCESS',
+            database: process.env.DB_NAME || 'not set',
+            host: process.env.DB_HOST ? 'set' : 'not set',
             test: result[0].test,
             tables: tables.map(t => Object.values(t)[0]),
-            userCount: users[0].count
+            userCount: userCount
         });
     } catch (error) {
+        console.error('Database debug error:', error);
         res.json({ 
             status: 'ERROR',
             connection: 'FAILED',
+            database: process.env.DB_NAME || 'not set',
+            host: process.env.DB_HOST ? 'set' : 'not set',
             error: error.message,
             code: error.code,
-            stack: error.stack
+            errno: error.errno,
+            sqlState: error.sqlState
         });
     }
 });
