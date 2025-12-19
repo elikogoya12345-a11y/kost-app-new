@@ -99,25 +99,29 @@
                             
                             <div id="selectedRoomsContainer" class="space-y-3 mb-4">
                                 <% if (selectedType && rooms.length > 0) { %>
-                                    <div class="border border-amber-200 rounded-lg p-4 selected-room-card">
-                                        <div class="flex items-center justify-between">
-                                            <div>
-                                                <h4 class="font-semibold text-gold-dark">Kamar <%= rooms[0].room_number %></h4>
-                                                <p class="text-sm text-gold"><%= rooms[0].type_name %></p>
-                                            </div>
-                                            <div class="text-right">
-                                                <div class="text-lg font-bold text-amber-600">
-                                                    Rp <%= parseInt(rooms[0].base_price).toLocaleString('id-ID') %>
+                                    <% rooms.slice(0, 1).forEach(room => { %>
+                                        <div class="border border-green-200 bg-green-50 rounded-lg p-4 selected-room-card">
+                                            <div class="flex items-center justify-between">
+                                                <div>
+                                                    <h4 class="font-semibold text-gold-dark">Kamar <%= room.room_number %></h4>
+                                                    <p class="text-sm text-gold"><%= room.type_name %></p>
+                                                    <span class="text-xs text-green-600"><i class="fas fa-check mr-1"></i>Terpilih</span>
                                                 </div>
-                                                <div class="text-xs text-gold">per bulan</div>
+                                                <div class="text-right">
+                                                    <div class="text-lg font-bold text-amber-600">
+                                                        Rp <%= parseInt(room.base_price).toLocaleString('id-ID') %>
+                                                    </div>
+                                                    <div class="text-xs text-gold">per bulan</div>
+                                                </div>
                                             </div>
+                                            <input type="checkbox" name="selected_rooms" value="<%= room.id %>" 
+                                                   data-price="<%= room.base_price %>" 
+                                                   data-room-number="<%= room.room_number %>"
+                                                   data-type-name="<%= room.type_name %>"
+                                                   data-room-type-id="<%= selectedType %>"
+                                                   class="room-checkbox" checked style="display: none;">
                                         </div>
-                                        <input type="hidden" name="selected_rooms" value="<%= rooms[0].id %>" 
-                                               data-price="<%= rooms[0].base_price %>" 
-                                               data-room-number="<%= rooms[0].room_number %>"
-                                               data-type-name="<%= rooms[0].type_name %>"
-                                               class="room-checkbox" checked>
-                                    </div>
+                                    <% }); %>
                                 <% } else { %>
                                     <p class="text-gold text-center py-4">Belum ada kamar dipilih. Klik "Tambah Kamar" untuk memilih.</p>
                                 <% } %>
@@ -245,8 +249,8 @@
         const roomsDataInput = document.getElementById('roomsData');
 
         function updateSummary() {
-            const roomCheckboxes = document.querySelectorAll('.room-checkbox');
-            const selectedRooms = Array.from(roomCheckboxes).filter(cb => cb.checked || cb.type === 'hidden');
+            const roomCheckboxes = document.querySelectorAll('.room-checkbox:checked');
+            const selectedRooms = Array.from(roomCheckboxes);
             const duration = parseInt(durationSelect.value);
             
             if (selectedRooms.length === 0) {
@@ -264,10 +268,12 @@
                 const price = parseInt(checkbox.dataset.price);
                 const roomNumber = checkbox.dataset.roomNumber;
                 const typeName = checkbox.dataset.typeName;
+                const roomTypeId = checkbox.dataset.roomTypeId;
                 
                 subtotal += price;
                 roomsData.push({
                     room_id: checkbox.value,
+                    room_type_id: roomTypeId,
                     room_number: roomNumber,
                     type_name: typeName,
                     price: price,
@@ -276,7 +282,7 @@
 
                 html += `
                     <div class="flex justify-between text-sm">
-                        <span class="text-gold">Kamar ${roomNumber}</span>
+                        <span class="text-gold">Kamar ${roomNumber} (${typeName})</span>
                         <span class="text-gold-dark">Rp ${price.toLocaleString('id-ID')}</span>
                     </div>
                 `;
@@ -299,6 +305,13 @@
         }
 
         durationSelect.addEventListener('change', updateSummary);
+        
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            updateSummary();
+        });
+        
+        // Update immediately
         updateSummary();
     </script>
 
