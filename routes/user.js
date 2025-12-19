@@ -381,11 +381,34 @@ router.post('/multi-booking', async (req, res) => {
         
         console.log('=== MULTI BOOKING REQUEST ===');
         console.log('User ID:', userId);
-        console.log('Start Date:', start_date);
-        console.log('Duration:', duration_months);
-        console.log('Total Amount:', total_amount);
-        console.log('Rooms Data:', rooms);
-        console.log('Notes:', notes);
+        console.log('Request body:', req.body);
+        
+        // Validation
+        if (!start_date || !duration_months || !rooms || !total_amount) {
+            console.log('Missing required fields');
+            return res.redirect('/user/bookings?error=Data tidak lengkap');
+        }
+        
+        let roomsArray;
+        try {
+            if (typeof rooms === 'string') {
+                roomsArray = JSON.parse(rooms);
+            } else if (Array.isArray(rooms)) {
+                roomsArray = rooms;
+            } else {
+                roomsArray = Object.values(rooms);
+            }
+        } catch (parseError) {
+            console.log('Error parsing rooms data:', parseError);
+            return res.redirect('/user/bookings?error=Format data kamar tidak valid');
+        }
+        
+        if (!roomsArray || roomsArray.length === 0) {
+            console.log('No rooms selected');
+            return res.redirect('/user/bookings?error=Silakan pilih minimal satu kamar');
+        }
+        
+        console.log('Parsed rooms:', roomsArray);
         
         await db.execute('START TRANSACTION');
         
@@ -395,19 +418,14 @@ router.post('/multi-booking', async (req, res) => {
         );
         
         const multiBookingId = result.insertId;
-        let roomsArray;
-        if (typeof rooms === 'string') {
-            roomsArray = JSON.parse(rooms);
-        } else if (Array.isArray(rooms)) {
-            roomsArray = rooms;
-        } else {
-            roomsArray = Object.values(rooms);
-        }
+        console.log('Created multi booking with ID:', multiBookingId);
         
         for (const room of roomsArray) {
             const roomId = room.room_id || room;
             const roomTypeId = room.room_type_id;
-            const subtotal = room.subtotal || room.price * duration_months;
+            const subtotal = room.subtotal || (room.price * duration_months);
+            
+            console.log('Processing room:', { roomId, roomTypeId, subtotal });
             
             if (roomId) {
                 await db.execute(
@@ -416,20 +434,24 @@ router.post('/multi-booking', async (req, res) => {
                 );
                 
                 await db.execute('UPDATE rooms SET status = ? WHERE id = ?', ['occupied', roomId]);
+                console.log('Updated room status for room ID:', roomId);
             }
         }
         
         await db.execute('COMMIT');
         console.log('=== BOOKING SUCCESS ===');
-        console.log('Multi Booking ID:', multiBookingId);
-        console.log('Redirecting to:', `/user/activate-payment/${multiBookingId}`);
+        console.log('Redirecting to payment activation:', multiBookingId);
         
         // Langsung redirect ke pembayaran dengan auto-activate
         res.redirect(`/user/activate-payment/${multiBookingId}`);
     } catch (error) {
-        await db.execute('ROLLBACK');
-        console.error(error);
-        res.redirect('/user/bookings?error=Gagal melakukan booking');
+        try {
+            await db.execute('ROLLBACK');
+        } catch (rollbackError) {
+            console.error('Rollback error:', rollbackError);
+        }
+        console.error('Multi-booking error:', error);
+        res.redirect('/user/bookings?error=Gagal melakukan booking: ' + error.message);
     }
 });
 

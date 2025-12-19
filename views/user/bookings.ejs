@@ -249,12 +249,16 @@
         function updateSummary() {
             const roomCheckboxes = document.querySelectorAll('.room-checkbox:checked');
             const selectedRooms = Array.from(roomCheckboxes);
-            const duration = parseInt(durationSelect.value);
+            const duration = parseInt(durationSelect.value) || 1;
+            
+            console.log('Updating summary with', selectedRooms.length, 'rooms');
             
             if (selectedRooms.length === 0) {
                 selectedRoomsList.innerHTML = '<p class="text-gold text-sm">Belum ada kamar dipilih</p>';
                 subtotalDisplay.textContent = 'Rp 0';
                 totalDisplay.textContent = 'Rp 0';
+                totalAmountInput.value = '0';
+                roomsDataInput.value = '[]';
                 return;
             }
 
@@ -263,14 +267,14 @@
             const roomsData = [];
 
             selectedRooms.forEach(checkbox => {
-                const price = parseInt(checkbox.dataset.price);
-                const roomNumber = checkbox.dataset.roomNumber;
-                const typeName = checkbox.dataset.typeName;
-                const roomTypeId = checkbox.dataset.roomTypeId;
+                const price = parseInt(checkbox.dataset.price) || 0;
+                const roomNumber = checkbox.dataset.roomNumber || 'Unknown';
+                const typeName = checkbox.dataset.typeName || 'Unknown';
+                const roomTypeId = parseInt(checkbox.dataset.roomTypeId) || 0;
                 
                 subtotal += price;
                 roomsData.push({
-                    room_id: checkbox.value,
+                    room_id: parseInt(checkbox.value),
                     room_type_id: roomTypeId,
                     room_number: roomNumber,
                     type_name: typeName,
@@ -296,6 +300,11 @@
             
             totalAmountInput.value = total;
             roomsDataInput.value = JSON.stringify(roomsData);
+            
+            console.log('Updated form data:', {
+                total_amount: total,
+                rooms_data: roomsData
+            });
         }
 
         function showRoomSelector() {
