@@ -368,10 +368,13 @@ router.post('/booking', async (req, res) => {
             return res.redirect('/user/bookings?error=Pilih minimal satu kamar');
         }
         
-        // Start database transaction for consistency
-        await db.execute('START TRANSACTION');
+        // Get a connection from pool for transaction
+        const connection = await db.getConnection();
         
         try {
+            // Start transaction
+            await connection.beginTransaction();
+            
             const bookingResults = [];
             
             // Process each room separately (simple approach)
@@ -382,7 +385,7 @@ router.post('/booking', async (req, res) => {
                 const totalAmount = monthlyPrice * duration_months;
                 
                 // Check room availability in real-time
-                const [roomCheck] = await db.execute(
+                const [roomCheck] = await connection.execute(
                     'SELECT status FROM rooms WHERE id = ? FOR UPDATE',
                     [roomId]
                 );
@@ -392,19 +395,19 @@ router.post('/booking', async (req, res) => {
                 }
                 
                 // Create booking for each room
-                const [bookingResult] = await db.execute(
+                const [bookingResult] = await connection.execute(
                     'INSERT INTO bookings (user_id, room_id, room_type_id, start_date, duration_months, total_amount, status, notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
                     [userId, roomId, roomTypeId, start_date, duration_months, totalAmount, 'confirmed', notes]
                 );
                 
                 // Update room status
-                await db.execute('UPDATE rooms SET status = ? WHERE id = ?', ['occupied', roomId]);
+                await connection.execute('UPDATE rooms SET status = ? WHERE id = ?', ['occupied', roomId]);
                 
                 // Create occupant
                 const endDate = new Date(start_date);
                 endDate.setMonth(endDate.getMonth() + parseInt(duration_months));
                 
-                const [occupantResult] = await db.execute(
+                const [occupantResult] = await connection.execute(
                     'INSERT INTO occupants (user_id, room_id, start_date, end_date, monthly_rent, status) VALUES (?, ?, ?, ?, ?, ?)',
                     [userId, roomId, start_date, endDate.toISOString().slice(0, 10), monthlyPrice, 'active']
                 );
@@ -417,7 +420,7 @@ router.post('/booking', async (req, res) => {
                     dueDate.setMonth(dueDate.getMonth() + i);
                     dueDate.setDate(10);
                     
-                    await db.execute(
+                    await connection.execute(
                         'INSERT INTO payments (occupant_id, amount, due_date, status) VALUES (?, ?, ?, ?)',
                         [occupantId, monthlyPrice, dueDate.toISOString().slice(0, 10), 'pending']
                     );
@@ -433,7 +436,10 @@ router.post('/booking', async (req, res) => {
             }
             
             // Commit transaction
-            await db.execute('COMMIT');
+            await connection.commit();
+            
+            // Release connection back to pool
+            connection.release();
             
             // Broadcast real-time updates
             for (const booking of bookingResults) {
@@ -467,7 +473,8 @@ router.post('/booking', async (req, res) => {
             
         } catch (error) {
             // Rollback transaction on error
-            await db.execute('ROLLBACK');
+            await connection.rollback();
+            connection.release();
             throw error;
         }
         
