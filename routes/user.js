@@ -150,6 +150,9 @@ router.get('/rooms/:typeId', async (req, res) => {
 // Payment Reports
 router.get('/payments', async (req, res) => {
     try {
+        const userId = req.session.user.id;
+        console.log('Loading payments for user:', userId);
+        
         // Get payments for user - handle case where user might not have occupants yet
         const [payments] = await db.execute(`
             SELECT p.*, r.room_number, rt.name as room_type,
@@ -160,7 +163,9 @@ router.get('/payments', async (req, res) => {
             JOIN room_types rt ON r.room_type_id = rt.id
             WHERE o.user_id = ? 
             ORDER BY p.due_date DESC
-        `, [req.session.user.id]);
+        `, [userId]);
+        
+        console.log('Payments found:', payments.length);
         
         const success = req.query.success;
         res.render('user/payments', { 
@@ -544,6 +549,8 @@ router.post('/payments/:id/confirm', async (req, res) => {
         const paymentId = req.params.id;
         const userId = req.session.user.id;
         
+        console.log('Payment confirmation attempt:', { paymentId, userId });
+        
         // Verify payment belongs to user
         const [payment] = await db.execute(`
             SELECT p.*, o.user_id, r.room_number, rt.name as room_type
@@ -554,12 +561,22 @@ router.post('/payments/:id/confirm', async (req, res) => {
             WHERE p.id = ? AND o.user_id = ?
         `, [paymentId, userId]);
         
+        console.log('Payment found:', payment.length > 0 ? 'Yes' : 'No');
+        
         if (payment.length === 0) {
-            return res.json({ success: false, message: 'Pembayaran tidak ditemukan' });
+            console.log('Payment not found or does not belong to user');
+            return res.json({ 
+                success: false, 
+                message: 'Pembayaran tidak ditemukan atau bukan milik Anda' 
+            });
         }
         
         if (payment[0].status === 'paid') {
-            return res.json({ success: false, message: 'Pembayaran sudah dikonfirmasi' });
+            console.log('Payment already paid');
+            return res.json({ 
+                success: false, 
+                message: 'Pembayaran sudah dikonfirmasi sebelumnya' 
+            });
         }
         
         // Update payment status
@@ -568,22 +585,30 @@ router.post('/payments/:id/confirm', async (req, res) => {
             [paymentId]
         );
         
-        // Broadcast real-time payment update
-        await req.realtimeService.broadcastPaymentUpdate({
-            id: paymentId,
-            user_id: userId,
-            status: 'paid',
-            amount: payment[0].amount,
-            room_number: payment[0].room_number,
-            room_type: payment[0].room_type
-        });
+        console.log('Payment updated successfully');
         
-        // Send notification
-        await req.realtimeService.sendNotification(userId, {
-            title: 'Pembayaran Dikonfirmasi',
-            message: `Pembayaran untuk kamar ${payment[0].room_number} sebesar Rp ${payment[0].amount.toLocaleString('id-ID')} telah dikonfirmasi.`,
-            type: 'payment'
-        });
+        // Broadcast real-time payment update (if service available)
+        try {
+            if (req.realtimeService) {
+                await req.realtimeService.broadcastPaymentUpdate({
+                    id: paymentId,
+                    user_id: userId,
+                    status: 'paid',
+                    amount: payment[0].amount,
+                    room_number: payment[0].room_number,
+                    room_type: payment[0].room_type
+                });
+                
+                // Send notification
+                await req.realtimeService.sendNotification(userId, {
+                    title: 'Pembayaran Dikonfirmasi',
+                    message: `Pembayaran untuk kamar ${payment[0].room_number} sebesar Rp ${payment[0].amount.toLocaleString('id-ID')} telah dikonfirmasi.`,
+                    type: 'payment'
+                });
+            }
+        } catch (realtimeError) {
+            console.log('Realtime service error (non-critical):', realtimeError.message);
+        }
         
         res.json({ 
             success: true, 
@@ -597,7 +622,10 @@ router.post('/payments/:id/confirm', async (req, res) => {
         
     } catch (error) {
         console.error('Payment confirmation error:', error);
-        res.json({ success: false, message: 'Gagal mengkonfirmasi pembayaran' });
+        res.json({ 
+            success: false, 
+            message: `Gagal mengkonfirmasi pembayaran: ${error.message}` 
+        });
     }
 });
 
