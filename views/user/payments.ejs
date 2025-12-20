@@ -126,7 +126,6 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-gold uppercase tracking-wider">Periode</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gold uppercase tracking-wider">Jumlah</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gold uppercase tracking-wider">Jatuh Tempo</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gold uppercase tracking-wider">Status</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gold uppercase tracking-wider">Aksi</th>
                         </tr>
                     </thead>
@@ -160,21 +159,6 @@
                                             </div>
                                         <% } %>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <% if (payment.status === 'paid') { %>
-                                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 payment-status">
-                                                <i class="fas fa-check mr-1"></i>Lunas
-                                            </span>
-                                        <% } else if (payment.status === 'pending') { %>
-                                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800 payment-status">
-                                                <i class="fas fa-clock mr-1"></i>Pending
-                                            </span>
-                                        <% } else if (payment.status === 'overdue') { %>
-                                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800 payment-status">
-                                                <i class="fas fa-exclamation-triangle mr-1"></i>Terlambat
-                                            </span>
-                                        <% } %>
-                                    </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                         <% if (payment.status === 'pending' || payment.status === 'overdue') { %>
                                             <div class="text-center">
@@ -198,7 +182,7 @@
                             <% }); %>
                         <% } else { %>
                             <tr>
-                                <td colspan="5" class="px-6 py-12 text-center">
+                                <td colspan="4" class="px-6 py-12 text-center">
                                     <i class="fas fa-receipt text-4xl text-gold mb-4"></i>
                                     <h3 class="text-lg font-semibold text-gold-dark mb-2">Belum Ada Pembayaran</h3>
                                     <p class="text-gold">Riwayat pembayaran akan muncul di sini</p>
@@ -241,16 +225,15 @@
             
             paymentRows.forEach((row, index) => {
                 const cells = row.querySelectorAll('td');
-                if (cells.length >= 4) {
+                if (cells.length >= 3) {
                     payments.push({
                         no: index + 1,
                         periode: cells[0].querySelector('.text-sm').textContent,
                         kamar: cells[0].querySelector('.text-xs').textContent,
                         jumlah: cells[1].querySelector('.text-sm').textContent,
                         jatuhTempo: cells[2].querySelector('.text-sm').textContent,
-                        status: cells[3].querySelector('span').textContent.trim(),
-                        tanggalBayar: cells[4].querySelector('.payment-date') ? 
-                                     cells[4].querySelector('.payment-date').textContent.replace('Dibayar: ', '') : '-'
+                        tanggalBayar: cells[3].querySelector('.payment-date') ? 
+                                     cells[3].querySelector('.payment-date').textContent.replace('Dibayar: ', '') : '-'
                     });
                 }
             });
@@ -289,7 +272,6 @@
                                 <th>Kamar</th>
                                 <th>Jumlah</th>
                                 <th>Jatuh Tempo</th>
-                                <th>Status</th>
                                 <th>Tanggal Bayar</th>
                             </tr>
                         </thead>
@@ -301,7 +283,6 @@
                                     <td>${payment.kamar}</td>
                                     <td>${payment.jumlah}</td>
                                     <td>${payment.jatuhTempo}</td>
-                                    <td>${payment.status}</td>
                                     <td>${payment.tanggalBayar}</td>
                                 </tr>
                             `).join('')}
@@ -383,13 +364,7 @@
         function updatePaymentStatus(paymentId, status) {
             const row = document.querySelector(`tr[data-payment-id="${paymentId}"]`);
             if (row) {
-                const statusElement = row.querySelector('.payment-status');
                 const actionCell = row.querySelector('td:last-child');
-                
-                if (statusElement && status === 'paid') {
-                    statusElement.className = 'inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 payment-status';
-                    statusElement.innerHTML = '<i class="fas fa-check mr-1"></i>Lunas';
-                }
                 
                 if (actionCell && status === 'paid') {
                     actionCell.innerHTML = `
