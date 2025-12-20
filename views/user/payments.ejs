@@ -198,12 +198,13 @@
     <script>
         // Auto-hide success message
         document.addEventListener('DOMContentLoaded', function() {
-            <% if (typeof success !== 'undefined' && success) { %>
+            // Check if there's a success alert and hide it after 5 seconds
+            const successAlert = document.querySelector('.glossy-gold-light');
+            if (successAlert) {
                 setTimeout(() => {
-                    const alert = document.querySelector('.glossy-gold-light');
-                    if (alert) alert.remove();
+                    if (successAlert) successAlert.remove();
                 }, 5000);
-            <% } %>
+            }
             
             // Add event listeners to payment confirmation buttons
             document.querySelectorAll('.payment-confirm-btn').forEach(button => {
@@ -327,9 +328,6 @@
             })
             .then(data => {
                 if (data.success) {
-                    // Show success message
-                    showSuccessMessage('Pembayaran berhasil dikonfirmasi!');
-                    
                     // Update UI immediately
                     updatePaymentStatus(paymentId, 'paid');
                     
@@ -338,7 +336,7 @@
                         window.location.reload();
                     }, 2000);
                 } else {
-                    showErrorMessage(data.message || 'Gagal mengkonfirmasi pembayaran');
+                    alert(data.message || 'Gagal mengkonfirmasi pembayaran');
                     // Reset button
                     if (button) {
                         button.disabled = false;
@@ -348,7 +346,7 @@
             })
             .catch(error => {
                 console.error('Payment confirmation error:', error);
-                showErrorMessage('Terjadi kesalahan saat memproses pembayaran');
+                alert('Terjadi kesalahan saat memproses pembayaran');
                 // Reset button
                 if (button) {
                     button.disabled = false;
@@ -375,59 +373,9 @@
             }
         }
         
-        function showSuccessMessage(message) {
-            // Create success notification
-            const notification = document.createElement('div');
-            notification.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 glossy-card';
-            notification.innerHTML = `
-                <div class="flex items-center">
-                    <i class="fas fa-check-circle mr-2"></i>
-                    <span>${message}</span>
-                </div>
-            `;
-            
-            document.body.appendChild(notification);
-            
-            // Remove after 3 seconds
-            setTimeout(() => {
-                if (notification.parentNode) {
-                    notification.parentNode.removeChild(notification);
-                }
-            }, 3000);
-        }
-        
-        function showErrorMessage(message) {
-            // Create error notification
-            const notification = document.createElement('div');
-            notification.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 glossy-card';
-            notification.innerHTML = `
-                <div class="flex items-center">
-                    <i class="fas fa-exclamation-circle mr-2"></i>
-                    <span>${message}</span>
-                </div>
-            `;
-            
-            document.body.appendChild(notification);
-            
-            // Remove after 5 seconds
-            setTimeout(() => {
-                if (notification.parentNode) {
-                    notification.parentNode.removeChild(notification);
-                }
-            }, 5000);
-        }
-        
         function refreshPaymentSummary() {
             // Refresh the summary cards by reloading page data
             location.reload();
-        }
-        
-        function showNotification(title, message, type) {
-            if (type === 'success') {
-                showSuccessMessage(message);
-            } else {
-                showErrorMessage(message);
-            }
         }
         
         // Auto-refresh payment status every 60 seconds
