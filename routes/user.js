@@ -580,10 +580,12 @@ router.post('/payments/:id/confirm', async (req, res) => {
         }
         
         // Update payment status
-        await db.execute(
-            'UPDATE payments SET status = "paid", payment_date = NOW() WHERE id = ?',
-            [paymentId]
+        const updateResult = await db.execute(
+            'UPDATE payments SET status = ?, payment_date = NOW() WHERE id = ?',
+            ['paid', paymentId]
         );
+        
+        console.log('Payment update result:', updateResult);
         
         console.log('Payment updated successfully');
         
