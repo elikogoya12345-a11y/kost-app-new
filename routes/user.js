@@ -194,7 +194,7 @@ router.post('/payments/:id/pay', async (req, res) => {
             ['paid', currentDate, paymentId]
         );
         
-        res.redirect('/user/payments?success=Pembayaran berhasil dikonfirmasi');
+        res.redirect('/user/payments');
     } catch (error) {
         console.error(error);
         res.redirect('/user/payments?error=Gagal mengkonfirmasi pembayaran');
@@ -600,21 +600,13 @@ router.post('/payments/:id/confirm', async (req, res) => {
                     room_number: payment[0].room_number,
                     room_type: payment[0].room_type
                 });
-                
-                // Send notification
-                await req.realtimeService.sendNotification(userId, {
-                    title: 'Pembayaran Dikonfirmasi',
-                    message: `Pembayaran untuk kamar ${payment[0].room_number} sebesar Rp ${payment[0].amount.toLocaleString('id-ID')} telah dikonfirmasi.`,
-                    type: 'payment'
-                });
             }
         } catch (realtimeError) {
             console.log('Realtime service error (non-critical):', realtimeError.message);
         }
         
         res.json({ 
-            success: true, 
-            message: 'Pembayaran berhasil dikonfirmasi',
+            success: true,
             payment: {
                 id: paymentId,
                 amount: payment[0].amount,
