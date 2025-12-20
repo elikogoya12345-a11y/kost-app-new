@@ -179,8 +179,7 @@
                                         <% if (payment.status === 'pending' || payment.status === 'overdue') { %>
                                             <div class="text-center">
                                                 <div class="text-xs text-gold mb-2">Sudah bayar? Tekan disini:</div>
-                                                <button onclick="confirmPaymentRealtime(<%= payment.id %>)" 
-                                                        data-payment-id="<%= payment.id %>"
+                                                <button data-payment-id="<%= payment.id %>"
                                                         class="glossy-gold text-white px-4 py-2 rounded-lg glossy-card text-sm font-medium payment-confirm-btn">
                                                     <i class="fas fa-check mr-2"></i>Konfirmasi Pembayaran
                                                 </button>
@@ -213,10 +212,48 @@
     </div>
 
     <script>
+        // Auto-hide success message
+        document.addEventListener('DOMContentLoaded', function() {
+            <% if (typeof success !== 'undefined' && success) { %>
+                setTimeout(() => {
+                    const alert = document.querySelector('.glossy-gold-light');
+                    if (alert) alert.remove();
+                }, 5000);
+            <% } %>
+            
+            // Add event listeners to payment confirmation buttons
+            document.querySelectorAll('.payment-confirm-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const paymentId = this.getAttribute('data-payment-id');
+                    confirmPaymentRealtime(paymentId);
+                });
+            });
+        });
+        
         function exportToPDF() {
             // Create a new window for PDF content
             const printWindow = window.open('', '_blank');
             const currentDate = new Date().toLocaleDateString('id-ID');
+            
+            // Get payment data from the current page
+            const payments = [];
+            const paymentRows = document.querySelectorAll('tbody tr[data-payment-id]');
+            
+            paymentRows.forEach((row, index) => {
+                const cells = row.querySelectorAll('td');
+                if (cells.length >= 4) {
+                    payments.push({
+                        no: index + 1,
+                        periode: cells[0].querySelector('.text-sm').textContent,
+                        kamar: cells[0].querySelector('.text-xs').textContent,
+                        jumlah: cells[1].querySelector('.text-sm').textContent,
+                        jatuhTempo: cells[2].querySelector('.text-sm').textContent,
+                        status: cells[3].querySelector('span').textContent.trim(),
+                        tanggalBayar: cells[4].querySelector('.payment-date') ? 
+                                     cells[4].querySelector('.payment-date').textContent.replace('Dibayar: ', '') : '-'
+                    });
+                }
+            });
             
             const pdfContent = `
                 <!DOCTYPE html>
@@ -242,14 +279,6 @@
                         <h1>LAPORAN PEMBAYARAN KOST</h1>
                         <h2>Kost Putra Bu Hartini</h2>
                         <p>Tanggal Cetak: ${currentDate}</p>
-                        <p>Nama: <%= user.name %> | Email: <%= user.email %></p>
-                    </div>
-                    
-                    <div class="info">
-                        <h3>Ringkasan Pembayaran</h3>
-                        <p><strong>Total Dibayar:</strong> Rp <%= payments.filter(p => p.status === 'paid').reduce((sum, p) => sum + parseFloat(p.amount), 0).toLocaleString('id-ID') %></p>
-                        <p><strong>Pembayaran Pending:</strong> <%= payments.filter(p => p.status === 'pending').length %> tagihan</p>
-                        <p><strong>Pembayaran Terlambat:</strong> <%= payments.filter(p => p.status === 'overdue').length %> tagihan</p>
                     </div>
                     
                     <table>
@@ -265,26 +294,17 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <% payments.forEach((payment, index) => { %>
+                            ${payments.map(payment => `
                                 <tr>
-                                    <td><%= index + 1 %></td>
-                                    <td><%= payment.month_year || 'N/A' %></td>
-                                    <td>Kamar <%= payment.room_number %> - <%= payment.room_type %></td>
-                                    <td>Rp <%= parseFloat(payment.amount).toLocaleString('id-ID') %></td>
-                                    <td><%= new Date(payment.due_date).toLocaleDateString('id-ID') %></td>
-                                    <td class="status-<%= payment.status %>">
-                                        <% if (payment.status === 'paid') { %>Lunas<% } %>
-                                        <% if (payment.status === 'pending') { %>Pending<% } %>
-                                        <% if (payment.status === 'overdue') { %>Terlambat<% } %>
-                                    </td>
-                                    <td><%= payment.payment_date ? new Date(payment.payment_date).toLocaleDateString('id-ID') : '-' %></td>
+                                    <td>${payment.no}</td>
+                                    <td>${payment.periode}</td>
+                                    <td>${payment.kamar}</td>
+                                    <td>${payment.jumlah}</td>
+                                    <td>${payment.jatuhTempo}</td>
+                                    <td>${payment.status}</td>
+                                    <td>${payment.tanggalBayar}</td>
                                 </tr>
-                            <% }); %>
-                            <tr class="total">
-                                <td colspan="3"><strong>TOTAL</strong></td>
-                                <td><strong>Rp <%= payments.reduce((sum, p) => sum + parseFloat(p.amount), 0).toLocaleString('id-ID') %></strong></td>
-                                <td colspan="3"></td>
-                            </tr>
+                            `).join('')}
                         </tbody>
                     </table>
                     
@@ -304,13 +324,6 @@
                 printWindow.print();
             };
         }
-        
-        <% if (typeof success !== 'undefined' && success) { %>
-            setTimeout(() => {
-                const alert = document.querySelector('.glossy-gold-light');
-                if (alert) alert.remove();
-            }, 5000);
-        <% } %>
         
         // Real-time payment confirmation
         function confirmPaymentRealtime(paymentId) {
