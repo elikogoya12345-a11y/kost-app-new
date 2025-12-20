@@ -57,12 +57,6 @@
             </div>
         </div>
 
-        <% if (typeof success !== 'undefined' && success) { %>
-            <div class="glossy-gold-light border border-amber-200 text-green-700 px-4 py-3 rounded-xl mb-6 glossy-card">
-                <i class="fas fa-check-circle mr-2"></i><%= success %>
-            </div>
-        <% } %>
-
         <!-- Payment Summary -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div class="glossy-gold rounded-2xl p-6 text-white glossy-card">
@@ -198,14 +192,6 @@
     <script>
         // Auto-hide success message
         document.addEventListener('DOMContentLoaded', function() {
-            // Check if there's a success alert and hide it after 5 seconds
-            const successAlert = document.querySelector('.glossy-gold-light');
-            if (successAlert) {
-                setTimeout(() => {
-                    if (successAlert) successAlert.remove();
-                }, 5000);
-            }
-            
             // Add event listeners to payment confirmation buttons
             document.querySelectorAll('.payment-confirm-btn').forEach(button => {
                 button.addEventListener('click', function() {

@@ -46,7 +46,7 @@ class RealtimeService {
             this.io.to(`user-${paymentData.user_id}`).emit('payment-status', {
                 type: 'payment',
                 status: paymentData.status,
-                message: paymentData.status === 'paid' ? 'Pembayaran berhasil dikonfirmasi!' : 'Status pembayaran diperbarui',
+                message: 'Status pembayaran diperbarui',
                 data: paymentData,
                 timestamp: new Date()
             });
@@ -193,7 +193,7 @@ class RealtimeService {
                 amount: payment[0].amount
             });
 
-            return { success: true, message: 'Pembayaran berhasil dikonfirmasi' };
+            return { success: true };
         } catch (error) {
             console.error('Error verifying payment:', error);
             return { success: false, message: 'Gagal memverifikasi pembayaran' };

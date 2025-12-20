@@ -173,7 +173,7 @@ class RealtimeClient {
     
     handlePaymentStatus(data) {
         console.log('Payment status received:', data);
-        this.showNotification('Payment Status', data.message, data.status === 'paid' ? 'success' : 'info');
+        // Notification disabled
         
         // Refresh payment summary
         this.refreshPaymentStats();
