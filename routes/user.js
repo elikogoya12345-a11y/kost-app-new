@@ -150,8 +150,10 @@ router.get('/rooms/:typeId', async (req, res) => {
 // Payment Reports
 router.get('/payments', async (req, res) => {
     try {
+        // Get payments for user - handle case where user might not have occupants yet
         const [payments] = await db.execute(`
-            SELECT p.*, r.room_number, rt.name as room_type
+            SELECT p.*, r.room_number, rt.name as room_type,
+                   CONCAT(MONTHNAME(p.due_date), ' ', YEAR(p.due_date)) as month_year
             FROM payments p
             JOIN occupants o ON p.occupant_id = o.id
             JOIN rooms r ON o.room_id = r.id
@@ -161,10 +163,19 @@ router.get('/payments', async (req, res) => {
         `, [req.session.user.id]);
         
         const success = req.query.success;
-        res.render('user/payments', { user: req.session.user, payments, success });
+        res.render('user/payments', { 
+            user: req.session.user, 
+            payments: payments || [], 
+            success 
+        });
     } catch (error) {
-        console.error(error);
-        res.render('user/payments', { user: req.session.user, payments: [], success: null });
+        console.error('Payments route error:', error);
+        // Render with empty payments array if there's an error
+        res.render('user/payments', { 
+            user: req.session.user, 
+            payments: [], 
+            success: null 
+        });
     }
 });
 

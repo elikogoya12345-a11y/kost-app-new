@@ -70,7 +70,7 @@
                     <div>
                         <p class="text-amber-100 text-sm">Total Dibayar</p>
                         <h3 class="text-2xl font-bold">
-                            Rp <%= payments.filter(p => p.status === 'paid').reduce((sum, p) => sum + parseFloat(p.amount), 0).toLocaleString('id-ID') %>
+                            Rp <%= (payments && payments.length > 0) ? payments.filter(p => p.status === 'paid').reduce((sum, p) => sum + parseFloat(p.amount || 0), 0).toLocaleString('id-ID') : '0' %>
                         </h3>
                     </div>
                     <div class="glossy-white p-3 rounded-xl glossy-card">
@@ -84,7 +84,7 @@
                     <div>
                         <p class="text-gold text-sm">Menunggu Pembayaran</p>
                         <h3 class="text-2xl font-bold">
-                            <%= payments.filter(p => p.status === 'pending').length %>
+                            <%= (payments && payments.length > 0) ? payments.filter(p => p.status === 'pending').length : 0 %>
                         </h3>
                     </div>
                     <div class="glossy-white p-3 rounded-xl glossy-card">
@@ -98,7 +98,7 @@
                     <div>
                         <p class="text-gold text-sm">Terlambat</p>
                         <h3 class="text-2xl font-bold">
-                            <%= payments.filter(p => p.status === 'overdue').length %>
+                            <%= (payments && payments.length > 0) ? payments.filter(p => p.status === 'overdue').length : 0 %>
                         </h3>
                     </div>
                     <div class="glossy-gold-light p-3 rounded-xl glossy-card">
@@ -112,7 +112,7 @@
         <div class="glossy-white rounded-2xl overflow-hidden glossy-card">
             <div class="p-6 border-b border-amber-200 flex justify-between items-center">
                 <h2 class="text-xl font-bold text-gold-dark">Daftar Pembayaran</h2>
-                <% if (payments.length > 0) { %>
+                <% if (payments && payments.length > 0) { %>
                     <button onclick="exportToPDF()" class="glossy-gold text-white px-4 py-2 rounded-lg glossy-card">
                         <i class="fas fa-file-pdf mr-2"></i>Export PDF
                     </button>
@@ -131,7 +131,7 @@
                         </tr>
                     </thead>
                     <tbody class="glossy-white divide-y divide-amber-200">
-                        <% if (payments.length > 0) { %>
+                        <% if (payments && payments.length > 0) { %>
                             <% payments.forEach(payment => { 
                                 const dueDate = new Date(payment.due_date);
                                 const today = new Date();
@@ -140,7 +140,7 @@
                             %>
                                 <tr class="hover:bg-amber-50" data-payment-id="<%= payment.id %>">
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm font-medium text-gold-dark"><%= payment.month_year %></div>
+                                        <div class="text-sm font-medium text-gold-dark"><%= payment.month_year || 'N/A' %></div>
                                         <div class="text-xs text-gold">Kamar <%= payment.room_number %> - <%= payment.room_type %></div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
@@ -315,42 +315,56 @@
         // Real-time payment confirmation
         function confirmPaymentRealtime(paymentId) {
             const button = document.querySelector(`[data-payment-id="${paymentId}"]`);
+            const originalButtonText = button ? button.innerHTML : '';
+            
             if (button) {
                 button.disabled = true;
                 button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Memproses...';
             }
             
-            if (window.realtimeClient && window.realtimeClient.isConnected) {
-                window.realtimeClient.confirmPayment(paymentId);
-            } else {
-                // Fallback to traditional form submission
-                fetch(`/user/payments/${paymentId}/confirm`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        // Update UI immediately
-                        updatePaymentStatus(paymentId, 'paid');
-                        showNotification('Success', data.message, 'success');
-                    } else {
-                        showNotification('Error', data.message, 'error');
-                    }
-                })
-                .catch(error => {
-                    console.error('Payment confirmation error:', error);
-                    showNotification('Error', 'Gagal mengkonfirmasi pembayaran', 'error');
-                })
-                .finally(() => {
+            // Use traditional fetch since realtime client might not be available
+            fetch(`/user/payments/${paymentId}/confirm`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    // Show success message
+                    showSuccessMessage('Pembayaran berhasil dikonfirmasi!');
+                    
+                    // Update UI immediately
+                    updatePaymentStatus(paymentId, 'paid');
+                    
+                    // Refresh page after 2 seconds to show updated data
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 2000);
+                } else {
+                    showErrorMessage(data.message || 'Gagal mengkonfirmasi pembayaran');
+                    // Reset button
                     if (button) {
                         button.disabled = false;
-                        button.innerHTML = '<i class="fas fa-check mr-2"></i>Konfirmasi Pembayaran';
+                        button.innerHTML = originalButtonText;
                     }
-                });
-            }
+                }
+            })
+            .catch(error => {
+                console.error('Payment confirmation error:', error);
+                showErrorMessage('Terjadi kesalahan saat memproses pembayaran');
+                // Reset button
+                if (button) {
+                    button.disabled = false;
+                    button.innerHTML = originalButtonText;
+                }
+            });
         }
         
         function updatePaymentStatus(paymentId, status) {
@@ -375,22 +389,60 @@
                     `;
                 }
             }
+        }
+        
+        function showSuccessMessage(message) {
+            // Create success notification
+            const notification = document.createElement('div');
+            notification.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 glossy-card';
+            notification.innerHTML = `
+                <div class="flex items-center">
+                    <i class="fas fa-check-circle mr-2"></i>
+                    <span>${message}</span>
+                </div>
+            `;
             
-            // Update summary cards
-            refreshPaymentSummary();
+            document.body.appendChild(notification);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 3000);
+        }
+        
+        function showErrorMessage(message) {
+            // Create error notification
+            const notification = document.createElement('div');
+            notification.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 glossy-card';
+            notification.innerHTML = `
+                <div class="flex items-center">
+                    <i class="fas fa-exclamation-circle mr-2"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Remove after 5 seconds
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 5000);
         }
         
         function refreshPaymentSummary() {
-            // This will be handled by the real-time client
-            if (window.realtimeClient && window.realtimeClient.isConnected) {
-                window.realtimeClient.refreshPaymentStats();
-            }
+            // Refresh the summary cards by reloading page data
+            location.reload();
         }
         
         function showNotification(title, message, type) {
-            // This will be handled by the real-time client
-            if (window.realtimeClient) {
-                window.realtimeClient.showNotification(title, message, type);
+            if (type === 'success') {
+                showSuccessMessage(message);
+            } else {
+                showErrorMessage(message);
             }
         }
         
