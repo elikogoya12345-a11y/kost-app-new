@@ -358,18 +358,6 @@
                 }
             }
         }
-        
-        function refreshPaymentSummary() {
-            // Refresh the summary cards by reloading page data
-            location.reload();
-        }
-        
-        // Auto-refresh payment status every 60 seconds
-        setInterval(() => {
-            if (window.realtimeClient && window.realtimeClient.isConnected) {
-                window.realtimeClient.refreshPaymentStats();
-            }
-        }, 60000);
     </script>
 </body>
 </html>

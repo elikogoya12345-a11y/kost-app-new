@@ -482,13 +482,6 @@ router.post('/booking', async (req, res) => {
                 });
             }
             
-            // Send notification to user (disabled)
-            // await req.realtimeService.sendNotification(userId, {
-            //     title: 'Booking Berhasil!',
-            //     message: `Booking untuk ${bookingResults.length} kamar telah dikonfirmasi. Silakan lakukan pembayaran.`,
-            //     type: 'booking'
-            // });
-            
             res.redirect('/user/payments');
             
         } catch (error) {

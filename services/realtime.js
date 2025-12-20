@@ -76,23 +76,8 @@ class RealtimeService {
 
     // Send real-time notification
     async sendNotification(userId, notification) {
-        try {
-            // Save to database
-            await db.execute(
-                'INSERT INTO notifications (user_id, title, message, type, created_at) VALUES (?, ?, ?, ?, NOW())',
-                [userId, notification.title, notification.message, notification.type]
-            );
-
-            // Send real-time notification
-            this.io.to(`user-${userId}`).emit('notification', {
-                ...notification,
-                timestamp: new Date()
-            });
-
-            console.log('Notification sent to user:', userId);
-        } catch (error) {
-            console.error('Error sending notification:', error);
-        }
+        // Notifications disabled - no longer sending notifications
+        return;
     }
 
     // Broadcast system-wide announcements

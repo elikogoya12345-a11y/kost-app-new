@@ -237,39 +237,8 @@ class RealtimeClient {
     
     // Utility methods
     showNotification(title, message, type = 'info') {
-        // Create notification element
-        const notification = document.createElement('div');
-        notification.className = `notification notification-${type}`;
-        notification.innerHTML = `
-            <div class="notification-content">
-                <div class="notification-title">${title}</div>
-                <div class="notification-message">${message}</div>
-            </div>
-            <button class="notification-close">&times;</button>
-        `;
-        
-        // Add to notification container
-        let container = document.querySelector('#notification-container');
-        if (!container) {
-            container = document.createElement('div');
-            container.id = 'notification-container';
-            container.className = 'fixed top-4 right-4 z-50 space-y-2';
-            document.body.appendChild(container);
-        }
-        
-        container.appendChild(notification);
-        
-        // Auto remove after 5 seconds
-        setTimeout(() => {
-            if (notification.parentNode) {
-                notification.remove();
-            }
-        }, 5000);
-        
-        // Close button handler
-        notification.querySelector('.notification-close').addEventListener('click', () => {
-            notification.remove();
-        });
+        // Notifications disabled
+        return;
     }
     
     showConnectionStatus(status) {
