@@ -64,54 +64,73 @@ router.get('/login', redirectIfAuth, (req, res) => {
 
 router.post('/login', async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const { email, password } = req.body; // 'email' field bisa berisi username atau email
         
-        console.log('Login attempt:', { email, passwordLength: password?.length });
+        console.log('Login attempt:', { loginInput: email, passwordLength: password?.length });
         
-        // Find user by username OR email in single query
-        let users;
+        if (!email || !password) {
+            return res.render('auth/login', { error: 'Username/Email dan password harus diisi' });
+        }
+        
+        // Cari user berdasarkan username ATAU email
+        let users = [];
+        
         try {
+            // Query untuk mencari user berdasarkan username atau email
             [users] = await db.execute(
                 'SELECT * FROM users WHERE username = ? OR email = ? LIMIT 1', 
-                [email, email]
+                [email.trim(), email.trim()]
             );
-            console.log('Users found:', users.length);
+            console.log('Users found with username/email query:', users.length);
         } catch (error) {
-            // Fallback if username column doesn't exist
             console.log('Username column might not exist, trying email only:', error.message);
-            [users] = await db.execute(
-                'SELECT * FROM users WHERE email = ? LIMIT 1', 
-                [email]
-            );
-            console.log('Users found (email only):', users.length);
+            // Fallback jika kolom username tidak ada
+            try {
+                [users] = await db.execute(
+                    'SELECT * FROM users WHERE email = ? LIMIT 1', 
+                    [email.trim()]
+                );
+                console.log('Users found with email only query:', users.length);
+            } catch (fallbackError) {
+                console.error('Both queries failed:', fallbackError);
+                return res.render('auth/login', { error: 'Terjadi kesalahan sistem. Silakan coba lagi.' });
+            }
         }
         
         if (users.length === 0) {
-            return res.render('auth/login', { error: 'Username/Email atau password salah' });
+            return res.render('auth/login', { 
+                error: 'Username/Email atau password salah. Pastikan Anda sudah terdaftar.' 
+            });
         }
         
         const user = users[0];
+        console.log('Found user:', { id: user.id, name: user.name, email: user.email, username: user.username });
         
-        // Check if user is active
+        // Cek status user
         if (user.status === 'inactive') {
             return res.render('auth/login', { error: 'Akun Anda telah dinonaktifkan. Hubungi admin.' });
         }
         
+        // Verifikasi password
         const isValid = await bcrypt.compare(password, user.password);
+        console.log('Password validation result:', isValid);
         
         if (!isValid) {
             return res.render('auth/login', { error: 'Username/Email atau password salah' });
         }
         
+        // Simpan data user ke session
         req.session.user = {
             id: user.id,
             name: user.name,
             email: user.email,
             role: user.role,
-            username: user.username
+            username: user.username || user.email.split('@')[0] // fallback username dari email
         };
         
-        // Check if there's a redirect URL in session
+        console.log('Login successful for user:', req.session.user);
+        
+        // Cek redirect URL
         const redirectUrl = req.session.redirectUrl;
         delete req.session.redirectUrl;
         
@@ -119,8 +138,11 @@ router.post('/login', async (req, res) => {
             return res.redirect(redirectUrl);
         }
         
+        // Redirect berdasarkan role
         const redirectPath = user.role === 'admin' ? '/admin/dashboard' : '/user/dashboard';
+        console.log('Redirecting to:', redirectPath);
         res.redirect(redirectPath);
+        
     } catch (error) {
         console.error('Login error:', error);
         let errorMessage = 'Terjadi kesalahan sistem';
@@ -128,7 +150,9 @@ router.post('/login', async (req, res) => {
         if (error.code === 'ECONNREFUSED') {
             errorMessage = 'Database tidak dapat diakses';
         } else if (error.code === 'ER_NO_SUCH_TABLE') {
-            errorMessage = 'Tabel users tidak ditemukan';
+            errorMessage = 'Tabel users tidak ditemukan. Silakan hubungi admin.';
+        } else if (error.code === 'ER_BAD_DB_ERROR') {
+            errorMessage = 'Database tidak ditemukan. Silakan hubungi admin.';
         } else if (error.sqlMessage) {
             errorMessage = 'Database error: ' + error.sqlMessage;
         }
@@ -144,6 +168,14 @@ router.get('/register', redirectIfAuth, (req, res) => {
 router.post('/register', async (req, res) => {
     try {
         const { name, email, password, confirm_password } = req.body;
+        
+        // Validasi input
+        if (!name || !email || !password || !confirm_password) {
+            return res.render('auth/register', { 
+                error: 'Semua field harus diisi',
+                formData: req.body
+            });
+        }
         
         // Validasi password match
         if (password !== confirm_password) {
@@ -161,25 +193,48 @@ router.post('/register', async (req, res) => {
             });
         }
         
-        // Cek apakah email sudah terdaftar
-        const [existingEmail] = await db.execute('SELECT id FROM users WHERE email = ?', [email]);
-        if (existingEmail && existingEmail.length > 0) {
+        // Validasi format email
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
             return res.render('auth/register', { 
-                error: 'Email sudah terdaftar',
+                error: 'Format email tidak valid',
                 formData: req.body
             });
         }
         
-        // Generate username from email (before @)
-        const username = email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
+        // Cek apakah email sudah terdaftar
+        const [existingEmail] = await db.execute('SELECT id FROM users WHERE email = ?', [email.trim()]);
+        if (existingEmail && existingEmail.length > 0) {
+            return res.render('auth/register', { 
+                error: 'Email sudah terdaftar. Silakan gunakan email lain atau login.',
+                formData: req.body
+            });
+        }
         
+        // Generate username dari email (bagian sebelum @)
+        let username = email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
+        
+        // Pastikan username unik
+        const [existingUsername] = await db.execute('SELECT id FROM users WHERE username = ?', [username]);
+        if (existingUsername && existingUsername.length > 0) {
+            // Jika username sudah ada, tambahkan angka random
+            username = username + Math.floor(Math.random() * 1000);
+        }
+        
+        console.log('Creating user:', { name, email, username });
+        
+        // Hash password
         const hashedPassword = await bcrypt.hash(password, 10);
+        
+        // Insert user baru
         await db.execute(
-            'INSERT INTO users (name, username, email, password) VALUES (?, ?, ?, ?)',
-            [name, username, email, hashedPassword]
+            'INSERT INTO users (name, username, email, password, role, status) VALUES (?, ?, ?, ?, ?, ?)',
+            [name.trim(), username, email.trim(), hashedPassword, 'user', 'active']
         );
         
-        res.redirect('/auth/login?success=Registrasi berhasil! Silakan login dengan username atau email dan password Anda.');
+        console.log('User created successfully');
+        
+        res.redirect('/auth/login?success=Registrasi berhasil! Silakan login dengan username "' + username + '" atau email "' + email + '"');
     } catch (error) {
         console.error('Register error:', error);
         let errorMessage = 'Terjadi kesalahan sistem';
@@ -187,9 +242,15 @@ router.post('/register', async (req, res) => {
         if (error.code === 'ECONNREFUSED') {
             errorMessage = 'Database tidak dapat diakses';
         } else if (error.code === 'ER_NO_SUCH_TABLE') {
-            errorMessage = 'Tabel users tidak ditemukan';
+            errorMessage = 'Tabel users tidak ditemukan. Silakan hubungi admin.';
         } else if (error.code === 'ER_DUP_ENTRY') {
-            errorMessage = 'Email sudah terdaftar';
+            if (error.sqlMessage.includes('email')) {
+                errorMessage = 'Email sudah terdaftar';
+            } else if (error.sqlMessage.includes('username')) {
+                errorMessage = 'Username sudah digunakan';
+            } else {
+                errorMessage = 'Data sudah terdaftar';
+            }
         } else if (error.sqlMessage) {
             errorMessage = 'Database error: ' + error.sqlMessage;
         }
