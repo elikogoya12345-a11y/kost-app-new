@@ -136,3 +136,56 @@ Jika ada pertanyaan atau masalah, silakan hubungi developer.
 ---
 
 **Kost Professional** - Solusi manajemen kost modern dan profesional.
+
+## 🚀 Deployment ke Railway
+
+### Prerequisites:
+- Akun Railway
+- Database Aiven MySQL (atau Railway MySQL)
+- Repository GitHub
+
+### Langkah Deployment:
+
+1. **Push ke GitHub**
+   ```bash
+   git add .
+   git commit -m "Ready for Railway deployment"
+   git push origin main
+   ```
+
+2. **Setup Railway Project**
+   - Login ke [Railway](https://railway.app)
+   - Create new project dari GitHub repository
+   - Connect repository ini
+
+3. **Set Environment Variables di Railway**
+   Buka Railway dashboard → Variables tab, set:
+   ```
+   NODE_ENV=production
+   SESSION_SECRET=your-secret-key-here
+   DB_HOST=your-aiven-host
+   DB_PORT=15388
+   DB_USER=avnadmin
+   DB_PASSWORD=your-aiven-password
+   DB_NAME=defaultdb
+   AIVEN_PASSWORD=your-aiven-password
+   ```
+
+4. **Setup Database Schema**
+   Setelah deploy berhasil, jalankan:
+   ```bash
+   railway run npm run setup-aiven
+   ```
+
+5. **Akses Aplikasi**
+   Railway akan memberikan URL public untuk aplikasi Anda.
+
+### Database Configuration:
+Aplikasi ini sudah dikonfigurasi untuk menggunakan:
+- **Development**: MySQL localhost
+- **Production**: Aiven MySQL dengan SSL
+
+### Troubleshooting:
+- Cek Railway logs jika deployment gagal
+- Pastikan semua environment variables sudah diset
+- Pastikan database Aiven dapat diakses dari Railway

@@ -1,15 +1,17 @@
 const mysql = require('mysql2/promise');
 require('dotenv').config();
 
-// Try Railway MySQL first, fallback to Aiven
+// Database configuration for Aiven MySQL
 const dbConfig = {
-    host: process.env.MYSQLHOST || process.env.DB_HOST?.replace(/"/g, '') || 'localhost',
-    user: process.env.MYSQLUSER || process.env.DB_USER?.replace(/"/g, '') || 'root',
-    password: process.env.MYSQLPASSWORD || process.env.DB_PASSWORD?.replace(/"/g, '') || '',
-    database: process.env.MYSQLDATABASE || process.env.DB_NAME?.replace(/"/g, '') || 'kost_professional',
-    port: parseInt(process.env.MYSQLPORT || process.env.DB_PORT?.replace(/"/g, '')) || 3306,
+    host: process.env.DB_HOST || 'localhost',
+    user: process.env.DB_USER || 'root',
+    password: process.env.DB_PASSWORD || '',
+    database: process.env.DB_NAME || 'kost_professional',
+    port: parseInt(process.env.DB_PORT) || 3306,
     ssl: {
-        rejectUnauthorized: false
+        rejectUnauthorized: false,
+        // For Aiven, SSL is required
+        ca: undefined
     },
     waitForConnections: true,
     connectionLimit: 10,
@@ -24,7 +26,8 @@ console.log('Database config:', {
     host: dbConfig.host,
     port: dbConfig.port,
     database: dbConfig.database,
-    user: dbConfig.user
+    user: dbConfig.user,
+    ssl: 'enabled'
 });
 
 const pool = mysql.createPool(dbConfig);
