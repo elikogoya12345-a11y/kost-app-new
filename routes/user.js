@@ -2,8 +2,16 @@ const express = require('express');
 const router = express.Router();
 const db = require('../models/db');
 const { requireUser } = require('../middleware/auth');
+const RealtimeService = require('../services/realtime');
 
 router.use(requireUser);
+
+// Initialize realtime service
+router.use((req, res, next) => {
+    const io = req.app.get('io');
+    req.realtimeService = new RealtimeService(io);
+    next();
+});
 
 // Dashboard
 router.get('/dashboard', async (req, res) => {
@@ -360,50 +368,112 @@ router.post('/booking', async (req, res) => {
             return res.redirect('/user/bookings?error=Pilih minimal satu kamar');
         }
         
-        // Process each room separately (simple approach)
-        for (const room of roomsArray) {
-            const roomId = room.room_id;
-            const roomTypeId = room.room_type_id;
-            const monthlyPrice = room.price;
-            const totalAmount = monthlyPrice * duration_months;
+        // Start database transaction for consistency
+        await db.execute('START TRANSACTION');
+        
+        try {
+            const bookingResults = [];
             
-            // Create booking for each room
-            await db.execute(
-                'INSERT INTO bookings (user_id, room_id, room_type_id, start_date, duration_months, total_amount, status) VALUES (?, ?, ?, ?, ?, ?, ?)',
-                [userId, roomId, roomTypeId, start_date, duration_months, totalAmount, 'confirmed']
-            );
-            
-            // Update room status
-            await db.execute('UPDATE rooms SET status = ? WHERE id = ?', ['occupied', roomId]);
-            
-            // Create occupant
-            const endDate = new Date(start_date);
-            endDate.setMonth(endDate.getMonth() + parseInt(duration_months));
-            
-            const [occupantResult] = await db.execute(
-                'INSERT INTO occupants (user_id, room_id, start_date, end_date, monthly_rent, status) VALUES (?, ?, ?, ?, ?, ?)',
-                [userId, roomId, start_date, endDate.toISOString().slice(0, 10), monthlyPrice, 'active']
-            );
-            
-            const occupantId = occupantResult.insertId;
-            
-            // Create payment schedule
-            for (let i = 0; i < duration_months; i++) {
-                const dueDate = new Date(start_date);
-                dueDate.setMonth(dueDate.getMonth() + i);
-                dueDate.setDate(10);
+            // Process each room separately (simple approach)
+            for (const room of roomsArray) {
+                const roomId = room.room_id;
+                const roomTypeId = room.room_type_id;
+                const monthlyPrice = room.price;
+                const totalAmount = monthlyPrice * duration_months;
                 
-                await db.execute(
-                    'INSERT INTO payments (occupant_id, amount, due_date, status) VALUES (?, ?, ?, ?)',
-                    [occupantId, monthlyPrice, dueDate.toISOString().slice(0, 10), 'pending']
+                // Check room availability in real-time
+                const [roomCheck] = await db.execute(
+                    'SELECT status FROM rooms WHERE id = ? FOR UPDATE',
+                    [roomId]
                 );
+                
+                if (roomCheck.length === 0 || roomCheck[0].status !== 'available') {
+                    throw new Error(`Kamar ${room.room_number} sudah tidak tersedia`);
+                }
+                
+                // Create booking for each room
+                const [bookingResult] = await db.execute(
+                    'INSERT INTO bookings (user_id, room_id, room_type_id, start_date, duration_months, total_amount, status, notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+                    [userId, roomId, roomTypeId, start_date, duration_months, totalAmount, 'confirmed', notes]
+                );
+                
+                // Update room status
+                await db.execute('UPDATE rooms SET status = ? WHERE id = ?', ['occupied', roomId]);
+                
+                // Create occupant
+                const endDate = new Date(start_date);
+                endDate.setMonth(endDate.getMonth() + parseInt(duration_months));
+                
+                const [occupantResult] = await db.execute(
+                    'INSERT INTO occupants (user_id, room_id, start_date, end_date, monthly_rent, status) VALUES (?, ?, ?, ?, ?, ?)',
+                    [userId, roomId, start_date, endDate.toISOString().slice(0, 10), monthlyPrice, 'active']
+                );
+                
+                const occupantId = occupantResult.insertId;
+                
+                // Create payment schedule
+                for (let i = 0; i < duration_months; i++) {
+                    const dueDate = new Date(start_date);
+                    dueDate.setMonth(dueDate.getMonth() + i);
+                    dueDate.setDate(10);
+                    
+                    await db.execute(
+                        'INSERT INTO payments (occupant_id, amount, due_date, status) VALUES (?, ?, ?, ?)',
+                        [occupantId, monthlyPrice, dueDate.toISOString().slice(0, 10), 'pending']
+                    );
+                }
+                
+                bookingResults.push({
+                    id: bookingResult.insertId,
+                    room_id: roomId,
+                    room_number: room.room_number,
+                    room_type: room.type_name,
+                    amount: totalAmount
+                });
             }
+            
+            // Commit transaction
+            await db.execute('COMMIT');
+            
+            // Broadcast real-time updates
+            for (const booking of bookingResults) {
+                // Broadcast booking update
+                await req.realtimeService.broadcastBookingUpdate({
+                    id: booking.id,
+                    user_id: userId,
+                    room_id: booking.room_id,
+                    status: 'confirmed',
+                    room_number: booking.room_number,
+                    room_type: booking.room_type,
+                    amount: booking.amount
+                });
+                
+                // Broadcast room availability change
+                await req.realtimeService.broadcastRoomAvailability({
+                    room_id: booking.room_id,
+                    status: 'occupied',
+                    room_number: booking.room_number
+                });
+            }
+            
+            // Send notification to user
+            await req.realtimeService.sendNotification(userId, {
+                title: 'Booking Berhasil!',
+                message: `Booking untuk ${bookingResults.length} kamar telah dikonfirmasi. Silakan lakukan pembayaran.`,
+                type: 'booking'
+            });
+            
+            res.redirect('/user/payments?success=Booking berhasil! Silakan lakukan pembayaran.');
+            
+        } catch (error) {
+            // Rollback transaction on error
+            await db.execute('ROLLBACK');
+            throw error;
         }
         
-        res.redirect('/user/payments?success=Booking berhasil! Silakan lakukan pembayaran.');
     } catch (error) {
         console.error('Booking error:', error);
-        res.redirect('/user/bookings?error=Gagal melakukan booking');
+        res.redirect('/user/bookings?error=' + error.message);
     }
 });
 
@@ -445,3 +515,138 @@ router.get('/bookings/:id/print', async (req, res) => {
 });
 
 module.exports = router;
+
+// Real-time payment confirmation
+router.post('/payments/:id/confirm', async (req, res) => {
+    try {
+        const paymentId = req.params.id;
+        const userId = req.session.user.id;
+        
+        // Verify payment belongs to user
+        const [payment] = await db.execute(`
+            SELECT p.*, o.user_id, r.room_number, rt.name as room_type
+            FROM payments p
+            JOIN occupants o ON p.occupant_id = o.id
+            JOIN rooms r ON o.room_id = r.id
+            JOIN room_types rt ON r.room_type_id = rt.id
+            WHERE p.id = ? AND o.user_id = ?
+        `, [paymentId, userId]);
+        
+        if (payment.length === 0) {
+            return res.json({ success: false, message: 'Pembayaran tidak ditemukan' });
+        }
+        
+        if (payment[0].status === 'paid') {
+            return res.json({ success: false, message: 'Pembayaran sudah dikonfirmasi' });
+        }
+        
+        // Update payment status
+        await db.execute(
+            'UPDATE payments SET status = "paid", payment_date = NOW() WHERE id = ?',
+            [paymentId]
+        );
+        
+        // Broadcast real-time payment update
+        await req.realtimeService.broadcastPaymentUpdate({
+            id: paymentId,
+            user_id: userId,
+            status: 'paid',
+            amount: payment[0].amount,
+            room_number: payment[0].room_number,
+            room_type: payment[0].room_type
+        });
+        
+        // Send notification
+        await req.realtimeService.sendNotification(userId, {
+            title: 'Pembayaran Dikonfirmasi',
+            message: `Pembayaran untuk kamar ${payment[0].room_number} sebesar Rp ${payment[0].amount.toLocaleString('id-ID')} telah dikonfirmasi.`,
+            type: 'payment'
+        });
+        
+        res.json({ 
+            success: true, 
+            message: 'Pembayaran berhasil dikonfirmasi',
+            payment: {
+                id: paymentId,
+                amount: payment[0].amount,
+                room_number: payment[0].room_number
+            }
+        });
+        
+    } catch (error) {
+        console.error('Payment confirmation error:', error);
+        res.json({ success: false, message: 'Gagal mengkonfirmasi pembayaran' });
+    }
+});
+
+// Real-time room availability check
+router.get('/api/rooms/availability', async (req, res) => {
+    try {
+        const [rooms] = await db.execute(`
+            SELECT r.id, r.room_number, r.status, rt.name as type_name, rt.base_price
+            FROM rooms r
+            JOIN room_types rt ON r.room_type_id = rt.id
+            ORDER BY rt.name, r.room_number
+        `);
+        
+        res.json({ success: true, rooms });
+    } catch (error) {
+        console.error('Room availability error:', error);
+        res.json({ success: false, message: 'Gagal memuat ketersediaan kamar' });
+    }
+});
+
+// Real-time booking status check
+router.get('/api/bookings/status/:id', async (req, res) => {
+    try {
+        const bookingId = req.params.id;
+        const userId = req.session.user.id;
+        
+        const [booking] = await db.execute(`
+            SELECT b.*, r.room_number, rt.name as room_type
+            FROM bookings b
+            JOIN rooms r ON b.room_id = r.id
+            JOIN room_types rt ON r.room_type_id = rt.id
+            WHERE b.id = ? AND b.user_id = ?
+        `, [bookingId, userId]);
+        
+        if (booking.length === 0) {
+            return res.json({ success: false, message: 'Booking tidak ditemukan' });
+        }
+        
+        res.json({ success: true, booking: booking[0] });
+    } catch (error) {
+        console.error('Booking status error:', error);
+        res.json({ success: false, message: 'Gagal memuat status booking' });
+    }
+});
+
+// Real-time payment status
+router.get('/api/payments/status', async (req, res) => {
+    try {
+        const userId = req.session.user.id;
+        
+        const [payments] = await db.execute(`
+            SELECT p.*, r.room_number, rt.name as room_type,
+                   DATEDIFF(p.due_date, CURDATE()) as days_until_due
+            FROM payments p
+            JOIN occupants o ON p.occupant_id = o.id
+            JOIN rooms r ON o.room_id = r.id
+            JOIN room_types rt ON r.room_type_id = rt.id
+            WHERE o.user_id = ?
+            ORDER BY p.due_date DESC
+        `, [userId]);
+        
+        const summary = {
+            total_paid: payments.filter(p => p.status === 'paid').reduce((sum, p) => sum + parseFloat(p.amount), 0),
+            pending_count: payments.filter(p => p.status === 'pending').length,
+            overdue_count: payments.filter(p => p.status === 'pending' && p.days_until_due < 0).length,
+            next_payment: payments.find(p => p.status === 'pending' && p.days_until_due >= 0)
+        };
+        
+        res.json({ success: true, payments, summary });
+    } catch (error) {
+        console.error('Payment status error:', error);
+        res.json({ success: false, message: 'Gagal memuat status pembayaran' });
+    }
+});

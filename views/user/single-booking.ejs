@@ -236,11 +236,24 @@
         document.getElementById('roomTypeFilter').addEventListener('change', filterRooms);
         document.getElementById('statusFilter').addEventListener('change', filterRooms);
 
+        // Real-time room availability check
+        function checkRoomAvailability() {
+            if (window.realtimeClient && window.realtimeClient.isConnected) {
+                window.realtimeClient.checkRoomAvailability();
+            }
+        }
+
+        // Auto-refresh room availability every 30 seconds
+        setInterval(checkRoomAvailability, 30000);
+
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
             document.querySelector('input[name="start_date"]').value = new Date().toISOString().split('T')[0];
             updateSummary();
             filterRooms();
+            
+            // Initial room availability check
+            setTimeout(checkRoomAvailability, 1000);
         });
     </script>
 </body>

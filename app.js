@@ -1,6 +1,8 @@
 const express = require('express');
 const session = require('express-session');
 const path = require('path');
+const http = require('http');
+const socketIo = require('socket.io');
 require('dotenv').config();
 
 // Keep Aiven MySQL alive
@@ -33,6 +35,14 @@ if (process.env.AIVEN_PASSWORD) {
 }
 
 const app = express();
+const server = http.createServer(app);
+const io = socketIo(server, {
+    cors: {
+        origin: "*",
+        methods: ["GET", "POST"]
+    }
+});
+
 const PORT = process.env.PORT || 3000;
 
 // Middleware
@@ -62,6 +72,42 @@ app.use(session({
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
+// Make io available to routes
+app.set('io', io);
+
+// WebSocket connection handling
+io.on('connection', (socket) => {
+    console.log('User connected:', socket.id);
+    
+    // Join user to their personal room for notifications
+    socket.on('join-user-room', (userId) => {
+        socket.join(`user-${userId}`);
+        console.log(`User ${userId} joined their room`);
+    });
+    
+    // Join admin room
+    socket.on('join-admin-room', () => {
+        socket.join('admin-room');
+        console.log('Admin joined admin room');
+    });
+    
+    // Handle booking events
+    socket.on('booking-request', (data) => {
+        // Broadcast to admin room
+        socket.to('admin-room').emit('new-booking', data);
+    });
+    
+    // Handle payment events
+    socket.on('payment-made', (data) => {
+        // Broadcast to admin room
+        socket.to('admin-room').emit('payment-update', data);
+    });
+    
+    socket.on('disconnect', () => {
+        console.log('User disconnected:', socket.id);
+    });
+});
+
 // Routes
 app.use('/', require('./routes/home'));
 app.use('/auth', require('./routes/auth'));
@@ -90,6 +136,7 @@ app.use((req, res) => {
     });
 });
 
-app.listen(PORT, '0.0.0.0', () => {
+server.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running on port ${PORT}`);
+    console.log(`WebSocket server ready for real-time transactions`);
 });

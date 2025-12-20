@@ -149,4 +149,13 @@
         document.getElementById('userMenuDropdown').classList.add('hidden');
     });
 </script>
+
+<!-- Real-time WebSocket Integration -->
+<script src="/socket.io/socket.io.js"></script>
+<script src="/js/realtime.js"></script>
+<script>
+    // Set user data for real-time client
+    document.body.dataset.userRole = '<%= typeof user !== "undefined" ? user.role : "user" %>';
+    document.body.dataset.userId = '<%= typeof user !== "undefined" ? user.id : "" %>';
+</script>
 <script src="/js/mobile-constraint.js"></script>

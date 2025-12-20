@@ -138,7 +138,7 @@
                                 const diffTime = dueDate - today;
                                 const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
                             %>
-                                <tr class="hover:bg-amber-50">
+                                <tr class="hover:bg-amber-50" data-payment-id="<%= payment.id %>">
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="text-sm font-medium text-gold-dark"><%= payment.month_year %></div>
                                         <div class="text-xs text-gold">Kamar <%= payment.room_number %> - <%= payment.room_type %></div>
@@ -162,15 +162,15 @@
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <% if (payment.status === 'paid') { %>
-                                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 payment-status">
                                                 <i class="fas fa-check mr-1"></i>Lunas
                                             </span>
                                         <% } else if (payment.status === 'pending') { %>
-                                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800 payment-status">
                                                 <i class="fas fa-clock mr-1"></i>Pending
                                             </span>
                                         <% } else if (payment.status === 'overdue') { %>
-                                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
+                                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800 payment-status">
                                                 <i class="fas fa-exclamation-triangle mr-1"></i>Terlambat
                                             </span>
                                         <% } %>
@@ -179,16 +179,16 @@
                                         <% if (payment.status === 'pending' || payment.status === 'overdue') { %>
                                             <div class="text-center">
                                                 <div class="text-xs text-gold mb-2">Sudah bayar? Tekan disini:</div>
-                                                <form action="/user/payments/<%= payment.id %>/pay" method="POST" style="display: inline;">
-                                                    <button type="submit" class="glossy-gold text-white px-4 py-2 rounded-lg glossy-card text-sm font-medium">
-                                                        <i class="fas fa-check mr-2"></i>Konfirmasi Pembayaran
-                                                    </button>
-                                                </form>
+                                                <button onclick="confirmPaymentRealtime(<%= payment.id %>)" 
+                                                        data-payment-id="<%= payment.id %>"
+                                                        class="glossy-gold text-white px-4 py-2 rounded-lg glossy-card text-sm font-medium payment-confirm-btn">
+                                                    <i class="fas fa-check mr-2"></i>Konfirmasi Pembayaran
+                                                </button>
                                             </div>
                                         <% } %>
                                         <% if (payment.status === 'paid' && payment.payment_date) { %>
                                             <div class="text-center">
-                                                <span class="text-green-600 text-sm">
+                                                <span class="text-green-600 text-sm payment-date">
                                                     <i class="fas fa-calendar-check mr-1"></i>
                                                     Dibayar: <%= new Date(payment.payment_date).toLocaleDateString('id-ID') %>
                                                 </span>
@@ -311,6 +311,95 @@
                 if (alert) alert.remove();
             }, 5000);
         <% } %>
+        
+        // Real-time payment confirmation
+        function confirmPaymentRealtime(paymentId) {
+            const button = document.querySelector(`[data-payment-id="${paymentId}"]`);
+            if (button) {
+                button.disabled = true;
+                button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Memproses...';
+            }
+            
+            if (window.realtimeClient && window.realtimeClient.isConnected) {
+                window.realtimeClient.confirmPayment(paymentId);
+            } else {
+                // Fallback to traditional form submission
+                fetch(`/user/payments/${paymentId}/confirm`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Update UI immediately
+                        updatePaymentStatus(paymentId, 'paid');
+                        showNotification('Success', data.message, 'success');
+                    } else {
+                        showNotification('Error', data.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Payment confirmation error:', error);
+                    showNotification('Error', 'Gagal mengkonfirmasi pembayaran', 'error');
+                })
+                .finally(() => {
+                    if (button) {
+                        button.disabled = false;
+                        button.innerHTML = '<i class="fas fa-check mr-2"></i>Konfirmasi Pembayaran';
+                    }
+                });
+            }
+        }
+        
+        function updatePaymentStatus(paymentId, status) {
+            const row = document.querySelector(`tr[data-payment-id="${paymentId}"]`);
+            if (row) {
+                const statusElement = row.querySelector('.payment-status');
+                const actionCell = row.querySelector('td:last-child');
+                
+                if (statusElement && status === 'paid') {
+                    statusElement.className = 'inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 payment-status';
+                    statusElement.innerHTML = '<i class="fas fa-check mr-1"></i>Lunas';
+                }
+                
+                if (actionCell && status === 'paid') {
+                    actionCell.innerHTML = `
+                        <div class="text-center">
+                            <span class="text-green-600 text-sm payment-date">
+                                <i class="fas fa-calendar-check mr-1"></i>
+                                Dibayar: ${new Date().toLocaleDateString('id-ID')}
+                            </span>
+                        </div>
+                    `;
+                }
+            }
+            
+            // Update summary cards
+            refreshPaymentSummary();
+        }
+        
+        function refreshPaymentSummary() {
+            // This will be handled by the real-time client
+            if (window.realtimeClient && window.realtimeClient.isConnected) {
+                window.realtimeClient.refreshPaymentStats();
+            }
+        }
+        
+        function showNotification(title, message, type) {
+            // This will be handled by the real-time client
+            if (window.realtimeClient) {
+                window.realtimeClient.showNotification(title, message, type);
+            }
+        }
+        
+        // Auto-refresh payment status every 60 seconds
+        setInterval(() => {
+            if (window.realtimeClient && window.realtimeClient.isConnected) {
+                window.realtimeClient.refreshPaymentStats();
+            }
+        }, 60000);
     </script>
 </body>
 </html>

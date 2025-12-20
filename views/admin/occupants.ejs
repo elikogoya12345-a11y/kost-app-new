@@ -227,13 +227,7 @@
                                                         <i class="fas fa-play mr-1"></i>Aktifkan
                                                     </button>
                                                 </form>
-                                                <% if (occupant.booking_id) { %>
-                                                    <form action="/admin/occupants/<%= occupant.id %>/activate" method="POST" style="display: inline;">
-                                                        <button type="submit" class="glossy-white text-green-600 px-3 py-1 rounded-lg glossy-card text-xs border border-green-200">
-                                                            <i class="fas fa-home mr-1"></i>Aktifkan Hunian
-                                                        </button>
-                                                    </form>
-                                                <% } %>
+
                                             <% } %>
                                             <button onclick="deleteOccupant('<%= occupant.id %>', '<%= occupant.name %>')" 
                                                     class="glossy-white text-red-600 px-3 py-1 rounded-lg glossy-card text-xs border border-red-200">

@@ -2,8 +2,16 @@ const express = require('express');
 const router = express.Router();
 const db = require('../models/db');
 const { requireAdmin } = require('../middleware/auth');
+const RealtimeService = require('../services/realtime');
 
 router.use(requireAdmin);
+
+// Initialize realtime service
+router.use((req, res, next) => {
+    const io = req.app.get('io');
+    req.realtimeService = new RealtimeService(io);
+    next();
+});
 
 // Test database connection
 router.get('/test-db', async (req, res) => {
@@ -204,7 +212,8 @@ router.get('/dashboard', async (req, res) => {
 router.get('/occupants', async (req, res) => {
     try {
         const [occupants] = await db.execute(`
-            SELECT u.*, o.start_date, o.end_date, o.status as occupant_status, r.room_number,
+            SELECT DISTINCT u.id, u.name, u.email, u.phone, u.birth_date, u.status,
+                   o.start_date, o.end_date, o.status as occupant_status, r.room_number,
                    b.id as booking_id, b.duration_months, b.start_date as booking_start_date,
                    br.room_number as booking_room_number, rt.name as room_type
             FROM users u
@@ -214,6 +223,7 @@ router.get('/occupants', async (req, res) => {
             LEFT JOIN rooms br ON b.room_id = br.id
             LEFT JOIN room_types rt ON br.room_type_id = rt.id
             WHERE u.role = 'user'
+            GROUP BY u.id
             ORDER BY u.name
         `);
         
@@ -465,6 +475,23 @@ router.post('/payments/:id/update', async (req, res) => {
         const { status } = req.body;
         const currentDate = new Date().toISOString().slice(0, 10);
         
+        // Get payment details for real-time update
+        const [paymentDetails] = await db.execute(`
+            SELECT p.*, o.user_id, u.name as user_name, r.room_number, rt.name as room_type
+            FROM payments p
+            JOIN occupants o ON p.occupant_id = o.id
+            JOIN users u ON o.user_id = u.id
+            JOIN rooms r ON o.room_id = r.id
+            JOIN room_types rt ON r.room_type_id = rt.id
+            WHERE p.id = ?
+        `, [paymentId]);
+        
+        if (paymentDetails.length === 0) {
+            return res.redirect('/admin/payments?error=Pembayaran tidak ditemukan');
+        }
+        
+        const payment = paymentDetails[0];
+        
         if (status === 'paid') {
             await db.execute(
                 'UPDATE payments SET status = ?, payment_date = ? WHERE id = ?',
@@ -476,6 +503,24 @@ router.post('/payments/:id/update', async (req, res) => {
                 [status, paymentId]
             );
         }
+        
+        // Broadcast real-time payment update
+        await req.realtimeService.broadcastPaymentUpdate({
+            id: paymentId,
+            user_id: payment.user_id,
+            status: status,
+            amount: payment.amount,
+            room_number: payment.room_number,
+            room_type: payment.room_type,
+            user_name: payment.user_name
+        });
+        
+        // Send notification to user
+        await req.realtimeService.sendNotification(payment.user_id, {
+            title: 'Status Pembayaran Diperbarui',
+            message: `Status pembayaran untuk kamar ${payment.room_number} telah diperbarui menjadi ${status === 'paid' ? 'Lunas' : 'Pending'}.`,
+            type: 'payment'
+        });
         
         res.redirect('/admin/payments?success=Status pembayaran berhasil diperbarui');
     } catch (error) {
@@ -924,5 +969,119 @@ router.get('/settings', (req, res) => {
 });
 
 
+
+// Real-time admin dashboard statistics
+router.get('/api/dashboard/stats', async (req, res) => {
+    try {
+        const stats = await req.realtimeService.broadcastStatistics();
+        res.json({ success: true, stats });
+    } catch (error) {
+        console.error('Dashboard stats error:', error);
+        res.json({ success: false, message: 'Gagal memuat statistik' });
+    }
+});
+
+// Real-time booking management
+router.post('/bookings/:id/update-status', async (req, res) => {
+    try {
+        const bookingId = req.params.id;
+        const { status } = req.body;
+        
+        // Get booking details
+        const [booking] = await db.execute(`
+            SELECT b.*, u.name as user_name, r.room_number, rt.name as room_type
+            FROM bookings b
+            JOIN users u ON b.user_id = u.id
+            JOIN rooms r ON b.room_id = r.id
+            JOIN room_types rt ON r.room_type_id = rt.id
+            WHERE b.id = ?
+        `, [bookingId]);
+        
+        if (booking.length === 0) {
+            return res.json({ success: false, message: 'Booking tidak ditemukan' });
+        }
+        
+        const bookingData = booking[0];
+        
+        // Update booking status
+        await db.execute(
+            'UPDATE bookings SET status = ? WHERE id = ?',
+            [status, bookingId]
+        );
+        
+        // Update room status based on booking status
+        let roomStatus = 'available';
+        if (status === 'confirmed') {
+            roomStatus = 'occupied';
+        } else if (status === 'cancelled') {
+            roomStatus = 'available';
+        }
+        
+        await db.execute(
+            'UPDATE rooms SET status = ? WHERE id = ?',
+            [roomStatus, bookingData.room_id]
+        );
+        
+        // Broadcast updates
+        await req.realtimeService.broadcastBookingUpdate({
+            id: bookingId,
+            user_id: bookingData.user_id,
+            room_id: bookingData.room_id,
+            status: status,
+            room_number: bookingData.room_number,
+            room_type: bookingData.room_type
+        });
+        
+        await req.realtimeService.broadcastRoomAvailability({
+            room_id: bookingData.room_id,
+            status: roomStatus,
+            room_number: bookingData.room_number
+        });
+        
+        // Send notification to user
+        await req.realtimeService.sendNotification(bookingData.user_id, {
+            title: 'Status Booking Diperbarui',
+            message: `Status booking untuk kamar ${bookingData.room_number} telah diperbarui menjadi ${status}.`,
+            type: 'booking'
+        });
+        
+        res.json({ success: true, message: 'Status booking berhasil diperbarui' });
+    } catch (error) {
+        console.error('Booking status update error:', error);
+        res.json({ success: false, message: 'Gagal memperbarui status booking' });
+    }
+});
+
+// Real-time payment verification
+router.post('/payments/:id/verify', async (req, res) => {
+    try {
+        const paymentId = req.params.id;
+        
+        const result = await req.realtimeService.verifyPaymentRealtime(paymentId, null);
+        res.json(result);
+    } catch (error) {
+        console.error('Payment verification error:', error);
+        res.json({ success: false, message: 'Gagal memverifikasi pembayaran' });
+    }
+});
+
+// Broadcast system announcement
+router.post('/api/broadcast/announcement', async (req, res) => {
+    try {
+        const { title, message, type } = req.body;
+        
+        await req.realtimeService.broadcastAnnouncement({
+            title,
+            message,
+            type: type || 'general',
+            admin: req.session.user.name
+        });
+        
+        res.json({ success: true, message: 'Pengumuman berhasil disiarkan' });
+    } catch (error) {
+        console.error('Broadcast announcement error:', error);
+        res.json({ success: false, message: 'Gagal menyiarkan pengumuman' });
+    }
+});
 
 module.exports = router;
