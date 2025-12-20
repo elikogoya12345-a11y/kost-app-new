@@ -211,11 +211,17 @@ router.get('/dashboard', async (req, res) => {
 // Manage Occupants
 router.get('/occupants', async (req, res) => {
     try {
+        // Get all users with their occupancy and booking information
         const [occupants] = await db.execute(`
-            SELECT DISTINCT u.id, u.name, u.email, u.phone, u.birth_date, u.status,
+            SELECT DISTINCT u.id, u.name, u.email, u.phone, u.birth_date, u.status, u.created_at,
                    o.start_date, o.end_date, o.status as occupant_status, r.room_number,
                    b.id as booking_id, b.duration_months, b.start_date as booking_start_date,
-                   br.room_number as booking_room_number, rt.name as room_type
+                   br.room_number as booking_room_number, rt.name as room_type,
+                   CASE 
+                       WHEN o.status = 'active' THEN 'Sedang Menghuni'
+                       WHEN b.status = 'confirmed' THEN 'Ada Booking'
+                       ELSE 'Terdaftar'
+                   END as user_category
             FROM users u
             LEFT JOIN occupants o ON u.id = o.user_id AND o.status = 'active'
             LEFT JOIN rooms r ON o.room_id = r.id
@@ -223,15 +229,42 @@ router.get('/occupants', async (req, res) => {
             LEFT JOIN rooms br ON b.room_id = br.id
             LEFT JOIN room_types rt ON br.room_type_id = rt.id
             WHERE u.role = 'user'
-            GROUP BY u.id
-            ORDER BY u.name
+            ORDER BY 
+                CASE 
+                    WHEN o.status = 'active' THEN 1
+                    WHEN b.status = 'confirmed' THEN 2
+                    ELSE 3
+                END,
+                u.created_at DESC
         `);
         
+        // Calculate statistics
+        const stats = {
+            total: occupants.length,
+            active_occupants: occupants.filter(o => o.occupant_status === 'active').length,
+            inactive_users: occupants.filter(o => o.status === 'inactive').length,
+            registered_users: occupants.filter(o => !o.occupant_status && !o.booking_id).length
+        };
+        
         const success = req.query.success;
-        res.render('admin/occupants', { user: req.session.user, occupants, success });
+        const error = req.query.error;
+        
+        res.render('admin/occupants', { 
+            user: req.session.user, 
+            occupants, 
+            stats,
+            success,
+            error
+        });
     } catch (error) {
-        console.error(error);
-        res.render('admin/occupants', { user: req.session.user, occupants: [], success: null });
+        console.error('Error fetching occupants:', error);
+        res.render('admin/occupants', { 
+            user: req.session.user, 
+            occupants: [], 
+            stats: { total: 0, active_occupants: 0, inactive_users: 0, registered_users: 0 },
+            success: null,
+            error: 'Gagal memuat data penghuni'
+        });
     }
 });
 
