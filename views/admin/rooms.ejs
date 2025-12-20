@@ -140,20 +140,6 @@
                 </button>
             </form>
             <% } %>
-            
-            <form action="/admin/fix-users" method="POST" style="display: inline;">
-                <button type="submit" 
-                        class="bg-purple-500 hover:bg-purple-600 text-white px-6 py-3 rounded-xl font-medium transition-colors"
-                        onclick="return confirm('Ini akan memperbaiki username untuk semua user. Lanjutkan?')">
-                    <i class="fas fa-user-cog mr-2"></i>Fix User Usernames
-                </button>
-            </form>
-            
-            <button onclick="resetAllRooms()" 
-                    class="glossy-blue text-white px-6 py-3 rounded-xl glossy-card font-medium"
-                    id="resetButton">
-                <i class="fas fa-refresh mr-2"></i>Reset Semua Kamar ke Tersedia
-            </button>
         </div>
 
         <!-- Rooms Table -->
@@ -364,37 +350,6 @@
                 .catch(error => {
                     console.error('Error:', error);
                     alert('Terjadi kesalahan saat menghapus kamar');
-                });
-            }
-        }
-
-        function resetAllRooms() {
-            if (confirm('Yakin ingin mereset semua kamar ke status tersedia? Ini akan:\n- Mengubah semua kamar menjadi tersedia\n- Menonaktifkan semua penghuni\n- Membatalkan booking yang dikonfirmasi\n- Menghapus pembayaran pending')) {
-                const button = event.target;
-                button.disabled = true;
-                button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Memproses...';
-                
-                fetch('/admin/rooms/reset-all', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                })
-                .then(response => {
-                    if (response.ok) {
-                        alert('Semua kamar berhasil direset!');
-                        location.reload();
-                    } else {
-                        alert('Gagal mereset kamar');
-                        button.disabled = false;
-                        button.innerHTML = '<i class="fas fa-refresh mr-2"></i>Reset Semua Kamar ke Tersedia';
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Terjadi kesalahan saat mereset kamar');
-                    button.disabled = false;
-                    button.innerHTML = '<i class="fas fa-refresh mr-2"></i>Reset Semua Kamar ke Tersedia';
                 });
             }
         }
