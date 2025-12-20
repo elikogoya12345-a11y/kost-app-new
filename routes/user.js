@@ -414,11 +414,15 @@ router.post('/booking', async (req, res) => {
                 
                 const occupantId = occupantResult.insertId;
                 
-                // Create payment schedule
+                // Create payment schedule based on user's selected start date
+                const startDateObj = new Date(start_date);
+                const dayOfMonth = startDateObj.getDate(); // Get the day from user's selected date
+                
                 for (let i = 0; i < duration_months; i++) {
                     const dueDate = new Date(start_date);
                     dueDate.setMonth(dueDate.getMonth() + i);
-                    dueDate.setDate(10);
+                    // Keep the same day of month as user's selected start date
+                    dueDate.setDate(dayOfMonth);
                     
                     await connection.execute(
                         'INSERT INTO payments (occupant_id, amount, due_date, status) VALUES (?, ?, ?, ?)',
