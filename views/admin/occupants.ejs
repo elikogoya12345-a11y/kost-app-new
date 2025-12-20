@@ -69,7 +69,9 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-blue-100 text-sm">Total Penghuni</p>
-                        <h3 class="text-2xl font-bold"><%= occupants.length %></h3>
+                        <h3 class="text-2xl font-bold">
+                            <%= typeof stats !== 'undefined' ? stats.total : occupants.length %>
+                        </h3>
                     </div>
                     <div class="glossy-white p-3 rounded-xl glossy-card">
                         <i class="fas fa-users text-2xl text-blue-600"></i>
@@ -82,7 +84,7 @@
                     <div>
                         <p class="text-amber-100 text-sm">Sedang Menghuni</p>
                         <h3 class="text-2xl font-bold">
-                            <%= occupants.filter(o => o.occupant_status === 'active').length %>
+                            <%= typeof stats !== 'undefined' ? stats.active_occupants : occupants.filter(o => o.occupant_status === 'active').length %>
                         </h3>
                     </div>
                     <div class="glossy-white p-3 rounded-xl glossy-card">
@@ -96,7 +98,7 @@
                     <div>
                         <p class="text-blue-medium text-sm">User Nonaktif</p>
                         <h3 class="text-2xl font-bold">
-                            <%= occupants.filter(o => o.status === 'inactive').length %>
+                            <%= typeof stats !== 'undefined' ? stats.inactive_users : occupants.filter(o => o.status === 'inactive').length %>
                         </h3>
                     </div>
                     <div class="glossy-blue-light p-3 rounded-xl glossy-card">
@@ -109,7 +111,9 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-blue-medium text-sm">User Terdaftar</p>
-                        <h3 class="text-2xl font-bold"><%= occupants.filter(o => o.role === 'user').length %></h3>
+                        <h3 class="text-2xl font-bold">
+                            <%= typeof stats !== 'undefined' ? stats.registered_users : occupants.filter(o => !o.occupant_status && !o.booking_id).length %>
+                        </h3>
                     </div>
                     <div class="glossy-white p-3 rounded-xl glossy-card">
                         <i class="fas fa-user-plus text-2xl text-blue-600"></i>
@@ -152,6 +156,9 @@
                                             <div class="ml-4">
                                                 <div class="text-sm font-medium text-blue-dark"><%= occupant.name %></div>
                                                 <div class="text-sm text-blue-medium"><%= occupant.email %></div>
+                                                <% if (occupant.user_category) { %>
+                                                    <div class="text-xs text-gray-500">Kategori: <%= occupant.user_category %></div>
+                                                <% } %>
                                             </div>
                                         </div>
                                     </td>
@@ -169,6 +176,9 @@
                                                 <%= new Date(occupant.birth_date).toLocaleDateString('id-ID') %>
                                             </div>
                                         <% } %>
+                                        <div class="text-xs text-gray-400">
+                                            Daftar: <%= new Date(occupant.created_at).toLocaleDateString('id-ID') %>
+                                        </div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <% if (occupant.room_number) { %>
@@ -194,7 +204,7 @@
                                             <div class="text-blue-600">Booking: <%= occupant.duration_months %> bulan</div>
                                             <div class="text-gray-500">Mulai: <%= new Date(occupant.booking_start_date).toLocaleDateString('id-ID') %></div>
                                         <% } else { %>
-                                            <span class="text-gray-400">-</span>
+                                            <span class="text-gray-400">Belum ada booking</span>
                                         <% } %>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
@@ -210,6 +220,14 @@
                                         <% if (occupant.occupant_status === 'active') { %>
                                             <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 ml-1">
                                                 <i class="fas fa-home mr-1"></i>Menghuni
+                                            </span>
+                                        <% } else if (occupant.booking_id) { %>
+                                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800 ml-1">
+                                                <i class="fas fa-calendar mr-1"></i>Ada Booking
+                                            </span>
+                                        <% } else { %>
+                                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800 ml-1">
+                                                <i class="fas fa-user-plus mr-1"></i>Terdaftar
                                             </span>
                                         <% } %>
                                     </td>
