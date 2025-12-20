@@ -91,7 +91,7 @@ CREATE TABLE occupants (
     FOREIGN KEY (room_id) REFERENCES rooms(id) ON DELETE CASCADE
 );
 
--- Payments table
+-- Payments table (FIXED ENUM)
 CREATE TABLE payments (
     id INT AUTO_INCREMENT PRIMARY KEY,
     occupant_id INT NOT NULL,
