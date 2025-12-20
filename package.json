@@ -10,7 +10,8 @@
     "setup-aiven": "node setup-aiven-db.js",
     "check-db": "node check-database.js",
     "seed-data": "node insert-seed-data.js",
-    "debug-occupants": "node debug-occupants.js"
+    "debug-occupants": "node debug-occupants.js",
+    "debug-user": "node debug-user-data.js"
   },
   "engines": {
     "node": ">=18.0.0"
