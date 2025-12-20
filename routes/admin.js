@@ -984,9 +984,135 @@ router.get('/unified-payments', async (req, res) => {
     }
 });
 
-// Legacy route redirects for backward compatibility
-router.get('/users', (req, res) => {
-    res.redirect('/admin/occupants');
+// Users Management - Show all registered users
+router.get('/users', async (req, res) => {
+    try {
+        // Get all users with their basic info and occupancy status
+        const [users] = await db.execute(`
+            SELECT u.id, u.name, u.email, u.phone, u.birth_date, u.status, u.created_at,
+                   o.id as occupant_id, o.start_date, o.end_date, o.status as occupant_status,
+                   r.room_number, rt.name as room_type,
+                   b.id as booking_id, b.status as booking_status,
+                   CASE 
+                       WHEN o.status = 'active' THEN 'Sedang Menghuni'
+                       WHEN b.status = 'confirmed' THEN 'Ada Booking'
+                       ELSE 'Terdaftar'
+                   END as user_category,
+                   CASE 
+                       WHEN o.status = 'active' THEN 'success'
+                       WHEN b.status = 'confirmed' THEN 'warning'
+                       ELSE 'info'
+                   END as category_color
+            FROM users u
+            LEFT JOIN occupants o ON u.id = o.user_id AND o.status = 'active'
+            LEFT JOIN rooms r ON o.room_id = r.id
+            LEFT JOIN room_types rt ON r.room_type_id = rt.id
+            LEFT JOIN bookings b ON u.id = b.user_id AND b.status = 'confirmed' AND o.id IS NULL
+            WHERE u.role = 'user'
+            ORDER BY 
+                CASE 
+                    WHEN o.status = 'active' THEN 1
+                    WHEN b.status = 'confirmed' THEN 2
+                    ELSE 3
+                END,
+                u.created_at DESC
+        `);
+        
+        // Calculate statistics
+        const stats = {
+            total: users.length,
+            active_occupants: users.filter(u => u.occupant_status === 'active').length,
+            with_bookings: users.filter(u => u.booking_id && !u.occupant_id).length,
+            registered_only: users.filter(u => !u.occupant_id && !u.booking_id).length,
+            inactive_users: users.filter(u => u.status === 'inactive').length
+        };
+        
+        const success = req.query.success;
+        const error = req.query.error;
+        
+        res.render('admin/users', { 
+            user: req.session.user, 
+            users, 
+            stats,
+            success,
+            error
+        });
+    } catch (error) {
+        console.error('Error fetching users:', error);
+        res.render('admin/users', { 
+            user: req.session.user, 
+            users: [], 
+            stats: { total: 0, active_occupants: 0, with_bookings: 0, registered_only: 0, inactive_users: 0 },
+            success: null,
+            error: 'Gagal memuat data pengguna'
+        });
+    }
+});
+
+// Toggle user status
+router.post('/users/:id/toggle-status', async (req, res) => {
+    try {
+        const userId = req.params.id;
+        
+        // Get current user status
+        const [users] = await db.execute(
+            'SELECT status FROM users WHERE id = ?',
+            [userId]
+        );
+        
+        if (users.length === 0) {
+            return res.redirect('/admin/users?error=Pengguna tidak ditemukan');
+        }
+        
+        const newStatus = users[0].status === 'active' ? 'inactive' : 'active';
+        
+        await db.execute(
+            'UPDATE users SET status = ? WHERE id = ?',
+            [newStatus, userId]
+        );
+        
+        res.redirect('/admin/users?success=Status pengguna berhasil diperbarui');
+    } catch (error) {
+        console.error(error);
+        res.redirect('/admin/users?error=Gagal memperbarui status pengguna');
+    }
+});
+
+// Delete user
+router.delete('/users/:id', async (req, res) => {
+    try {
+        const userId = req.params.id;
+        
+        // Check if user has active occupancy or bookings
+        const [occupants] = await db.execute(
+            'SELECT id FROM occupants WHERE user_id = ? AND status = "active"',
+            [userId]
+        );
+        
+        const [bookings] = await db.execute(
+            'SELECT id FROM bookings WHERE user_id = ? AND status = "confirmed"',
+            [userId]
+        );
+        
+        if (occupants.length > 0 || bookings.length > 0) {
+            return res.json({ success: false, message: 'Pengguna tidak dapat dihapus karena masih memiliki hunian atau booking aktif' });
+        }
+        
+        // Delete related data first
+        await db.execute('DELETE FROM payments WHERE occupant_id IN (SELECT id FROM occupants WHERE user_id = ?)', [userId]);
+        await db.execute('DELETE FROM occupants WHERE user_id = ?', [userId]);
+        await db.execute('DELETE FROM bookings WHERE user_id = ?', [userId]);
+        await db.execute('DELETE FROM complaints WHERE user_id = ?', [userId]);
+        await db.execute('DELETE FROM notifications WHERE user_id = ?', [userId]);
+        
+        // Delete user
+        await db.execute('DELETE FROM users WHERE id = ?', [userId]);
+        
+        res.json({ success: true, message: 'Pengguna berhasil dihapus' });
+    } catch (error) {
+        console.error(error);
+        res.json({ success: false, message: 'Gagal menghapus pengguna: ' + error.message });
+    }
 });
 
 router.get('/bookings', (req, res) => {
